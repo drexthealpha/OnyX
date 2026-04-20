@@ -1,7 +1,6 @@
-/**
- * @onyx/onyx-gateway
- * ONYX — Sovereign AI OS on Solana
- */
-
-export const NAME = 'onyx-gateway';
-export const VERSION = '0.0.1';
+export { startDaemon } from "./daemon.js";
+export { Lobby } from "./lobby.js";
+export { emit as emitTelemetry } from "./telemetry.js";
+export type { Channel } from "./channels/index.js";
+export type { ConversationTelemetry } from "./telemetry.js";
+export type { QueuedMessage } from "./lobby.js";
