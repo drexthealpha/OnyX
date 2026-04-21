@@ -1,6 +1,8 @@
 {
-  "name": "@onyx/onyx-mem",
-  "version": "0.0.1",
+  "name": "@onyx/mem",
+  "version": "0.1.0",
+  "description": "Cross-session persistent memory system for ONYX — capture, compress, store, inject",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -10,15 +12,19 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "build": "tsc --project tsconfig.json",
+    "dev": "bun run --watch src/index.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
   },
+  "dependencies": {},
   "devDependencies": {
-    "rimraf": "*",
-    "typescript": "*",
-    "vitest": "*"
+    "@types/bun": "latest",
+    "@types/node": "^20.10.0",
+    "bun-types": "latest",
+    "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "bun": ">=1.0.0"
   }
 }
