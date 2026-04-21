@@ -1,24 +1,24 @@
 {
-  "name": "@onyx/onyx-multica",
-  "version": "0.0.1",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "name": "@onyx/multica",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
   "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
+    ".": "./src/index.ts",
+    "./herald": "./src/herald.js",
+    "./council": "./src/council.js",
+    "./consensus": "./src/consensus.js",
+    "./quorum": "./src/quorum.js",
+    "./broadcast": "./src/broadcast.js",
+    "./messaging": "./src/messaging.js",
+    "./shared-memory": "./src/shared-memory.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "test": "vitest run"
   },
   "devDependencies": {
-    "rimraf": "*",
-    "typescript": "*",
-    "vitest": "*"
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
   }
 }
