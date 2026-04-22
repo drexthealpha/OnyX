@@ -1,7 +1,11 @@
-/**
- * @onyx/onyx-rl
- * ONYX — Sovereign AI OS on Solana
- */
+import { app } from "./loop.js";
 
-export const NAME = 'onyx-rl';
-export const VERSION = '0.0.1';
+// RL_PORT is defined in kernel/constants (default 4010)
+const port = Number(process.env.RL_PORT ?? 4010);
+
+console.log(`[onyx-rl] Starting on port ${port}`);
+
+export default {
+  port,
+  fetch: app.fetch,
+};

@@ -29,7 +29,7 @@ L9 Sovereignty       nomad
 [ ] S08 - onyx-tutor
 [ ] S09 - onyx-semantic
 [ ] S10 - onyx-compute
-[ ] S11 - onyx-rl
+[x] S11 - onyx-rl
 [ ] S12 - onyx-swe
 [ ] S13 - onyx-vault + onyx-solana
 [ ] S14 - onyx-privacy (Umbra)

@@ -1,24 +1,19 @@
 {
-  "name": "@onyx/onyx-rl",
-  "version": "0.0.1",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
+  "name": "@onyx/rl",
+  "version": "0.1.0",
+  "description": "Reinforcement learning loop for ONYX — wired to every conversation",
+  "type": "module",
+  "main": "src/index.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "hono": "^4.4.0"
   },
   "devDependencies": {
-    "rimraf": "*",
-    "typescript": "*",
-    "vitest": "*"
+    "@types/bun": "latest",
+    "typescript": "^5.4.0"
   }
 }
