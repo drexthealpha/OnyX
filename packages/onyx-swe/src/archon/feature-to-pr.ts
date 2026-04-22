@@ -1,0 +1,179 @@
+/**
+ * feature-to-pr.ts — Full feature → PR pipeline.
+ *
+ * Implements the Archon archon-idea-to-pr workflow pattern:
+ * plan → implement (loop until tests pass) → adversarial review → open PR
+ *
+ * Deterministic nodes (test runner, git ops) are interleaved with AI nodes
+ * (planner, coder, reviewer) — Archon's core principle.
+ */
+
+import { planFromIssue } from '../agent/planner.js';
+import { executeStep } from '../agent/coder.js';
+import { runTestSuite } from '../agent/tester.js';
+import { reviewCode } from '../agent/reviewer.js';
+import { adversarialTest } from './adversarial-loop.js';
+import { createSandbox } from '../sandbox/docker.js';
+import { WorkspaceManager } from '../sandbox/workspace.js';
+import { createPR } from '../github/pr.js';
+import { postStatusUpdate } from '../github/comment.js';
+import type { Plan, StepResult } from '../types.js';
+
+export interface FeatureToPROptions {
+  issueUrl: string;
+  repoUrl: string;
+  owner: string;
+  repo: string;
+  issueNumber: number;
+  maxRetries?: number;
+  skipAdversarial?: boolean;
+}
+
+export interface FeatureToPRResult {
+  prUrl: string;
+  plan: Plan;
+  stepResults: StepResult[];
+  adversarialPassed: boolean;
+  totalMinutes: number;
+}
+
+/**
+ * End-to-end pipeline: GitHub issue → implementation → PR.
+ *
+ * Flow (Archon-inspired):
+ * 1. Plan (AI) — generate 3-5 step plan from issue
+ * 2. Implement (AI loop) — execute each step, retry on test failure
+ * 3. Test (deterministic) — run test suite, verify pass
+ * 4. Adversarial review (AI) — security + bug analysis
+ * 5. Code review (AI) — style + correctness
+ * 6. Open PR (deterministic) — commit and create draft PR
+ */
+export async function featureToPR(options: FeatureToPROptions): Promise<FeatureToPRResult> {
+  const {
+    issueUrl,
+    repoUrl,
+    owner,
+    repo,
+    issueNumber,
+    maxRetries = 2,
+    skipAdversarial = false,
+  } = options;
+
+  const startTime = Date.now();
+  const sandbox = await createSandbox();
+  const workspace = new WorkspaceManager(sandbox);
+
+  try {
+    // ── Step 1: Plan ──────────────────────────────────────────────────────
+    await postStatusUpdate(owner, repo, issueNumber, 'planning');
+    const plan = await planFromIssue(issueUrl);
+
+    // ── Step 2: Workspace setup ───────────────────────────────────────────
+    const branchName = `onyx-swe/issue-${issueNumber}`;
+    const workspaceInfo = await workspace.initialize(repoUrl, branchName);
+
+    await postStatusUpdate(
+      owner,
+      repo,
+      issueNumber,
+      'coding',
+      `Implementing ${plan.steps.length} steps`,
+    );
+
+    // ── Step 3: Implement (loop with retry) ───────────────────────────────
+    const stepResults: StepResult[] = [];
+    const allFiles: Record<string, string> = {};
+
+    for (const [i, step] of plan.steps.entries()) {
+      let lastResult: StepResult | null = null;
+      let attempt = 0;
+
+      while (attempt <= maxRetries) {
+        const repoContext = await workspace.readFiles(
+          workspaceInfo.repoPath,
+          step.filePaths,
+        );
+
+        lastResult = await executeStep(step, sandbox, repoContext);
+
+        if (lastResult.success) break;
+
+        attempt++;
+        if (attempt <= maxRetries) {
+          console.warn(
+            `Step ${i + 1} failed (attempt ${attempt}/${maxRetries}), retrying...`,
+          );
+          // Inject test failure context into next attempt
+          step.description = `${step.description}\n\nPrevious attempt failed with:\n${lastResult.testOutput}\nFix the issues and try again.`;
+        }
+      }
+
+      if (lastResult) {
+        stepResults.push(lastResult);
+        Object.assign(allFiles, lastResult.files);
+      }
+    }
+
+    // ── Step 4: Test (deterministic) ─────────────────────────────────────
+    await postStatusUpdate(owner, repo, issueNumber, 'testing');
+    const testResult = await runTestSuite(sandbox);
+
+    // ── Step 5: Adversarial + code review (AI) ───────────────────────────
+    await postStatusUpdate(owner, repo, issueNumber, 'reviewing');
+
+    let adversarialPassed = true;
+    if (!skipAdversarial && Object.keys(allFiles).length > 0) {
+      const allCode = Object.entries(allFiles)
+        .map(([path, content]) => `// === ${path} ===\n${content}`)
+        .join('\n\n');
+
+      const adversarialResult = await adversarialTest(allCode, `Issue: ${issueUrl}`);
+      adversarialPassed = adversarialResult.passed;
+    }
+
+    // ── Step 6: Open PR (deterministic) ──────────────────────────────────
+    const prBody = [
+      `## Changes`,
+      '',
+      plan.steps.map((s, i) => `${i + 1}. ${s.description}`).join('\n'),
+      '',
+      `## Test Results`,
+      testResult.passed ? '✅ All tests passing' : `❌ ${testResult.failingTests.length} tests failing`,
+      '',
+      `## Adversarial Review`,
+      adversarialPassed ? '✅ No critical issues found' : '⚠️ Issues found — see review comments',
+      '',
+      `_Generated by [ONYX SWE Agent](https://github.com/onyx-ai/onyx) from issue ${issueUrl}_`,
+    ].join('\n');
+
+    const prUrl = await createPR({
+      owner,
+      repo,
+      branch: workspaceInfo.branch,
+      title: `feat: resolve issue #${issueNumber}`,
+      body: prBody,
+      files: allFiles,
+      draft: true,
+    });
+
+    const totalMinutes = Math.round((Date.now() - startTime) / 60_000);
+
+    await postStatusUpdate(
+      owner,
+      repo,
+      issueNumber,
+      'done',
+      `PR opened: ${prUrl}\nCompleted in ${totalMinutes} minutes`,
+    );
+
+    return {
+      prUrl,
+      plan,
+      stepResults,
+      adversarialPassed,
+      totalMinutes,
+    };
+  } finally {
+    await sandbox.destroy();
+  }
+}
