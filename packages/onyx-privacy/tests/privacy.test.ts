@@ -241,28 +241,4 @@ describe('onyx-privacy', () => {
       expect(() => parsePaymentLink('https://example.com')).toThrow();
     });
   });
-
-  describe('token constants', () => {
-    it('TOKENS has correct USDC address', () => {
-      const TOKENS = {
-        USDC: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-        USDT: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
-        wSOL: 'So11111111111111111111111111111111111111112',
-        UMBRA: 'PRVT6TB7uss3FrUd2D9xs2zqDBsa3GbMJMwCQsgmeta',
-      };
-      expect(TOKENS.USDC).toBe('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
-    });
-  });
-
-  describe('PROGRAM_IDS', () => {
-    it('has correct network program IDs', () => {
-      const PROGRAM_IDS = {
-        mainnet: 'UMBRAD2ishebJTcgCLkTkNUx1v3GyoAgpTRPeWoLykh',
-        devnet: 'DSuKkyqGVGgo4QtPABfxKJKygUDACbUhirnuv63mEpAJ',
-        localnet: 'DSuKkyqGVGgo4QtPABfxKJKygUDACbUhirnuv63mEpAJ',
-      };
-      expect(PROGRAM_IDS.mainnet).toBe('UMBRAD2ishebJTcgCLkTkNUx1v3GyoAgpTRPeWoLykh');
-      expect(PROGRAM_IDS.devnet).toBe('DSuKkyqGVGgo4QtPABfxKJKygUDACbUhirnuv63mEpAJ');
-    });
-  });
 });

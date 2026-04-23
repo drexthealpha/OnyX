@@ -1,24 +1,21 @@
 {
-  "name": "@onyx/onyx-privacy",
-  "version": "0.0.1",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
+  "name": "@onyx/privacy",
+  "version": "0.1.0",
+  "description": "Umbra SDK integration for ONYX financial privacy on Solana",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc",
     "test": "vitest run",
-    "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@umbra-privacy/sdk": "latest",
+    "@umbra-privacy/web-zk-prover": "latest",
+    "@solana/web3.js": "^2.0.0"
   },
   "devDependencies": {
-    "rimraf": "*",
-    "typescript": "*",
-    "vitest": "*"
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
   }
 }

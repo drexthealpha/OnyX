@@ -1,7 +1,21 @@
-/**
- * @onyx/onyx-privacy
- * ONYX — Sovereign AI OS on Solana
- */
-
 export const NAME = 'onyx-privacy';
-export const VERSION = '0.0.1';
+export const VERSION = '0.1.0';
+
+export * from './types.js';
+export * from './client.js';
+export * from './shield.js';
+export * from './unshield.js';
+export * from './utxo-create.js';
+export * from './utxo-scan.js';
+export * from './utxo-claim.js';
+export * from './relayer.js';
+export * from './viewing-key.js';
+export * from './stealth-address.js';
+export * from './compliance.js';
+export * from './x402-private.js';
+export * from './neobank.js';
+export * from './payroll.js';
+export * from './payment-link.js';
+export * from './gift-card.js';
+export * from './billing.js';
+export * from './agent-treasury.js';
