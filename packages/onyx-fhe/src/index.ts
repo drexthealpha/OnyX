@@ -1,7 +1,10 @@
-/**
- * @onyx/onyx-fhe
- * ONYX — Sovereign AI OS on Solana
- */
-
-export const NAME = 'onyx-fhe';
-export const VERSION = '0.0.1';
+export * from './types'
+export * from './program-id'
+export * from './encrypt-context'
+export * from './deposit'
+export * from './refhe'
+export * from './confidential-swap'
+export * from './sealed-bid'
+export * from './strategy-vault'
+export * from './prediction'
+export * from './private-lending'

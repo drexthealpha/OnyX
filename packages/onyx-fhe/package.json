@@ -1,24 +1,26 @@
 {
-  "name": "@onyx/onyx-fhe",
-  "version": "0.0.1",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
+  "name": "@onyx/fhe",
+  "version": "0.1.0",
+  "description": "Encrypt FHE integration for ONYX — encrypted computation on Solana",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist"
   },
+  "dependencies": {
+    "@solana/web3.js": "^1.91.0"
+  },
   "devDependencies": {
-    "rimraf": "*",
+    "@types/node": "^20.0.0",
     "typescript": "*",
     "vitest": "*"
+  },
+  "vitest": {
+    "preset": "vitest/presets/default",
+    "testEnvironment": "node"
   }
 }
