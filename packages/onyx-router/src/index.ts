@@ -1,7 +1,12 @@
 /**
- * @onyx/onyx-router
- * ONYX — Sovereign AI OS on Solana
+ * @onyx/router — Barrel Export
  */
 
-export const NAME = 'onyx-router';
-export const VERSION = '0.0.1';
+export * from "./types.js";
+export * from "./x402.js";
+export * from "./routing/providers.js";
+export * from "./routing/strategy.js";
+export * from "./routing/load-balancer.js";
+export * from "./budget/tracker.js";
+export * from "./budget/cap.js";
+export * from "./budget/per-user-meter.js";
