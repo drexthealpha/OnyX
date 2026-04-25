@@ -46,7 +46,7 @@ L9 Sovereignty       nomad
 [ ] S25 - onyx-voice + onyx-studio
 [ ] S26 - onyx-hud
 [ ] S27 - onyx-lobster
-[ ] S28 - onyx-eliza-adapter + onyx-hermes-adapter
+[x] S28 - onyx-eliza-adapter + onyx-hermes-adapter
 [ ] S29 - onyx-nerve
 [ ] S30 - onyx-control
 [ ] S31 - onyx-editor

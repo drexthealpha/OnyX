@@ -1,24 +1,26 @@
 {
-  "name": "@onyx/onyx-eliza-adapter",
-  "version": "0.0.1",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "name": "@onyx/eliza-adapter",
+  "version": "0.1.0",
+  "description": "ONYX ↔ ElizaOS adapter bridge — maps ConversationTelemetry to ElizaOS Memory and vice versa",
+  "type": "module",
+  "main": "./src/index.ts",
   "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
+    ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@onyx/multica": "workspace:*"
+  },
+  "peerDependencies": {
+    "@onyx/agent": "workspace:*"
   },
   "devDependencies": {
-    "rimraf": "*",
-    "typescript": "*",
-    "vitest": "*"
-  }
+    "@types/bun": "latest",
+    "typescript": "^5.4.0"
+  },
+  "keywords": ["onyx", "eliza", "elizaos", "adapter", "memory", "telemetry"],
+  "license": "MIT"
 }
