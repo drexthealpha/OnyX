@@ -1,6 +1,8 @@
 {
-  "name": "@onyx/onyx-research",
-  "version": "0.0.1",
+  "name": "@onyx/research",
+  "version": "0.1.0",
+  "description": "ONYX deep research system with temporal scheduling — Layer L5 Surface",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -10,15 +12,20 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "bun test src/tests/research.test.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
-    "rimraf": "*",
-    "typescript": "*",
-    "vitest": "*"
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0",
+    "bun-types": "^1.0.0"
+  },
+  "engines": {
+    "bun": ">=1.1.0"
   }
 }
