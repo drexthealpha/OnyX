@@ -1,24 +1,23 @@
 {
-  "name": "@onyx/onyx-intel",
-  "version": "0.0.1",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
+  "name": "@onyx/intel",
+  "version": "0.1.0",
+  "description": "Real-time multi-source intelligence layer for ONYX",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "test": "bun test src/tests/intel.test.ts"
+  },
+  "dependencies": {
+    "youtube-transcript": "^1.2.1"
   },
   "devDependencies": {
-    "rimraf": "*",
-    "typescript": "*",
-    "vitest": "*"
+    "@types/bun": "latest",
+    "typescript": "^5.4.0"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/sdk": "^0.39.0"
+  },
+  "peerDependenciesOptional": {
+    "@onyx/browser": "*"
   }
 }
