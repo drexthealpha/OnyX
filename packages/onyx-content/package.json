@@ -1,24 +1,26 @@
 {
-  "name": "@onyx/onyx-content",
-  "version": "0.0.1",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
+  "name": "@onyx/content",
+  "version": "0.1.0",
+  "description": "Automated content generation and revenue routing for ONYX",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "build": "tsc",
+    "test": "bun test src/tests/content.test.ts",
+    "dev": "bun run src/index.ts"
+  },
+  "dependencies": {
+    "fluent-ffmpeg": "^2.1.3"
   },
   "devDependencies": {
-    "rimraf": "*",
-    "typescript": "*",
-    "vitest": "*"
+    "@types/fluent-ffmpeg": "^2.1.24",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  },
+  "peerDependencies": {
+    "@onyx/privacy": "^0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@onyx/privacy": { "optional": true }
   }
 }
