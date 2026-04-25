@@ -1,24 +1,36 @@
 {
-  "name": "@onyx/onyx-voice",
-  "version": "0.0.1",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+  "name": "@onyx/voice",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@picovoice/porcupine-node": "^3.0.3",
+    "edge-tts": "^1.0.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  },
+  "peerDependencies": {
+    "@onyx/agent": "*",
+    "@onyx/multica": "*",
+    "@onyx/persona": "*"
+  },
+  "peerDependenciesMeta": {
+    "@onyx/agent": {
+      "optional": true
+    },
+    "@onyx/multica": {
+      "optional": true
+    },
+    "@onyx/persona": {
+      "optional": true
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
-  },
-  "devDependencies": {
-    "rimraf": "*",
-    "typescript": "*",
-    "vitest": "*"
+    "build": "tsc",
+    "test": "bun test src/tests/voice.test.ts"
   }
 }
