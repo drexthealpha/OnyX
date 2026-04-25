@@ -1,24 +1,41 @@
 {
-  "name": "@onyx/onyx-lobster",
-  "version": "0.0.1",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
+  "name": "@onyx/lobster",
+  "version": "0.1.0",
+  "description": "Typed deterministic pipeline DSL for ONYX",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "build": "tsc",
+    "test": "bun test src/tests/lobster.test.ts"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.95.0"
+  },
+  "peerDependencies": {
+    "@onyx/gateway": "workspace:*",
+    "@onyx/router": "workspace:*",
+    "@onyx/privacy": "workspace:*",
+    "@onyx/vault": "workspace:*",
+    "@onyx/mem": "workspace:*",
+    "@onyx/intel": "workspace:*",
+    "@onyx/research": "workspace:*",
+    "@onyx/content": "workspace:*",
+    "@onyx/browser": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@onyx/gateway": { "optional": true },
+    "@onyx/router": { "optional": true },
+    "@onyx/privacy": { "optional": true },
+    "@onyx/vault": { "optional": true },
+    "@onyx/mem": { "optional": true },
+    "@onyx/intel": { "optional": true },
+    "@onyx/research": { "optional": true },
+    "@onyx/content": { "optional": true },
+    "@onyx/browser": { "optional": true }
   },
   "devDependencies": {
-    "rimraf": "*",
-    "typescript": "*",
-    "vitest": "*"
+    "typescript": "^5.4.0",
+    "bun-types": "latest"
   }
 }
