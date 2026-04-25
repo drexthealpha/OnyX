@@ -1,24 +1,22 @@
 {
-  "name": "@onyx/onyx-browser",
-  "version": "0.0.1",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
+  "name": "@onyx/browser",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "start": "bun run src/index.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.0",
+    "hono": "^4.4.0",
+    "playwright": "^1.44.0"
   },
   "devDependencies": {
-    "rimraf": "*",
-    "typescript": "*",
-    "vitest": "*"
+    "bun-types": "latest",
+    "@types/node": "^20.0.0"
+  },
+  "peerDependencies": {
+    "@onyx/router": "workspace:*"
   }
 }
