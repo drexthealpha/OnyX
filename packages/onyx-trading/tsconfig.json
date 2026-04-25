@@ -1,9 +1,28 @@
 {
-  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "lib": ["ES2022"],
     "outDir": "./dist",
-    "rootDir": "./src"
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "typeRoots": ["<rootDir>/src", "<rootDir>/../node_modules/@types"],
+    "types": ["node"],
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "@onyx/privacy": ["stubs/onyx-privacy.ts"],
+      "@onyx/intel": ["stubs/onyx-intel.ts"],
+      "@onyx/rl": ["<rootDir>/../onyx-rl/src/index.ts"]
+    }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests"]
+  "include": ["src/**/*", "stubs/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }
