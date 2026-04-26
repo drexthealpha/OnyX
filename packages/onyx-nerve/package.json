@@ -1,24 +1,72 @@
 {
-  "name": "@onyx/onyx-nerve",
-  "version": "0.0.1",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
+  "name": "@onyx/nerve",
+  "version": "1.0.0",
+  "description": "ONYX cockpit backend (Hono) + React 19 dashboard UI",
+  "type": "module",
+  "main": "src/index.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "dev": "bun run src/index.ts",
+    "dev:ui": "vite ui/",
+    "build:ui": "vite build ui/",
+    "test": "bun test src/tests/nerve.test.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.0.0",
+    "hono": "^4.12.15",
+    "pino": "^10.3.1",
+    "ws": "^8.20.0"
   },
   "devDependencies": {
-    "rimraf": "*",
-    "typescript": "*",
-    "vitest": "*"
+    "@types/bun": "latest",
+    "@types/ws": "^8.18.1",
+    "typescript": "~5.9.3",
+    "vite": "^7.2.4",
+    "@vitejs/plugin-react": "^5.1.1",
+    "tailwindcss": "^4.1.18",
+    "@tailwindcss/vite": "^4.1.18"
+  },
+  "peerDependencies": {
+    "@onyx/agent": "*",
+    "@onyx/multica": "*",
+    "@onyx/vault": "*",
+    "@onyx/trading": "*",
+    "@onyx/research": "*",
+    "@onyx/intel": "*",
+    "@onyx/router": "*",
+    "@onyx/rl": "*",
+    "@onyx/tutor": "*",
+    "@onyx/mem": "*"
+  },
+  "peerDependenciesMeta": {
+    "@onyx/agent": {
+      "optional": true
+    },
+    "@onyx/multica": {
+      "optional": true
+    },
+    "@onyx/vault": {
+      "optional": true
+    },
+    "@onyx/trading": {
+      "optional": true
+    },
+    "@onyx/research": {
+      "optional": true
+    },
+    "@onyx/intel": {
+      "optional": true
+    },
+    "@onyx/router": {
+      "optional": true
+    },
+    "@onyx/rl": {
+      "optional": true
+    },
+    "@onyx/tutor": {
+      "optional": true
+    },
+    "@onyx/mem": {
+      "optional": true
+    }
   }
 }
