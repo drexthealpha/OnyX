@@ -29,7 +29,7 @@
     "vitest": "^3.0.0"
   },
   "peerDependencies": {
-    "@onyx/mem": "*"
+    "@onyx/mem": "workspace:*"
   },
   "keywords": ["onyx", "swe", "agent", "github", "docker", "autonomous"],
   "license": "MIT"

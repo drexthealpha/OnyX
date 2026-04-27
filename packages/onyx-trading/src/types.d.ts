@@ -1,123 +1,134 @@
-declare module 'axios' {
-  interface AxiosRequestConfig {
-    headers?: Record<string, string>;
-    params?: Record<string, unknown>;
-    timeout?: number;
-  }
-  interface AxiosResponse<T = unknown> {
-    data: T;
-    status: number;
-    statusText: string;
-    headers: Record<string, string>;
-    config: AxiosRequestConfig;
-  }
-  interface AxiosInstance {
-    get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>>;
-    post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<AxiosResponse<T>>;
-  }
-  function create(config?: unknown): AxiosInstance;
-  const axios: AxiosInstance;
-  export default axios;
-  export { AxiosInstance, AxiosResponse, AxiosRequestConfig };
-}
-
-declare module '@anthropic-ai/sdk' {
-  interface MessageParam {
-    role: 'user' | 'assistant';
-    content: string;
-  }
-  interface ContentBlock {
-    type: 'text';
-    text: string;
-  }
-  interface Message {
-    id: string;
-    type: string;
-    role: string;
-    content: ContentBlock[];
-  }
-  interface MessagesOptions {
-    model: string;
-    max_tokens: number;
-    system?: string;
-    messages: MessageParam[];
-  }
-  class Anthropic {
-    constructor(config: { apiKey: string });
-    messages: {
-      create(options: MessagesOptions): Promise<Message>;
-    };
-  }
-  export default Anthropic;
-}
-
-declare module '@onyx/intel' {
-  export interface TwitterSearchParams {
-    query: string;
-    maxResults?: number;
-  }
-  export interface TwitterResult {
-    text: string;
-    publicMetrics?: { like_count?: number; retweet_count?: number };
-  }
-  export function searchTwitter(params: TwitterSearchParams): Promise<TwitterResult[]>;
-}
-
-declare module '@onyx/privacy' {
-  export interface ShieldResult {
-    utxoId: string;
-    txHash: string;
-  }
-  export interface SwapResult {
-    txHash: string;
-    outputUtxoId?: string;
-    executionPrice?: number;
-    actualSlippageBps?: number;
-  }
-  export interface UnshieldResult {
-    txHash: string;
-  }
-  export function shield(params: { token: string; amount: number }): Promise<ShieldResult>;
-  export function unshield(params: { utxoId: string }): Promise<UnshieldResult>;
-  export function privateSwap(params: {
-    fromToken: string;
-    toToken: string;
-    amount: number;
-    slippageBps?: number;
-    shieldedUtxo?: string;
-  }): Promise<SwapResult>;
-}
-
-declare module '@onyx/solana' {
-  export interface SwapTokensParams {
-    fromToken: string;
-    toToken: string;
-    amountUsd: number;
-    slippageBps?: number;
-  }
-  export interface SwapTokensResult {
-    txHash: string;
-    executionPrice?: number;
-    actualSlippageBps?: number;
-  }
-  export function swapTokens(params: SwapTokensParams): Promise<SwapTokensResult>;
-}
-
-declare module '@onyx/rl' {
-  export interface RlOutcome {
-    tradeId: string;
-    token: string;
-    action: string;
-    pnlUsd: number;
-    pnlPct: number;
-    metrics: {
-      sharpe30d: number;
-      winRate30d: number;
-      avgReturn30d: number;
-      tradeCount: number;
-    };
+export interface OHLCV {
     timestamp: number;
-    source: string;
-  }
-  export { RlOutcome };
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
 }
+export interface MarketAnalysis {
+    token: string;
+    price: number;
+    signal: 'BUY' | 'SELL' | 'HOLD';
+    confidence: number;
+    indicators: {
+        sma20: number;
+        ema9: number;
+        rsi14: number;
+        macd: number;
+        macdSignal: number;
+        macdHistogram: number;
+        bbUpper: number;
+        bbMiddle: number;
+        bbLower: number;
+        [key: string]: number;
+    };
+    candles: OHLCV[];
+    timestamp: number;
+}
+export interface NewsAnalysis {
+    token: string;
+    sentiment: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+    score: number;
+    headlines: string[];
+    summary: string;
+    timestamp: number;
+}
+export interface FundamentalAnalysis {
+    token: string;
+    mintAddress: string;
+    holders: number;
+    transactions24h: number;
+    volume24h: number;
+    marketCap: number;
+    signal: 'BUY' | 'SELL' | 'HOLD';
+    confidence: number;
+    timestamp: number;
+}
+export interface SocialAnalysis {
+    token: string;
+    mentionCount: number;
+    sentimentScore: number;
+    trendingScore: number;
+    signal: 'BUY' | 'SELL' | 'HOLD';
+    confidence: number;
+    timestamp: number;
+}
+export interface ResearchReport {
+    thesis: string;
+    supportingPoints: string[];
+    risks: string[];
+    confidence: number;
+    stance: 'BULL' | 'BEAR';
+}
+export interface RiskDecision {
+    action: 'BUY' | 'SELL' | 'HOLD';
+    size: number;
+    confidence: number;
+    reasoning: string;
+    kellyFraction: number;
+}
+export interface TradeDecision {
+    token: string;
+    action: 'BUY' | 'SELL' | 'HOLD';
+    size: number;
+    confidence: number;
+    reasoning: string;
+    marketAnalysis: MarketAnalysis;
+    bullReport: ResearchReport;
+    bearReport: ResearchReport;
+    riskDecision: RiskDecision;
+    timestamp: number;
+}
+export interface Portfolio {
+    totalValueUsd: number;
+    positions: Record<string, {
+        amount: number;
+        valueUsd: number;
+        entryPrice: number;
+    }>;
+    cashUsd: number;
+    timestamp: number;
+}
+export interface ExecutionResult {
+    success: boolean;
+    txHash?: string;
+    amountExecuted: number;
+    priceExecuted: number;
+    slippage: number;
+    error?: string;
+    timestamp: number;
+}
+export interface CompletedTrade {
+    token: string;
+    action: 'BUY' | 'SELL';
+    size: number;
+    entryPrice: number;
+    exitPrice?: number;
+    pnlUsd?: number;
+    pnlPct?: number;
+    txHash: string;
+    timestamp: number;
+}
+export interface TradeSignal {
+    action: 'BUY' | 'SELL' | 'HOLD';
+    size: number;
+}
+export interface BacktestResult {
+    startEquity: number;
+    endEquity: number;
+    totalReturn: number;
+    sharpe: number;
+    sortino: number;
+    maxDrawdown: number;
+    totalTrades: number;
+    winRate: number;
+    equityCurve: number[];
+    trades: Array<{
+        index: number;
+        action: string;
+        price: number;
+        equity: number;
+    }>;
+}
+//# sourceMappingURL=types.d.ts.map

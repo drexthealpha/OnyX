@@ -1,10 +1,10 @@
-import { getTab, getRefMap } from "./state.js";
+import { getTab, getRefMap } from "./state";
 
 export async function typeText(
   tabId: string,
   elementRef: string,
   text: string,
-  pressEnter = false
+  pressEnter = false,
 ): Promise<void> {
   const page = getTab(tabId);
   if (!page) {
@@ -14,14 +14,11 @@ export async function typeText(
   const refMap = getRefMap(tabId);
   const selector = refMap.get(elementRef);
   if (!selector) {
-    const err = new Error(`Element reference not found: ${elementRef}`);
-    (err as any).code = "stale_refs";
-    throw err;
+    throw new Error(`Element reference not found: ${elementRef}`);
   }
 
-  await page.click(selector);
-  await page.keyboard.type(text);
+  await page.fill(selector, text);
   if (pressEnter) {
-    await page.keyboard.press("Enter");
+    await page.press(selector, "Enter");
   }
 }

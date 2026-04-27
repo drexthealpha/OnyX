@@ -1,4 +1,4 @@
-import type { BrowserClient, Tab, Snapshot, Cookie } from "../types.js";
+import type { BrowserClient, Tab, Snapshot, Cookie } from "../types.ts";
 
 export function createClient(baseUrl: string): BrowserClient {
   const base = baseUrl.replace(/\/$/, "");

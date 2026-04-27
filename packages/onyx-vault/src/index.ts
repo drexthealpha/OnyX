@@ -1,7 +1,6 @@
 /**
- * @onyx/onyx-vault
- * ONYX — Sovereign AI OS on Solana
+ * @onyx/vault — Public API
  */
-
-export const NAME = 'onyx-vault';
-export const VERSION = '0.0.1';
+export { createWallet } from "./wallet.js";
+export { withAbort } from "./abort.js";
+export type { Wallet, WalletConfig, AbortedOperation } from "./types.js";

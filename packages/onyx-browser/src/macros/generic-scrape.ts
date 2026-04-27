@@ -1,5 +1,5 @@
-import type { Element } from "../types.js";
-import { createClient } from "../client.js";
+import type { Element } from "../types.ts";
+import { createClient } from "../client.ts";
 
 export interface ScrapeResult {
   url: string;

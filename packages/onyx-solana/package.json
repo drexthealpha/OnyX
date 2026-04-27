@@ -1,24 +1,26 @@
 {
-  "name": "@onyx/onyx-solana",
-  "version": "0.0.1",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "name": "@onyx/solana",
+  "version": "0.1.0",
+  "description": "ONYX Solana MCP tools — 31 tools covering wallet, Helius, Jupiter, BirdEye, PumpFun, SPL, NFT, staking, and privacy",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node --test dist/**/*.test.js",
+    "clean": "rm -rf dist"
   },
   "devDependencies": {
-    "rimraf": "*",
-    "typescript": "*",
-    "vitest": "*"
-  }
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0"
+  },
+  "engines": { "node": ">=20" },
+  "license": "MIT"
 }

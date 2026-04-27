@@ -36,6 +36,10 @@ export function getAllTabs(): Map<string, Page> {
   return tabs;
 }
 
+export function getTabsMap(): Map<string, Page> {
+  return tabs;
+}
+
 export async function closeAllTabs(): Promise<void> {
   for (const page of tabs.values()) {
     await page.close();

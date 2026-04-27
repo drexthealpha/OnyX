@@ -1,21 +1,21 @@
-import { chromium, Browser, Page } from "playwright";
-import type { Tab } from "../types.js";
-import { setTab, getRefMap } from "./state.js";
+import { chromium } from "playwright";
+import type { Tab } from "../types";
+import { setTab, getRefMap, getTabsMap, getAllTabs } from "./state";
 
-let browserInstance: Browser | null = null;
+let browserInstance: any = null;
 
-export async function ensureBrowser(): Promise<Browser> {
+export async function ensureBrowser() {
   if (!browserInstance) {
     browserInstance = await chromium.launch({ headless: true });
   }
   return browserInstance;
 }
 
-export function getBrowser(): Browser | null {
+export function getBrowser() {
   return browserInstance;
 }
 
-export async function closeBrowser(): Promise<void> {
+export async function closeBrowser() {
   if (browserInstance) {
     await browserInstance.close();
     browserInstance = null;
@@ -43,7 +43,7 @@ export async function createTab(url?: string): Promise<Tab> {
 
 export async function listTabs(): Promise<Tab[]> {
   const tabs: Tab[] = [];
-  for (const [id, page] of getAllPages()) {
+  for (const [id, page] of getAllTabs()) {
     tabs.push({
       id,
       url: page.url(),
@@ -53,8 +53,6 @@ export async function listTabs(): Promise<Tab[]> {
   return tabs;
 }
 
-export function getAllPages(): Map<string, Page> {
+export function getAllPages() {
   return getTabsMap();
 }
-
-import { getTabsMap } from "./state.js";

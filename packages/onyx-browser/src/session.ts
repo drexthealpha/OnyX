@@ -1,4 +1,4 @@
-import type { Cookie } from "./types.js";
+import type { Cookie } from "./types.ts";
 
 export class SessionCookieJar {
   private cookies: Map<string, Cookie[]> = new Map();

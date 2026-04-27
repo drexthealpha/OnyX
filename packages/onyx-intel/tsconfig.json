@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
@@ -8,7 +8,9 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "esModuleInterop": true,
-    "types": ["bun-types"]
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "types": ["bun-types", "node"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

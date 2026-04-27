@@ -1,31 +1,30 @@
 {
-  "name": "@onyx/tutor",
-  "version": "0.1.0",
-  "description": "Persistent learner model and TutorBot system for ONYX",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "build": "tsup src/index.ts --format esm --dts",
-    "dev": "bun run src/index.ts",
-    "test": "bun test"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
-    "hono": "^4.6.0"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "tsup": "^8.0.0",
-    "typescript": "^5.4.0"
-  },
-  "peerDependencies": {
-    "@onyx/mem": "workspace:*"
-  }
+    "name":  "@onyx/tutor",
+    "version":  "0.1.0",
+    "description":  "Persistent learner model and TutorBot system for ONYX",
+    "type":  "module",
+    "main":  "./dist/index.js",
+    "types":  "./dist/index.d.ts",
+    "exports":  {
+                    ".":  {
+                              "import":  "./dist/index.js",
+                              "types":  "./dist/index.d.ts"
+                          }
+                },
+    "scripts":  {
+                    "build":  "tsup src/index.ts --format esm --dts",
+                    "dev":  "bun run src/index.ts",
+                    "test":  "bun test"
+                },
+    "dependencies":  {
+
+                     },
+    "devDependencies":  {
+                            "@types/bun":  "latest",
+                            "tsup":  "^8.0.0",
+                            "typescript":  "^5.4.0"
+                        },
+    "peerDependencies":  {
+                             "@onyx/mem":  "workspace:*"
+                         }
 }

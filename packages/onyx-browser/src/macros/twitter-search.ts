@@ -1,5 +1,5 @@
-import type { SearchResult } from "../types.js";
-import { createClient } from "../client.js";
+import type { SearchResult } from "../types.ts";
+import { createClient } from "../client.ts";
 
 export async function searchTwitter(
   query: string,

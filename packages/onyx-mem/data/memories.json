@@ -1,0 +1,24 @@
+{
+  "crystals": {
+    "8f0b8901-b63d-41e6-a791-ef191e0fac98": {
+      "id": "8f0b8901-b63d-41e6-a791-ef191e0fac98",
+      "sessionId": "past-session-001",
+      "timestamp": 1776705412781,
+      "mode": "code--ts",
+      "decisions": [
+        "Use onyx-gateway for all API routing"
+      ],
+      "facts": [
+        "Hermes uses herald pub/sub for inter-package comms"
+      ],
+      "preferences": [
+        "User prefers Bun over Node for all ONYX packages"
+      ],
+      "errors": [
+        "Herald subscription failed when gateway starts after mem"
+      ],
+      "rawTokenCount": 1200,
+      "compressedTokenCount": 87
+    }
+  }
+}

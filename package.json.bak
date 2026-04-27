@@ -1,0 +1,31 @@
+{
+  "name": "onyx",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Sovereign AI OS on Solana — 37 packages, 9 layers, zero operator cost",
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean && rimraf node_modules",
+    "dev": "turbo run dev --parallel",
+    "format": "prettier --write \"packages/**/*.{ts,tsx,json,md}\""
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
+    "turbo": "^1.13.2",
+    "typescript": "^5.4.5",
+    "vitest": "^1.4.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.1.0"
+}
