@@ -1,7 +1,19 @@
-/**
- * @onyx/onyx-sdk
- * ONYX — Sovereign AI OS on Solana
- */
+// packages/onyx-sdk/src/index.ts
+// ─── ONYX SDK — public barrel ─────────────────────────────────────────────────
 
-export const NAME = 'onyx-sdk';
-export const VERSION = '0.0.1';
+// Default export: OnyxClient class
+export { OnyxClient } from './client.js';
+export { default } from './client.js';
+
+// Named config type
+export type { OnyxClientConfig } from './client.js';
+
+// All public types from all @onyx/* packages
+export * from './types.js';
+
+// Utilities
+export * from './utils/solana.js';
+export * from './utils/crypto.js';
+
+// Version
+export const SDK_VERSION = '0.1.0';

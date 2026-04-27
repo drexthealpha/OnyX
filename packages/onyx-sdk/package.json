@@ -1,12 +1,18 @@
 {
-  "name": "@onyx/onyx-sdk",
-  "version": "0.0.1",
+  "name": "@onyx/sdk",
+  "version": "0.1.0",
+  "description": "ONYX — Sovereign AI OS on Solana — public TypeScript SDK",
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./react": {
+      "import": "./dist/react/OnyxProvider.js",
+      "types": "./dist/react/OnyxProvider.d.ts"
     }
   },
   "scripts": {
@@ -16,9 +22,35 @@
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist"
   },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": { "optional": true },
+    "react-dom": { "optional": true }
+  },
+  "dependencies": {
+    "@onyx/agent": "workspace:*",
+    "@onyx/vault": "workspace:*",
+    "@onyx/research": "workspace:*",
+    "@onyx/intel": "workspace:*",
+    "@onyx/trading": "workspace:*",
+    "@onyx/privacy": "workspace:*",
+    "@onyx/compute": "workspace:*",
+    "@onyx/tutor": "workspace:*"
+  },
   "devDependencies": {
+    "@testing-library/react": "^14.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "jsdom": "^24.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "rimraf": "*",
     "typescript": "*",
     "vitest": "*"
-  }
+  },
+  "keywords": ["onyx", "solana", "ai", "agent", "sdk", "sovereign"],
+  "license": "MIT"
 }
