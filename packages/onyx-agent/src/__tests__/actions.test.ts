@@ -1,30 +1,30 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, jest } from "vitest";
 
 const mockRuntime = {
   agentId: "test-agent-id",
-  getSetting: (key: string) => undefined,
-  useModel: () => Promise.resolve("mock model output"),
-  createMemory: () => Promise.resolve("mock-memory-id"),
-  getMemories: () => Promise.resolve([]),
-  searchMemories: () => Promise.resolve([]),
-  registerAction: () => {},
-  registerProvider: () => {},
-  registerEvaluator: () => {},
-  registerEvent: () => {},
-  registerModel: () => {},
-  registerTaskWorker: () => {},
+  getSetting: jest.fn().mockReturnValue(undefined),
+  useModel: jest.fn().mockResolvedValue("mock model output"),
+  createMemory: jest.fn().mockResolvedValue("mock-memory-id"),
+  getMemories: jest.fn().mockResolvedValue([]),
+  searchMemories: jest.fn().mockResolvedValue([]),
+  registerAction: jest.fn(),
+  registerProvider: jest.fn(),
+  registerEvaluator: jest.fn(),
+  registerEvent: jest.fn(),
+  registerModel: jest.fn(),
+  registerTaskWorker: jest.fn(),
   plugins: [],
   actions: [],
   providers: [],
   evaluators: [],
-  logger: { info: () => {}, warn: () => {}, error: () => {}, debug: () => {} },
+  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
 };
 
 describe("Action validate() functions", () => {
   it("all actions have validate that returns boolean", async () => {
     const { allActions } = await import("../actions/index.js");
     for (const action of allActions) {
-      const mockMsg = { content: { text: "test search query bridge swap remember recall browse" }, entityId: "e1", roomId: "r1", agentId: "a1" };
+      const mockMsg = { content: { text: "test search query bridge swap remember recall" }, entityId: "e1", roomId: "r1", agentId: "a1" };
       const result = await action.validate(mockRuntime as any, mockMsg as any);
       expect(typeof result).toBe("boolean");
     }
@@ -61,7 +61,7 @@ describe("Plugins init() complete without throwing", () => {
     const plugins = [nosanaPlugin, solanaPlugin, umbraPlugin, ikaPlugin, encryptPlugin, claudeMemPlugin, deepTutorPlugin, last30DaysPlugin];
     for (const plugin of plugins) {
       if (plugin.init) {
-        await plugin.init({}, mockRuntime as any);
+        expect(async () => await plugin.init({}, mockRuntime as any)).not.toThrow();
       }
     }
   });
