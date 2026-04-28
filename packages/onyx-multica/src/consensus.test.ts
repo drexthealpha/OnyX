@@ -1,3 +1,7 @@
+/**
+ * consensus.test.ts
+ * Unit tests for the pure tallyVotes function.
+ */
 import { describe, expect, it } from "vitest";
 import { tallyVotes } from "./consensus.js";
 

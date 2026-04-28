@@ -1,3 +1,19 @@
+/**
+ * herald.ts
+ * In-process pub/sub event bus.
+ *
+ * publish(topic, data)  — fire-and-forget delivery to all subscribers on that topic.
+ * subscribe(topic, handler) — register a handler; returns an unsubscribe function.
+ *
+ * Topics support exact matches only (no glob). Use dot-separated convention:
+ *   "agent.status.changed"
+ *   "council.proposal.submitted"
+ *   "layer.compute.task.queued"
+ *
+ * Multiple subscribers per topic are all called synchronously in registration order.
+ * Errors thrown by individual handlers are caught and logged; other handlers still run.
+ */
+
 export type HeraldHandler<T = unknown> = (data: T) => void;
 export type HeraldUnsubscribe = () => void;
 
@@ -9,6 +25,11 @@ export class Herald {
     this.debugLabel = debugLabel;
   }
 
+  /**
+   * Publish data to all subscribers of `topic`.
+   * Delivery is synchronous and in registration order.
+   * A handler that throws does NOT prevent subsequent handlers from running.
+   */
   publish(topic: string, data: unknown): void {
     const handlers = this.subscribers.get(topic);
     if (handlers === undefined || handlers.size === 0) return;
@@ -25,6 +46,10 @@ export class Herald {
     }
   }
 
+  /**
+   * Subscribe to `topic`. Returns a zero-argument unsubscribe function.
+   * Calling unsubscribe() is idempotent.
+   */
   subscribe<T = unknown>(
     topic: string,
     handler: HeraldHandler<T>,
@@ -33,7 +58,9 @@ export class Herald {
       this.subscribers.set(topic, new Set());
     }
 
+    // Cast: the internal map is untyped; callers provide the type param.
     const typedHandler = handler as HeraldHandler;
+    // Non-null assertion safe: we just ensured the key exists above.
     this.subscribers.get(topic)!.add(typedHandler);
 
     let unsubscribed = false;
@@ -44,17 +71,29 @@ export class Herald {
     };
   }
 
+  /**
+   * Return the number of active subscribers for a topic (useful for testing).
+   */
   subscriberCount(topic: string): number {
     return this.subscribers.get(topic)?.size ?? 0;
   }
 
+  /**
+   * Remove all subscribers for all topics.
+   */
   clear(): void {
     this.subscribers.clear();
   }
 }
 
+/**
+ * Factory — creates a fresh Herald instance.
+ * Most packages should import the singleton exported below,
+ * but tests and isolated layers can create their own.
+ */
 export function createHerald(label?: string): Herald {
   return new Herald(label);
 }
 
+/** Package-level singleton — the global ONYX event bus. */
 export const globalHerald: Herald = createHerald("ONYX");

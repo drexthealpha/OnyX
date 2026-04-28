@@ -1,3 +1,8 @@
+/**
+ * herald.test.ts
+ * Test: Herald delivers published messages to all subscribers but not
+ *       to unsubscribed handlers.
+ */
 import { describe, expect, it, vi } from "vitest";
 import { createHerald } from "./herald.js";
 

@@ -1,3 +1,7 @@
+/**
+ * council.test.ts
+ * Test: Council collects responses from all joined members.
+ */
 import { describe, expect, it, vi } from "vitest";
 import { Council, createCouncil } from "./council.js";
 import { createHerald } from "./herald.js";
@@ -12,17 +16,23 @@ describe("Council", () => {
     council.join("beta", 1);
     council.join("gamma", 1);
 
+    const agentIds = ["alpha", "beta", "gamma"];
     const votes: Record<string, boolean> = {
       alpha: true,
       beta: true,
       gamma: false,
     };
 
-    const agentIds = ["alpha", "beta", "gamma"];
+    const publishSpy = vi.spyOn(herald, "publish");
+
+    let proposalTopic: string | undefined;
+    let capturedEvent: AgentProposalEvent | undefined;
 
     const originalPublish = herald.publish.bind(herald);
-    vi.spyOn(herald, "publish").mockImplementation((topic: string, data: unknown) => {
+    publishSpy.mockImplementation((topic: string, data: unknown) => {
       if (topic.startsWith("council.proposal.")) {
+        proposalTopic = topic;
+        capturedEvent = data as AgentProposalEvent;
         for (const agentId of agentIds) {
           (data as AgentProposalEvent).respond(agentId, votes[agentId]!);
         }
@@ -32,10 +42,15 @@ describe("Council", () => {
 
     const decision = await council.propose("deploy:production", { version: "1.2.3" });
 
+    expect(proposalTopic).toMatch(/^council\.proposal\./);
+    expect(capturedEvent?.proposal.topic).toBe("deploy:production");
+
     expect(decision.approved).toBe(true);
     expect(decision.yesWeight).toBe(3);
     expect(decision.noWeight).toBe(1);
     expect(decision.totalWeight).toBe(4);
+
+    publishSpy.mockRestore();
   });
 
   it("lists all joined members", () => {

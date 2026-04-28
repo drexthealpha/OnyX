@@ -1,3 +1,7 @@
+/**
+ * quorum.test.ts
+ * Test: Quorum blocks until threshold weight is reached.
+ */
 import { describe, expect, it, vi } from "vitest";
 import { requireQuorum } from "./quorum.js";
 

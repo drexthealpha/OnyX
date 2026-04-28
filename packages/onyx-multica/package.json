@@ -5,13 +5,13 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./herald": "./src/herald.js",
-    "./council": "./src/council.js",
-    "./consensus": "./src/consensus.js",
-    "./quorum": "./src/quorum.js",
-    "./broadcast": "./src/broadcast.js",
-    "./messaging": "./src/messaging.js",
-    "./shared-memory": "./src/shared-memory.js"
+    "./herald": "./src/herald.ts",
+    "./council": "./src/council.ts",
+    "./consensus": "./src/consensus.ts",
+    "./quorum": "./src/quorum.ts",
+    "./broadcast": "./src/broadcast.ts",
+    "./messaging": "./src/messaging.ts",
+    "./shared-memory": "./src/shared-memory.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
