@@ -55,11 +55,9 @@ export function requireQuorum(options: QuorumOptions): {
     if (settled) return;
     settled = true;
 
-    try {
-      // Dynamic import requires turbo monorepo workspace resolution
+try {
+      // Dynamic import - uses turbo monorepo workspace resolution
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore - runtime dynamic import
       const kernel = require("@onyx/kernel/alarm-and-abort");
       if (kernel && typeof kernel.abort === "function") {
         kernel.abort(ABORT_CODE_TIMEOUT);
