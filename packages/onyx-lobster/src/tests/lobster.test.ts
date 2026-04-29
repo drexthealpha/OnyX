@@ -1,4 +1,4 @@
-import { test, expect, mock, beforeEach } from 'bun:test';
+import { test, expect, mock, beforeEach } from 'vitest';
 
 const originalFetch = globalThis.fetch;
 

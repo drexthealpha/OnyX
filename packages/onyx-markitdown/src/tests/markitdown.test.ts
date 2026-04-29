@@ -8,7 +8,7 @@
  * 3. Unknown extension throws UnsupportedFileType with the extension in message
  */
 
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";

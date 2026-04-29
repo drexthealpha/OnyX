@@ -17,8 +17,10 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@nosana/kit": "^2.0.0",
-    "@nosana/types": "^2.0.0",
+    "@nosana/kit": "latest",
+    "@nosana/types": "latest",
+    "@solana/kit": "latest",
+    "bs58": "^1.0.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {

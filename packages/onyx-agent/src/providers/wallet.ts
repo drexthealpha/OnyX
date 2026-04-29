@@ -1,10 +1,10 @@
-import { Provider, ProviderResult, IAgentRuntime, Memory } from "@elizaos/core";
+import { Provider, ProviderResult, IAgentRuntime, Memory, State } from "@elizaos/core";
 
 export const walletStateProvider: Provider = {
   name: "wallet-state",
   position: -10,
   description: "Provides current wallet state including address and balances",
-  get: async (runtime: IAgentRuntime, message: Memory): Promise<ProviderResult> => {
+  get: async (runtime: IAgentRuntime, message: Memory, state: State): Promise<ProviderResult> => {
     const address = runtime.getSetting?.("WALLET_ADDRESS") ?? process.env.WALLET_ADDRESS ?? "";
     const balance = runtime.getSetting?.("WALLET_BALANCE_SOL") ?? process.env.WALLET_BALANCE_SOL ?? "0.00";
     if (!address) {

@@ -1,4 +1,4 @@
-import { Plugin, Provider, IAgentRuntime } from "@elizaos/core";
+import { Plugin, Provider, IAgentRuntime, Memory, State, ProviderResult } from "@elizaos/core";
 
 export interface NosanaJobDefinition {
   ops: Array<{
@@ -18,18 +18,18 @@ export const nosanaStatusProvider: Provider = {
   name: "nosana-status",
   position: 20,
   description: "Provides Nosana RPC connection status",
-  get: async (runtime: IAgentRuntime): Promise<{ text: string; values: Record<string, unknown> }> => {
+  get: async (runtime: IAgentRuntime, message: Memory, state: State): Promise<ProviderResult> => {
     const rpcUrl = runtime.getSetting?.("NOSANA_RPC_URL") ?? process.env.NOSANA_RPC_URL;
     if (!rpcUrl) {
-      return { text: "Nosana RPC: not configured", values: { online: false } };
+      return { text: "Nosana RPC: not configured", values: { online: false as string | boolean } };
     }
     try {
       const response = await runtime.fetch?.(rpcUrl + "/health");
       if (response?.ok) {
-        return { text: "Nosana RPC: online", values: { online: true } };
+        return { text: "Nosana RPC: online", values: { online: true as string | boolean } };
       }
     } catch {}
-    return { text: "Nosana RPC: offline", values: { online: false } };
+    return { text: "Nosana RPC: offline", values: { online: false as string | boolean } };
   }
 };
 
@@ -61,7 +61,7 @@ export const nosanaPlugin: Plugin = {
   init: async (config: Record<string, string>, runtime: IAgentRuntime): Promise<void> => {
     const rpcUrl = config.NOSANA_RPC_URL ?? process.env.NOSANA_RPC_URL;
     const privateKey = config.NOSANA_PRIVATE_KEY ?? process.env.NOSANA_PRIVATE_KEY;
-    const logger = (runtime as any).logger;
+    const logger = runtime.logger;
     if (!rpcUrl || !privateKey) {
       if (logger?.warn) logger.warn("onyx-nosana: NOSANA_RPC_URL or NOSANA_PRIVATE_KEY not set. Nosana jobs disabled.");
       return;

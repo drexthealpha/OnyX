@@ -1,8 +1,8 @@
 // packages/onyx-intel/src/cache.ts
-// bun:sqlite-backed TTL cache for IntelBrief results.
+// better-sqlite3-backed TTL cache for IntelBrief results.
 // TTL: 3600 seconds (1 hour).
 
-import { Database } from "bun:sqlite";
+import Database from "better-sqlite3";
 import type { IntelBrief } from "./types.ts";
 
 const DB_PATH = process.env.INTEL_CACHE_DB ?? "./data/intel-cache.db";

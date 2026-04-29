@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from "bun:test";
+import { describe, it, expect, beforeAll } from "vitest";
 import { app } from "../src/loop.js";
 import { compute as computeReward } from "../src/reward/model.js";
 import { optimize as runGRPO } from "../src/optimizer/grpo.js";

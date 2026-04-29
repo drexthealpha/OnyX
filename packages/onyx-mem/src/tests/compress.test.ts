@@ -2,7 +2,7 @@
 // Test 2: compress.ts — crystal token budget
 // ─────────────────────────────────────────────
 
-import { describe, it, expect, mock, beforeAll } from 'bun:test';
+import { describe, it, expect, mock, beforeAll } from 'vitest';
 import type { ConversationTelemetry } from '../types.js';
 import { MEMORY_CRYSTAL_MAX_TOKENS } from '../constants.js';
 

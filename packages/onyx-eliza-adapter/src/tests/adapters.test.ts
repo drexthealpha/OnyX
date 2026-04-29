@@ -6,7 +6,7 @@
  * Test 3: Round-trip through both adapters preserves original message content
  */
 
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect } from "vitest";
 import {
   toElizaMemory,
   fromElizaResult,

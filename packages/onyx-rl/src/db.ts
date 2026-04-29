@@ -1,4 +1,4 @@
-import { Database } from "bun:sqlite";
+import Database from "better-sqlite3";
 import { mkdirSync } from "node:fs";
 import type { Trajectory, OutcomeRecord, FeedbackRecord, PolicyUpdate } from "./types.js";
 

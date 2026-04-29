@@ -5,10 +5,10 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "bun run src/index.ts",
+    "dev": "pnpm src/index.ts",
     "dev:ui": "vite ui/",
     "build:ui": "vite build ui/",
-    "test": "bun test src/tests/nerve.test.ts"
+    "test": "pnpm vitest run"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.0",
@@ -26,16 +26,16 @@
     "@tailwindcss/vite": "^4.1.18"
   },
   "peerDependencies": {
-    "@onyx/agent": "*",
-    "@onyx/multica": "*",
-    "@onyx/vault": "*",
-    "@onyx/trading": "*",
-    "@onyx/research": "*",
-    "@onyx/intel": "*",
-    "@onyx/router": "*",
-    "@onyx/rl": "*",
-    "@onyx/tutor": "*",
-    "@onyx/mem": "*"
+    "@onyx/agent": "workspace:*",
+    "@onyx/multica": "workspace:*",
+    "@onyx/vault": "workspace:*",
+    "@onyx/trading": "workspace:*",
+    "@onyx/research": "workspace:*",
+    "@onyx/intel": "workspace:*",
+    "@onyx/router": "workspace:*",
+    "@onyx/rl": "workspace:*",
+    "@onyx/tutor": "workspace:*",
+    "@onyx/mem": "workspace:*"
   },
   "peerDependenciesMeta": {
     "@onyx/agent": {

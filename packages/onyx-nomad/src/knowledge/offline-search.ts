@@ -1,5 +1,5 @@
 // packages/onyx-nomad/src/knowledge/offline-search.ts
-import { Database } from 'bun:sqlite';
+import Database from 'better-sqlite3';
 import path from 'node:path';
 import type { IntelBrief } from '../types';
 

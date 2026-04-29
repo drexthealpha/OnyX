@@ -8,7 +8,7 @@ export const ikaPlugin: Plugin = {
   evaluators: [],
   init: async (config: Record<string, string>, runtime: IAgentRuntime): Promise<void> => {
     const enabled = config.IKA_ENABLED ?? process.env.IKA_ENABLED;
-    const logger = (runtime as any).logger;
+    const logger = runtime.logger;
     if (enabled !== "true") {
       if (logger?.info) logger.info("onyx-ika: disabled. Set IKA_ENABLED=true to activate.");
       return;

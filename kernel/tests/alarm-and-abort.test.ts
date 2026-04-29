@@ -3,7 +3,7 @@
  * Tests for kernel/alarm-and-abort.ts (financial abort system).
  */
 
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from "vitest";
 import { register, abort, clear } from "../alarm-and-abort.ts";
 import { AlarmCode } from "../types.ts";
 

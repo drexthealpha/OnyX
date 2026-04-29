@@ -13,8 +13,8 @@
                 },
     "scripts":  {
                     "build":  "tsup src/index.ts --format esm --dts",
-                    "dev":  "bun run src/index.ts",
-                    "test":  "bun test"
+                    "dev":  "pnpm src/index.ts",
+                    "test":  "pnpm vitest run"
                 },
     "dependencies":  {
 

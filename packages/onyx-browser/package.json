@@ -6,8 +6,8 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "start": "bun run src/index.ts",
-    "test": "bun test"
+    "start": "pnpm src/index.ts",
+    "test": "pnpm vitest run"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",

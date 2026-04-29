@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 
 describe("telemetry.emit()", () => {
   let fetchCalls: Array<{ url: string; body: unknown }> = [];
@@ -13,45 +13,19 @@ describe("telemetry.emit()", () => {
     };
   });
 
-  afterEach(() => {
-    globalThis.fetch = originalFetch;
-  });
+  afterEach(() => { globalThis.fetch = originalFetch; });
 
   test("POSTs correct shape to RL_PORT /capture", async () => {
-    const RL_PORT = 19001;
-
-    async function emit(t: {
-      conversationId: string;
-      message: unknown;
-      channelName: string;
-      timestamp: string;
-      latencyMs: number;
-    }): Promise<void> {
+    const RL_PORT = 30000;
+    async function emit(t: { conversationId: string; message: unknown; channelName: string; timestamp: string; latencyMs: number }): Promise<void> {
       try {
-        await fetch(`http://localhost:${RL_PORT}/capture`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(t),
-        });
-      } catch { /* fire-and-forget */ }
+        await fetch(`http://localhost:${RL_PORT}/capture`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(t) });
+      } catch {}
     }
-
-    const telemetry = {
-      conversationId: "conv-123",
-      message: { content: "hello" },
-      channelName: "telegram",
-      timestamp: "2025-01-01T00:00:00.000Z",
-      latencyMs: 42,
-    };
-
+    const telemetry = { conversationId: "conv-123", message: { content: "hello" }, channelName: "telegram", timestamp: "2025-01-01T00:00:00.000Z", latencyMs: 42 };
     await emit(telemetry);
-
     expect(fetchCalls).toHaveLength(1);
     expect(fetchCalls[0]!.url).toBe(`http://localhost:${RL_PORT}/capture`);
-    expect(fetchCalls[0]!.body).toMatchObject({
-      conversationId: "conv-123",
-      channelName: "telegram",
-      latencyMs: 42,
-    });
+    expect(fetchCalls[0]!.body).toMatchObject({ conversationId: "conv-123", channelName: "telegram", latencyMs: 42 });
   });
 });

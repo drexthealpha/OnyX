@@ -8,17 +8,17 @@ import { PERSONA_REGISTRY, DEFAULT_PERSONA_NAME } from './index';
 
 // Lazy import of herald to avoid hard circular dependency at load time.
 // @onyx/multica exposes a singleton herald bus compatible with EventEmitter.
-let _herald: { emit: (event: string, payload: unknown) => void } | null = null;
+let _herald: { publish: (topic: string, data: unknown) => void } | null = null;
 
 async function getHerald() {
   if (!_herald) {
     try {
       // Dynamic import — multica may not be present in all runtime environments (e.g. nomad/offline)
       const mod = await import('@onyx/multica');
-      _herald = mod.herald ?? mod.default?.herald ?? null;
+      _herald = mod.globalHerald ?? null;
     } catch {
       // Gracefully degrade: no herald in offline/nomad environments
-      _herald = { emit: () => {} };
+      _herald = { publish: () => {} };
     }
   }
   return _herald!;
@@ -54,7 +54,7 @@ export async function switchTo(
   _active = persona;
 
   const herald = await getHerald();
-  herald.emit('persona:switch', {
+  herald.publish('persona:switch', {
     from: previous,
     to: persona.name,
     trigger: 'explicit',
@@ -93,7 +93,7 @@ export async function autoDetect(
     _active = target;
 
     const herald = await getHerald();
-    herald.emit('persona:switch', {
+    herald.publish('persona:switch', {
       from: previous,
       to: target.name,
       trigger: 'auto',

@@ -9,33 +9,19 @@ export class HomeAssistantChannel implements Channel {
   async init(config: Record<string, string>): Promise<void> {
     this.url = config.HA_URL;
     this.token = config.HA_TOKEN;
-    if (!this.url || !this.token) {
-      throw new Error("HA_URL and HA_TOKEN required");
-    }
-    const response = await fetch(`${this.url}/api/`, {
-      headers: { Authorization: `Bearer ${this.token}` },
-    });
-    if (!response.ok) {
-      throw new Error(`Home Assistant connection failed: ${response.statusText}`);
-    }
+    if (!this.url || !this.token) throw new Error("HA_URL and HA_TOKEN required");
+    const res = await fetch(`${this.url}/api/`, { headers: { Authorization: `Bearer ${this.token}` } });
+    if (!res.ok) throw new Error(`Home Assistant connection failed: ${res.statusText}`);
   }
 
   async send(msg: { content: string }, to: string): Promise<void> {
     if (!this.url || !this.token) throw new Error("HomeAssistantChannel not initialized");
-    const response = await fetch(`${this.url}/api/services/notify/notify`, {
+    const res = await fetch(`${this.url}/api/services/notify/notify`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: msg.content,
-        target: to,
-      }),
+      headers: { Authorization: `Bearer ${this.token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ message: msg.content, target: to }),
     });
-    if (!response.ok) {
-      throw new Error(`Home Assistant API error: ${response.statusText}`);
-    }
+    if (!res.ok) throw new Error(`Home Assistant API error: ${res.statusText}`);
   }
 
   onMessage(handler: (msg: IncomingMessage, from: string) => Promise<void>): void {

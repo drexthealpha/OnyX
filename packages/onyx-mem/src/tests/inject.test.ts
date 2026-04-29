@@ -2,7 +2,7 @@
 // Test 3: inject.ts — context string format
 // ─────────────────────────────────────────────
 
-import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { saveCrystal, listCrystals } from '../store.js';
 import type { MemoryCrystal } from '../types.js';
 

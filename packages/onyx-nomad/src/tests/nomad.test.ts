@@ -1,5 +1,5 @@
 // packages/onyx-nomad/src/tests/nomad.test.ts
-import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
+import { describe, test, expect, beforeEach, afterEach } from 'vitest';
 import { writeFileSync, mkdirSync, rmSync, existsSync } from 'node:fs';
 import path from 'node:path';
 

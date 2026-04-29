@@ -5,7 +5,7 @@
 //  2. getTokenUsage returns percent between 0 and 100
 // ─────────────────────────────────────────────
 
-import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
+import { describe, it, expect, mock, beforeEach, afterEach } from "vitest";
 
 function isPNG(buf: Buffer): boolean {
   const PNG_HEADER = Buffer.from([0x89, 0x50, 0x4e, 0x47]);

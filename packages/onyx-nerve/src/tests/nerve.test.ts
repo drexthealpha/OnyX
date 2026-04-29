@@ -1,4 +1,4 @@
-import { test, expect, describe, beforeAll, afterAll } from "bun:test";
+import { test, expect, describe, beforeAll, afterAll } from "vitest";
 
 // Test 1 — GET /health returns 200
 describe("Health endpoint", () => {

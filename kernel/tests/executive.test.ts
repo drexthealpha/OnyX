@@ -3,7 +3,7 @@
  * Tests for kernel/executive.ts (min-heap priority queue).
  */
 
-import { describe, test, expect, beforeEach } from "bun:test";
+import { describe, test, expect, beforeEach } from "vitest";
 import { enqueue, dequeue, clear, size } from "../executive.ts";
 import { Priority } from "../types.ts";
 

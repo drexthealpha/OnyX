@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'bun:test';
+import { describe, test, expect } from 'vitest';
 import type { LearnerProfile, Question, Score, StudyPlan } from '../src/types.ts';
 import { DomainLevel } from '../src/types.ts';
 

@@ -8,7 +8,7 @@ export const encryptPlugin: Plugin = {
   evaluators: [],
   init: async (config: Record<string, string>, runtime: IAgentRuntime): Promise<void> => {
     const enabled = config.ENCRYPT_ENABLED ?? process.env.ENCRYPT_ENABLED;
-    const logger = (runtime as any).logger;
+    const logger = runtime.logger;
     if (enabled !== "true") {
       if (logger?.info) logger.info("onyx-encrypt: disabled. Set ENCRYPT_ENABLED=true to activate.");
       return;

@@ -1,5 +1,5 @@
 // packages/onyx-nomad/src/fallback/storage.ts
-import { Database } from 'bun:sqlite';
+import Database from 'better-sqlite3';
 import path from 'node:path';
 import { mkdirSync } from 'node:fs';
 import type { SearchResult } from '../types';

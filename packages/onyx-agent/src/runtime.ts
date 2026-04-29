@@ -50,7 +50,7 @@ export class OnyxRuntime extends AgentRuntime {
       allAvailablePlugins: opts.allAvailablePlugins,
     });
     this.gatewayUrl = gatewayUrl;
-    (this as any)._setupTelemetry();
+    this._setupTelemetry();
   }
 
   private _setupTelemetry(): void {
@@ -59,7 +59,7 @@ export class OnyxRuntime extends AgentRuntime {
         const eventPayload = payload as Record<string, unknown>;
         const telemetry: ConversationTelemetry = {
           event: EventType.MESSAGE_RECEIVED,
-          agentId: (this as any).agentId || "unknown",
+          agentId: this.agentId || "unknown",
           roomId: eventPayload.roomId as string | undefined,
           entityId: eventPayload.entityId as string | undefined,
           messageId: eventPayload.messageId as string | undefined,
@@ -67,8 +67,8 @@ export class OnyxRuntime extends AgentRuntime {
           source: "onyx-agent",
           metadata: eventPayload.metadata as Record<string, unknown> | undefined,
         };
-        const fetchFn = (this as any).fetch;
-        const logger = (this as any).logger;
+        const fetchFn = this.fetch;
+        const logger = this.logger;
         if (fetchFn) {
           const response = await fetchFn(this.gatewayUrl + "/telemetry", {
             method: "POST",
@@ -80,7 +80,7 @@ export class OnyxRuntime extends AgentRuntime {
           }
         }
       } catch (error) {
-        const logger = (this as any).logger;
+        const logger = this.logger;
         if (logger?.warn) {
           logger.warn("Telemetry emission error: " + (error as Error).message);
         }

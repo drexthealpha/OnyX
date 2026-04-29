@@ -2,7 +2,7 @@
 // Test 1: capture.ts — buffer isolation per sessionId
 // ─────────────────────────────────────────────
 
-import { describe, it, expect, beforeEach } from 'bun:test';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   getSessionBuffer,
   clearSessionBuffer,

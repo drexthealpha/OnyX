@@ -8,7 +8,7 @@
  * 3. Revenue router correctly converts USD to USDC lamports
  */
 
-import { describe, test, expect, mock, beforeAll, afterAll } from 'bun:test';
+import { describe, test, expect, mock, beforeAll, afterAll } from 'vitest';
 import { usdToUsdcLamports } from '../revenue.js';
 
 describe('Revenue Router — USD to USDC lamports', () => {

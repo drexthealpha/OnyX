@@ -4,7 +4,7 @@
 // 2. Score returns lower value for content 100h old vs 1h old
 // 3. Cache returns null after TTL expires (mock Date.now)
 
-import { describe, it, expect, beforeEach, afterEach, mock } from "bun:test";
+import { describe, it, expect, beforeEach, afterEach, mock } from "vitest";
 import { search as redditSearch } from "../sources/reddit.ts";
 import { scoreSource } from "../pipeline/score.ts";
 import { get as cacheGet, set as cacheSet, isExpired } from "../cache.ts";

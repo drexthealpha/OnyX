@@ -1,0 +1,25 @@
+{
+  "name": "kernel",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./boot.ts",
+  "exports": {
+    ".": "./boot.ts",
+    "./types": "./types.ts",
+    "./constants": "./constants.ts",
+    "./executive": "./executive.ts",
+    "./waitlist": "./waitlist.ts",
+    "./restart-tables": "./restart-tables.ts",
+    "./alarm-and-abort": "./alarm-and-abort.ts",
+    "./phase-table": "./phase-table.ts",
+    "./fresh-start": "./fresh-start.ts"
+  },
+  "scripts": {
+    "test": "pnpm vitest run"
+  },
+  "devDependencies": {
+    "vitest": "latest",
+    "better-sqlite3": "^9.4.0"
+  }
+}

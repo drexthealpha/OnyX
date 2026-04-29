@@ -3,7 +3,7 @@
 // Tests for @onyx/seo — minimum 3 required
 // ============================================================
 
-import { describe, expect, test, mock, beforeEach, afterEach } from "bun:test";
+import { describe, expect, test, mock, beforeEach, afterEach } from "vitest";
 
 // ─── Test 1: Content Analyzer returns string containing at least one of:
 //     'content', 'topic', 'keyword'

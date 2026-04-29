@@ -6,19 +6,19 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "bun test src/tests/intel.test.ts"
+    "test": "pnpm vitest run"
   },
   "dependencies": {
     "youtube-transcript": "^1.2.1"
   },
   "devDependencies": {
-    "@types/bun": "latest",
+    "vitest": "latest",
     "typescript": "^5.4.0"
   },
   "peerDependencies": {
     "@anthropic-ai/sdk": "^0.39.0"
   },
   "peerDependenciesOptional": {
-    "@onyx/browser": "*"
+    "@onyx/browser": "workspace:*"
   }
 }

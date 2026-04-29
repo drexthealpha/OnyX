@@ -12,10 +12,7 @@ export class TelegramChannel implements Channel {
     this.bot = new Bot(token);
     this.bot.on("message:text", async (ctx) => {
       if (!this.handler) return;
-      await this.handler(
-        { content: ctx.message.text, raw: ctx.message },
-        String(ctx.message.from.id),
-      );
+      await this.handler({ content: ctx.message.text, raw: ctx.message }, String(ctx.message.from.id));
     });
     void this.bot.start();
   }

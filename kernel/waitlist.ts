@@ -25,31 +25,22 @@
  * 2CADR (address) was persisted but the actual code was in fixed ROM.
  */
 
-import { Database } from "bun:sqlite";
+import Database from "better-sqlite3";
 import { mkdirSync } from "node:fs";
 import { type OnyxTask, Priority } from "./types.ts";
 
-// ---------------------------------------------------------------------------
-// Database path — written alongside the kernel data directory.
-// ---------------------------------------------------------------------------
 const DB_PATH = "./data/waitlist.db";
 
-// ---------------------------------------------------------------------------
-// Serialisable task record (fn stripped — code lives in ROM, not erasable)
-// ---------------------------------------------------------------------------
 interface WaitRecord {
   id:        string;
   priority:  Priority;
   createdAt: number;
 }
 
-// ---------------------------------------------------------------------------
-// Open (or create) the database and ensure the schema exists.
-// ---------------------------------------------------------------------------
 function openDb(): Database {
   mkdirSync("./data", { recursive: true });
   const db = new Database(DB_PATH);
-  db.run(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS waitlist (
       rowid      INTEGER PRIMARY KEY AUTOINCREMENT,
       id         TEXT    NOT NULL,
@@ -61,15 +52,6 @@ function openDb(): Database {
   return db;
 }
 
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
-
-/**
- * push — write a task to the persistent waitlist.
- * O(1) disk write. Mirrors AGC WAITLIST insertion into LST2.
- * The task's `fn` is not persisted; callers must re-attach it after pop().
- */
 export function push(task: OnyxTask): void {
   const db = openDb();
   const record: WaitRecord = {
@@ -77,32 +59,26 @@ export function push(task: OnyxTask): void {
     priority:  task.priority,
     createdAt: task.createdAt,
   };
-  db.run(
-    `INSERT INTO waitlist (id, priority, created_at, payload) VALUES (?, ?, ?, ?)`,
-    [task.id, task.priority, task.createdAt, JSON.stringify(record)],
+  const stmt = db.prepare(
+    `INSERT INTO waitlist (id, priority, created_at, payload) VALUES (?, ?, ?, ?)`
   );
+  stmt.run(task.id, task.priority, task.createdAt, JSON.stringify(record));
   db.close();
 }
 
-/**
- * pop — remove and return the highest-priority (lowest rowid = FIFO) task.
- * Returns undefined when the queue is empty (mirrors AGC ENDTASK sentinel).
- * The returned task has fn set to a no-op placeholder; callers must replace it.
- */
 export function pop(): OnyxTask | undefined {
   const db = openDb();
-  const row = db
-    .query<{ rowid: number; payload: string }, []>(
-      `SELECT rowid, payload FROM waitlist ORDER BY priority ASC, created_at ASC, rowid ASC LIMIT 1`,
-    )
-    .get();
+  const stmt = db.prepare(
+    `SELECT rowid, payload FROM waitlist ORDER BY priority ASC, created_at ASC, rowid ASC LIMIT 1`
+  );
+  const row = stmt.get() as { rowid: number; payload: string } | undefined;
 
   if (!row) {
     db.close();
     return undefined;
   }
 
-  db.run(`DELETE FROM waitlist WHERE rowid = ?`, [row.rowid]);
+  db.prepare(`DELETE FROM waitlist WHERE rowid = ?`).run(row.rowid);
   db.close();
 
   const rec = JSON.parse(row.payload) as WaitRecord;
@@ -110,29 +86,20 @@ export function pop(): OnyxTask | undefined {
     id:        rec.id,
     priority:  rec.priority,
     createdAt: rec.createdAt,
-    fn:        async () => {}, // placeholder — caller must replace
+    fn:        async () => {},
   };
 }
 
-/**
- * flush — remove all entries from the waitlist.
- * Mirrors AGC STARTSB2 replacing all waitlisted tasks with ENDTASK sentinels.
- */
 export function flush(): void {
   const db = openDb();
-  db.run(`DELETE FROM waitlist`);
+  db.prepare(`DELETE FROM waitlist`).run();
   db.close();
 }
 
-/**
- * size — count of tasks currently persisted.
- * Mirrors AGC LST2 occupancy scan.
- */
 export function size(): number {
   const db = openDb();
-  const row = db
-    .query<{ n: number }, []>(`SELECT COUNT(*) AS n FROM waitlist`)
-    .get();
+  const stmt = db.prepare(`SELECT COUNT(*) AS n FROM waitlist`);
+  const row = stmt.get() as { n: number } | undefined;
   db.close();
   return row?.n ?? 0;
 }

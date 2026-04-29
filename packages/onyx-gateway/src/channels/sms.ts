@@ -11,42 +11,21 @@ export class SMSChannel implements Channel {
     this.accountSid = config.TWILIO_SID;
     this.authToken = config.TWILIO_TOKEN;
     this.from = config.TWILIO_FROM;
-    if (!this.accountSid || !this.authToken || !this.from) {
-      throw new Error("TWILIO_SID, TWILIO_TOKEN, TWILIO_FROM required");
-    }
+    if (!this.accountSid || !this.authToken || !this.from) throw new Error("TWILIO_SID, TWILIO_TOKEN, TWILIO_FROM required");
     const credentials = btoa(`${this.accountSid}:${this.authToken}`);
-    const response = await fetch(
-      `https://api.twilio.com/2010-04-01/Accounts/${this.accountSid}.json`,
-      { headers: { Authorization: `Basic ${credentials}` } },
-    );
-    if (!response.ok) {
-      throw new Error(`Twilio authentication failed: ${response.statusText}`);
-    }
+    const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${this.accountSid}.json`, { headers: { Authorization: `Basic ${credentials}` } });
+    if (!res.ok) throw new Error(`Twilio authentication failed: ${res.statusText}`);
   }
 
   async send(msg: { content: string }, to: string): Promise<void> {
-    if (!this.accountSid || !this.authToken || !this.from) {
-      throw new Error("SMSChannel not initialized");
-    }
+    if (!this.accountSid || !this.authToken || !this.from) throw new Error("SMSChannel not initialized");
     const credentials = btoa(`${this.accountSid}:${this.authToken}`);
-    const response = await fetch(
-      `https://api.twilio.com/2010-04-01/Accounts/${this.accountSid}/Messages.json`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${credentials}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          To: to,
-          From: this.from,
-          Body: msg.content,
-        }).toString(),
-      },
-    );
-    if (!response.ok) {
-      throw new Error(`Twilio API error: ${response.statusText}`);
-    }
+    const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${this.accountSid}/Messages.json`, {
+      method: "POST",
+      headers: { Authorization: `Basic ${credentials}`, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ To: to, From: this.from, Body: msg.content }).toString(),
+    });
+    if (!res.ok) throw new Error(`Twilio API error: ${res.statusText}`);
   }
 
   onMessage(handler: (msg: IncomingMessage, from: string) => Promise<void>): void {

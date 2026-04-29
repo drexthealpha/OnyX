@@ -14,10 +14,7 @@ export class DiscordChannel implements Channel {
     });
     this.client.on(Events.MessageCreate, async (message) => {
       if (message.author.bot || !this.handler) return;
-      await this.handler(
-        { content: message.content, raw: message },
-        message.author.id,
-      );
+      await this.handler({ content: message.content, raw: message }, message.author.id);
     });
     await this.client.login(token);
   }

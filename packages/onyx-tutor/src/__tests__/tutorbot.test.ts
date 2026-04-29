@@ -1,4 +1,4 @@
-import { describe, test, expect, mock } from 'bun:test';
+import { describe, test, expect, mock } from 'vitest';
 import { DomainLevel } from '../types.ts';
 
 describe('TutorBot interface', () => {

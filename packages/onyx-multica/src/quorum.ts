@@ -1,14 +1,6 @@
 /**
  * quorum.ts
  * Quorum-gated operation wrapper.
- *
- * requireQuorum(options) → Promise<void>
- *
- * Blocks until the total weight of agents that have checked in via
- * options.checkIn(agentId) reaches or exceeds `options.threshold`.
- *
- * On timeout, imports kernel/alarm-and-abort and calls abort with
- * AbortCode.TIMEOUT before rejecting.
  */
 
 export interface QuorumOptions {
@@ -23,7 +15,8 @@ export interface QuorumHandle {
   readonly currentWeight: number;
 }
 
-const ABORT_CODE_TIMEOUT = "TIMEOUT";
+const OPERATION_ID = "quorum-timeout";
+const ALARM_CODE = "TIMEOUT";
 
 export function requireQuorum(options: QuorumOptions): {
   promise: Promise<void>;
@@ -51,16 +44,32 @@ export function requireQuorum(options: QuorumOptions): {
     rejectQuorum = rej;
   });
 
-  const timeoutHandle = setTimeout(() => {
+  // Register kernel abort handler at startup
+  const registerKernelHandler = async () => {
+    try {
+      // @ts-ignore - runtime import
+      const kernel = await import("../../../kernel/alarm-and-abort.ts");
+      if (kernel?.register) {
+        kernel.register(OPERATION_ID, {
+          code: "TIMEOUT" as any,
+          refund: async () => {},
+        });
+      }
+    } catch {
+      // Kernel not available
+    }
+  };
+  registerKernelHandler();
+
+  const timeoutHandle = setTimeout(async () => {
     if (settled) return;
     settled = true;
 
-try {
-      // Dynamic import - uses turbo monorepo workspace resolution
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const kernel = require("@onyx/kernel/alarm-and-abort");
-      if (kernel && typeof kernel.abort === "function") {
-        kernel.abort(ABORT_CODE_TIMEOUT);
+    try {
+      // @ts-ignore - runtime import
+      const kernel = await import("../../../kernel/alarm-and-abort.ts");
+      if (kernel?.abort) {
+        await kernel.abort(OPERATION_ID, ALARM_CODE);
       }
     } catch {
       console.error("[onyx-multica/quorum] Kernel abort unavailable on timeout.");

@@ -1,11 +1,8 @@
-// ─── Temporal scheduler — bun:sqlite backed, polls every 5 minutes ───────────
-// Inspired by Kronos's concept of time-aware model outputs: just as Kronos
-// forecasts K-line prices at a specified future timestamp, scheduleResearch
-// delivers a deep research report at a precisely specified future time.
-//
-// Uses bun:sqlite (built into Bun runtime — no external dependency).
+// ─── Temporal scheduler — better-sqlite3 backed, polls every 5 minutes ───────────
 
-import { Database } from "bun:sqlite";
+// Uses better-sqlite3 (Node.js SQLite binding).
+
+import Database from "better-sqlite3";
 import { randomUUID } from "crypto";
 import { join } from "path";
 import { mkdirSync, existsSync } from "fs";

@@ -4,7 +4,7 @@
  * Run: bun test src/tests/voice.test.ts
  */
 
-import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, mock } from 'vitest';
 import { readFile, rm, mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';

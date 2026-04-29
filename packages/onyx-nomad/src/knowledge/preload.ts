@@ -1,5 +1,5 @@
 // packages/onyx-nomad/src/knowledge/preload.ts
-import { Database } from 'bun:sqlite';
+import Database from 'better-sqlite3';
 import path from 'node:path';
 import { mkdirSync } from 'node:fs';
 import type { IntelBrief } from '../types';

@@ -11,30 +11,18 @@ export class SlackChannel implements Channel {
     const secret = config.SLACK_SIGNING_SECRET;
     if (!token || !secret) throw new Error("SLACK_BOT_TOKEN and SLACK_SIGNING_SECRET required");
 
-    this.app = new App({
-      token,
-      signingSecret: secret,
-      logLevel: LogLevel.ERROR,
-    });
-
+    this.app = new App({ token, signingSecret: secret, logLevel: LogLevel.ERROR });
     this.app.message(async ({ message, say }) => {
       if (!this.handler || message.subtype === "bot_message" || message.subtype === "app_message") return;
-      await this.handler(
-        { content: message.text, raw: message },
-        message.user,
-      );
+      await this.handler({ content: message.text, raw: message }, message.user);
     });
-
     const port = parseInt(config.SLACK_PORT || "3001", 10);
     await this.app.start(port);
   }
 
   async send(msg: { content: string }, to: string): Promise<void> {
     if (!this.app) throw new Error("SlackChannel not initialized");
-    await this.app.client.chat.postMessage({
-      channel: to,
-      text: msg.content,
-    });
+    await this.app.client.chat.postMessage({ channel: to, text: msg.content });
   }
 
   onMessage(handler: (msg: IncomingMessage, from: string) => Promise<void>): void {

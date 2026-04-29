@@ -9,7 +9,7 @@
     "typescript": "^5.4.0"
   },
   "peerDependencies": {
-    "@onyx/voice": "*"
+    "@onyx/voice": "workspace:*"
   },
   "peerDependenciesMeta": {
     "@onyx/voice": {

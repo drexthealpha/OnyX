@@ -1,44 +1,46 @@
-import { Plugin, Action, Evaluator, IAgentRuntime, Memory, State } from "@elizaos/core";
+import { Plugin, Action, Evaluator, IAgentRuntime, Memory, State, ActionResult } from "@elizaos/core";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { dirname } from "node:path";
 
 export const restoreMemoriesAction: Action = {
   name: "RESTORE_MEMORIES",
   similes: ["LOAD_MEMORIES", "RELOAD_MEMORIES"],
   description: "Restores persisted memories from disk into runtime memory",
   validate: async (runtime: IAgentRuntime, message: Memory): Promise<boolean> => {
-    const text = message.content.text.toLowerCase();
+    const text = (message.content?.text || "").toLowerCase();
     return text.includes("restore memories") || text.includes("load memories");
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state: State | undefined): Promise<{ success: boolean; text: string }> => {
+  handler: async (runtime, message, state, options, callback): Promise<ActionResult | undefined> => {
     const memPath = process.env.CLAUDE_MEM_PATH ?? "./data/claude-mem.json";
     try {
       if (!existsSync(memPath)) {
-        return { success: false, text: "No persisted memories found." };
+        if (callback) await callback({ text: "No persisted memories found." });
+        return { text: "No persisted memories found.", success: false };
       }
       const data = JSON.parse(readFileSync(memPath, "utf-8")) as Array<{ content: { text: string }; tableName: string }>;
       let count = 0;
       for (const entry of data) {
         await runtime.createMemory({
           content: { text: entry.content.text },
-          entityId: message.entityId,
-          roomId: message.roomId,
+          entityId: message.entityId!,
+          roomId: message.roomId!,
           agentId: runtime.agentId,
         }, entry.tableName, true);
         count++;
       }
-      return { success: true, text: "Restored " + count + " memories." };
+      if (callback) await callback({ text: "Restored " + count + " memories." });
+      return { text: "Restored " + count + " memories.", success: true };
     } catch (error) {
-      return { success: false, text: "Failed to restore memories: " + (error as Error).message };
+      if (callback) await callback({ text: "Failed to restore memories: " + (error as Error).message });
+      return { text: "Failed to restore memories: " + (error as Error).message, success: false };
     }
   },
   examples: [
     [
-      { role: "user", content: { text: "Restore my memories" } },
-      { role: "assistant", content: { text: "Restored 5 memories." } }
+      { name: "user", content: { text: "Restore my memories" } },
+      { name: "assistant", content: { text: "Restored 5 memories." } }
     ]
   ]
-};
+} as Action;
 
 export const persistMemoriesEvaluator: Evaluator = {
   alwaysRun: true,
@@ -47,22 +49,23 @@ export const persistMemoriesEvaluator: Evaluator = {
   validate: async (): Promise<boolean> => {
     return true;
   },
-  handler: async (runtime: IAgentRuntime, message: Memory): Promise<void> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State): Promise<ActionResult | undefined> => {
     const memPath = process.env.CLAUDE_MEM_PATH ?? "./data/claude-mem.json";
-    const logger = (runtime as any).logger;
+    const logger = runtime.logger;
     try {
       const memories = await runtime.getMemories({
-        roomId: message.roomId,
+        roomId: message.roomId!,
         tableName: "facts",
         count: 20,
       });
-      const toSave = memories.map(m => ({ content: { text: m.content.text }, tableName: "facts" }));
+      const toSave = memories.map(m => ({ content: { text: m.content?.text || "" }, tableName: "facts" }));
       try {
         writeFileSync(memPath, JSON.stringify(toSave, null, 2));
       } catch {}
     } catch (error) {
       if (logger?.warn) logger.warn("Memory persistence failed: " + (error as Error).message);
     }
+    return;
   },
   examples: []
 };
@@ -75,7 +78,7 @@ export const claudeMemPlugin: Plugin = {
   evaluators: [persistMemoriesEvaluator],
   init: async (_config: Record<string, string>, runtime: IAgentRuntime): Promise<void> => {
     const memPath = process.env.CLAUDE_MEM_PATH ?? "./data/claude-mem.json";
-    const logger = (runtime as any).logger;
+    const logger = runtime.logger;
     try {
       if (!existsSync(memPath)) {
         if (logger?.info) logger.info("onyx-claude-mem: No existing memories to load.");

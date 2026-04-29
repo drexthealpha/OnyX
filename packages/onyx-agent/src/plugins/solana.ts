@@ -1,12 +1,12 @@
-import { Plugin, Provider, IAgentRuntime, Memory } from "@elizaos/core";
+import { Plugin, Provider, IAgentRuntime, Memory, State, ProviderResult } from "@elizaos/core";
 
 export const solanaNetworkProvider: Provider = {
   name: "solana-network",
   position: -8,
   description: "Provides Solana network context",
-  get: async (runtime: IAgentRuntime, message: Memory): Promise<{ text: string; values: Record<string, unknown> }> => {
+  get: async (runtime: IAgentRuntime, message: Memory, state: State): Promise<ProviderResult> => {
     const network = runtime.getSetting?.("SOLANA_NETWORK") ?? process.env.SOLANA_NETWORK ?? "mainnet-beta";
-    return { text: "Solana network: " + network, values: { network } };
+    return { text: "Solana network: " + (network as string), values: { network: network as string } };
   }
 };
 
@@ -18,7 +18,7 @@ export const solanaPlugin: Plugin = {
   evaluators: [],
   init: async (config: Record<string, string>, runtime: IAgentRuntime): Promise<void> => {
     const rpcUrl = config.SOLANA_RPC_URL ?? process.env.SOLANA_RPC_URL ?? "https://api.mainnet-beta.solana.com";
-    const logger = (runtime as any).logger;
+    const logger = runtime.logger;
     if (logger?.info) logger.info("onyx-solana: connected to " + rpcUrl);
   }
 };

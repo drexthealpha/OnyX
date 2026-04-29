@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
+import { describe, test, expect, beforeEach, afterEach } from 'vitest';
 import { ProfileStore } from '../learner/profile.ts';
 import { DomainLevel } from '../types.ts';
 import { unlinkSync, existsSync } from 'node:fs';

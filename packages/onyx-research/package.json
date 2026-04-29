@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "bun test src/tests/research.test.ts"
+    "test": "pnpm vitest run"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -23,9 +23,9 @@
   "devDependencies": {
     "typescript": "^5.4.0",
     "@types/node": "^20.0.0",
-    "bun-types": "^1.0.0"
+    "vitest": "latest"
   },
   "engines": {
-    "bun": ">=1.1.0"
+    "node": ">=20.0.0"
   }
 }

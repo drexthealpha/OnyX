@@ -1,6 +1,7 @@
+import { GATEWAY_PORT } from "../../../kernel/constants.ts";
+
 import { Hono } from "hono";
 import { pino } from "pino";
-const GATEWAY_PORT = 18791;
 import { Lobby } from "./lobby.js";
 import { emit } from "./telemetry.js";
 import { TelegramChannel } from "./channels/telegram.js";
@@ -67,7 +68,6 @@ function envConfig(): Record<string, string> {
     EMAIL_PASS: process.env.EMAIL_PASS ?? "",
     EMAIL_HOST: process.env.EMAIL_HOST ?? "",
     EMAIL_PORT: process.env.EMAIL_PORT ?? "",
-    EMAIL_USE_IMAP: process.env.EMAIL_USE_IMAP ?? "",
   };
 }
 

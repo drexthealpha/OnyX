@@ -6,14 +6,20 @@
   "scripts": {
     "build": "turbo run build",
     "test": "turbo run test",
+    "test:s34:web-build": "pnpm --filter onyx-web build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean && rimraf node_modules",
     "dev": "turbo run dev --parallel",
+    "dev:web": "pnpm --filter onyx-web dev",
+    "dev:mobile": "pnpm --filter onyx-mobile start",
+    "dev:desktop": "pnpm --filter onyx-desktop dev",
     "format": "prettier --write \"packages/**/*.{ts,tsx,json,md}\""
   },
   "workspaces": [
-    "packages/*"
+    "kernel",
+    "packages/*",
+    "apps/*"
   ],
   "devDependencies": {
     "@types/node": "^20.11.0",

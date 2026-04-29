@@ -7,7 +7,7 @@
     "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,
     "outDir": "dist",
-    "rootDir": ".",
+    "rootDir": "src",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

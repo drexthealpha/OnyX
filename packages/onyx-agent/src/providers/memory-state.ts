@@ -1,10 +1,10 @@
-import { Provider, ProviderResult, IAgentRuntime, Memory } from "@elizaos/core";
+import { Provider, ProviderResult, IAgentRuntime, Memory, State } from "@elizaos/core";
 
 export const memoryStateProvider: Provider = {
   name: "memory-state",
   position: 5,
   description: "Injects recent facts and goals from ONYX persistent memory into context",
-  get: async (runtime: IAgentRuntime, message: Memory): Promise<ProviderResult> => {
+  get: async (runtime: IAgentRuntime, message: Memory, state: State): Promise<ProviderResult> => {
     const facts = await runtime.getMemories({
       roomId: message.roomId,
       tableName: "facts",

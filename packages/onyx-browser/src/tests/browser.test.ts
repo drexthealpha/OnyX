@@ -1,4 +1,4 @@
-import { test, expect, describe, beforeAll, afterAll } from "bun:test";
+import { test, expect, describe, beforeAll, afterAll } from "vitest";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 

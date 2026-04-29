@@ -3,7 +3,7 @@
  * Tests for kernel/waitlist.ts (persistent SQLite queue).
  */
 
-import { describe, test, expect, beforeEach } from "bun:test";
+import { describe, test, expect, beforeEach } from "vitest";
 import { unlinkSync, existsSync } from "node:fs";
 import { push, pop, flush, size } from "../waitlist.ts";
 import { Priority } from "../types.ts";

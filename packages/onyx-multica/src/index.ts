@@ -1,5 +1,5 @@
 // herald — in-process pub/sub event bus
-export { Herald, createHerald } from "./herald.js";
+export { Herald, createHerald, globalHerald } from "./herald.js";
 export type { HeraldHandler, HeraldUnsubscribe } from "./herald.js";
 
 // council — multi-agent deliberation

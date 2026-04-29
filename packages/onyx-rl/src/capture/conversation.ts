@@ -20,7 +20,7 @@ export function buildTrajectory(telemetry: ConversationTelemetry): Trajectory {
 }
 
 /**
- * Persist a trajectory to bun:sqlite.
+ * Persist a trajectory to better-sqlite3.
  * Idempotent — duplicate IDs are silently ignored (INSERT OR IGNORE).
  */
 export function saveTrajectory(t: Trajectory): void {
