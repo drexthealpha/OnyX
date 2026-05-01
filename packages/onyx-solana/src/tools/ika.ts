@@ -2,7 +2,7 @@
  * @onyx/solana — Ika dWallet tools
  */
 
-import type { MCPTool } from "../types.js";
+import type { MCPTool } from "../types";
 
 export const ikaBridgeTool: MCPTool = {
   name: "ikaBridge",

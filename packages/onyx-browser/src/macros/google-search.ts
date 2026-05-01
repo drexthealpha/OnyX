@@ -1,5 +1,5 @@
-import type { SearchResult } from "../types.ts";
-import { createClient } from "../client.ts";
+import type { SearchResult } from "../types";
+import { createClient } from "../client";
 
 export async function searchGoogle(
   query: string,

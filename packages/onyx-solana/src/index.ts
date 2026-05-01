@@ -3,19 +3,19 @@
  * 31 MCP tools for Solana
  */
 
-import type { ToolRegistryEntry } from "./types.js";
+import type { ToolRegistryEntry } from "./types";
 
-import { getBalanceTool, transferTool } from "./tools/wallet.js";
-import { getHeliusAssetsTool, searchAssetsTool, getWalletHistoryTool } from "./tools/helius.js";
-import { swapTokensTool } from "./tools/jupiter.js";
-import { getTokenPriceTool, getMarketDataTool, getTopHoldersTool } from "./tools/birdeye.js";
-import { pumpfunBuyTool, pumpfunSellTool, pumpfunCreateTool } from "./tools/pumpfun.js";
-import { createTokenTool, mintTokenTool, burnTokenTool, getTokenAccountsTool } from "./tools/spl.js";
-import { createNFTTool, transferNFTTool, getNFTMetadataTool } from "./tools/nft.js";
-import { stakeSOLTool, unstakeSOLTool, getStakeAccountsTool } from "./tools/staking.js";
-import { shieldAssetTool, unshieldAssetTool, getPrivateBalanceTool } from "./tools/umbra.js";
-import { ikaBridgeTool, ikaSignTool } from "./tools/ika.js";
-import { encryptBalanceTool, decryptBalanceTool } from "./tools/fhe.js";
+import { getBalanceTool, transferTool } from "./tools/wallet";
+import { getHeliusAssetsTool, searchAssetsTool, getWalletHistoryTool } from "./tools/helius";
+import { swapTokensTool } from "./tools/jupiter";
+import { getTokenPriceTool, getMarketDataTool, getTopHoldersTool } from "./tools/birdeye";
+import { pumpfunBuyTool, pumpfunSellTool, pumpfunCreateTool } from "./tools/pumpfun";
+import { createTokenTool, mintTokenTool, burnTokenTool, getTokenAccountsTool } from "./tools/spl";
+import { createNFTTool, transferNFTTool, getNFTMetadataTool } from "./tools/nft";
+import { stakeSOLTool, unstakeSOLTool, getStakeAccountsTool } from "./tools/staking";
+import { shieldAssetTool, unshieldAssetTool, getPrivateBalanceTool } from "./tools/umbra";
+import { ikaBridgeTool, ikaSignTool } from "./tools/ika";
+import { encryptBalanceTool, decryptBalanceTool } from "./tools/fhe";
 
 export const tools: ToolRegistryEntry[] = [
   getBalanceTool,
@@ -59,4 +59,4 @@ export async function executeTool(name: string, params: unknown): Promise<unknow
   return tool.execute(params);
 }
 
-export type { MCPTool, ToolRegistryEntry } from "./types.js";
+export type { MCPTool, ToolRegistryEntry } from "./types";

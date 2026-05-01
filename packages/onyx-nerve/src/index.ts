@@ -16,6 +16,8 @@ import rlRouter from "./routes/rl.ts";
 import intelRouter from "./routes/intel.ts";
 import tutorRouter from "./routes/tutor.ts";
 
+export const NAME = 'onyx-nerve';
+
 const NERVE_PORT = parseInt(process.env.NERVE_PORT ?? "3001", 10);
 
 export const app = new Hono();

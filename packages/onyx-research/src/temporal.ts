@@ -2,16 +2,16 @@
 
 // Uses better-sqlite3 (Node.js SQLite binding).
 
-import Database from "better-sqlite3";
+import Database, { type Database as DatabaseInstance } from "better-sqlite3";
 import { randomUUID } from "crypto";
 import { join } from "path";
 import { mkdirSync, existsSync } from "fs";
-import type { ScheduledJob } from "./types.js";
-import { runResearch } from "./graph.js";
+import type { ScheduledJob } from "./types";
+import { runResearch } from "./graph";
 
-const DB_PATH = process.env["RESEARCH_DB_PATH"] ?? join(import.meta.dir, "..", "data", "scheduled-research.db");
+const DB_PATH = process.env["RESEARCH_DB_PATH"] ?? join(dirname(fileURLToPath(import.meta.url)), "..", "data", "scheduled-research.db");
 
-function openDB(): Database {
+function openDB(): DatabaseInstance {
   const dir = join(DB_PATH, "..");
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });

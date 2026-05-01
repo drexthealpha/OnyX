@@ -3,6 +3,8 @@
  * Automated content generation and revenue routing.
  */
 
+export const NAME = 'onyx-content';
+
 export { generateContent } from './generator.js';
 export { createVideo } from './video.js';
 export { postThread } from './social.js';

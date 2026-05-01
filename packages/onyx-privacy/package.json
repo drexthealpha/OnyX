@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@umbra-privacy/sdk": "latest",
+    "@umbra-privacy/sdk": "2.0.3",
     "@umbra-privacy/web-zk-prover": "latest",
     "@solana/web3.js": "^2.0.0"
   },

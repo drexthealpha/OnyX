@@ -17,7 +17,7 @@ export function buildTrajectory(telemetry) {
     };
 }
 /**
- * Persist a trajectory to bun:sqlite.
+ * Persist a trajectory to better-sqlite3.
  * Idempotent — duplicate IDs are silently ignored (INSERT OR IGNORE).
  */
 export function saveTrajectory(t) {

@@ -5,7 +5,7 @@ export type { Persona } from './types';
 export type { ConversationContext } from './context';
 export type { TTSEngineParams } from './voice-conditioning';
 
-export { switchTo, autoDetect } from './switcher';
+export { switchTo, autoDetect, activePersona } from './switcher';
 export { getEngineParams } from './voice-conditioning';
 export { analyzeContext, extractKeywords } from './context';
 

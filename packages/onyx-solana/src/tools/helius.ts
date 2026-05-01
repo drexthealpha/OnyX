@@ -3,7 +3,7 @@
  * getHeliusAssets, searchAssets, getWalletHistory
  */
 
-import type { MCPTool } from "../types.js";
+import type { MCPTool } from "../types";
 
 const getHeliusAssetsTool: MCPTool = {
   name: "getHeliusAssets",

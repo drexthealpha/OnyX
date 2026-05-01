@@ -2,7 +2,7 @@
  * @onyx/solana — PumpFun tools
  */
 
-import type { MCPTool } from "../types.js";
+import type { MCPTool } from "../types";
 
 export const pumpfunBuyTool: MCPTool = {
   name: "pumpfunBuy",

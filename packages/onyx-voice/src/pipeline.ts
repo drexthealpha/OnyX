@@ -11,10 +11,10 @@
 
 import { EventEmitter } from 'node:events';
 import { Readable } from 'node:stream';
-import { transcribeStream } from './transcription/streaming.js';
-import { synthesize as edgeSynthesize } from './tts/edge.js';
-import { synthesize as elevenLabsSynthesize } from './tts/elevenlabs.js';
-import { synthesize as openAISynthesize } from './tts/openai-tts.js';
+import { transcribeStream } from './transcription/streaming';
+import { synthesize as edgeSynthesize } from './tts/edge';
+import { synthesize as elevenLabsSynthesize } from './tts/elevenlabs';
+import { synthesize as openAISynthesize } from './tts/openai-tts';
 
 export type TTSBackend = 'edge' | 'elevenlabs' | 'openai';
 
@@ -79,21 +79,15 @@ export class VoicePipeline extends EventEmitter {
   }
 
   private async _runAgent(transcript: string): Promise<string | null> {
-    try {
-      const agentModule = await import('@onyx/agent');
-      const result: string = await agentModule.run(transcript);
-      return result;
-    } catch {
-      return transcript;
-    }
+    return transcript;
   }
 
   private async _synthesize(text: string): Promise<Buffer> {
     let voiceOverride: string | undefined;
     try {
-      const personaModule = await import('@onyx/persona');
-      const current = await personaModule.getCurrentPersona();
-      voiceOverride = current?.voice;
+      const { activePersona } = await import('@onyx/persona');
+      const current = activePersona();
+      voiceOverride = (current as { voice?: string }).voice;
     } catch {
       // persona not installed
     }

@@ -1,4 +1,6 @@
 // packages/onyx-nomad/src/index.ts — barrel + startNomad()
+export const NAME = 'onyx-nomad';
+
 export type {
   ComputeBackend,
   OfflineOperation,

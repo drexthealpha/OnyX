@@ -9,6 +9,8 @@
  *   const results = await sem.memories.search('hello', 5);
  */
 
+export const NAME = 'onyx-semantic';
+
 export { createSemanticClient } from './client.js';
 export type { SemanticClient } from './client.js';
 

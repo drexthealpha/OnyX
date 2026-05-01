@@ -1,4 +1,4 @@
-import { Database } from "bun:sqlite";
+import Database from "better-sqlite3";
 import { mkdirSync } from "node:fs";
 // Ensure data directory exists
 mkdirSync("./data", { recursive: true });
@@ -134,13 +134,7 @@ export function savePolicyUpdate(u) {
 // Returns average reward for trajectories that used a given skill in the last 50 uses.
 // Stored in toolsUsed JSON array; we use LIKE for a fast approximation.
 export function getSkillAverageReward(_skillName) {
-    // NOTE: Full implementation scans toolsUsed JSON. For production use
-    // a generated column or separate skill_uses table.
-    // Simplified: we pull the last 50 trajectories that mention the skill,
-    // join with outcomes, and average. Returns 0.5 (neutral) if no data.
-    // SQLite does not have a native JSON array contains without json_each,
-    // which is available in SQLite ≥ 3.38.0 (bundled in Bun).
-    const rows = db.query(`
+    const stmt = db.prepare(`
     SELECT AVG(CASE WHEN o.success = 1 THEN 1.0 ELSE 0.0 END) as value
     FROM (
       SELECT t.id
@@ -152,7 +146,8 @@ export function getSkillAverageReward(_skillName) {
       LIMIT 50
     ) recent
     LEFT JOIN outcomes o ON o.trajectoryId = recent.id
-  `).get(_skillName, _skillName);
-    return rows?.value ?? 0.5;
+  `);
+    const row = stmt.get(_skillName);
+    return row?.value ?? 0.5;
 }
 //# sourceMappingURL=db.js.map

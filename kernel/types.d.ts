@@ -28,6 +28,7 @@ export declare enum RestartState {
     WARM = "WARM",
     HOT = "HOT"
 }
+export declare const ALARM_TIMEOUT = "TIMEOUT";
 export declare enum AlarmCode {
     BUDGET_CAP = "BUDGET_CAP",
     POLICY_VIOLATION = "POLICY_VIOLATION",

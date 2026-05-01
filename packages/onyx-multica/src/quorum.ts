@@ -15,9 +15,6 @@ export interface QuorumHandle {
   readonly currentWeight: number;
 }
 
-const OPERATION_ID = "quorum-timeout";
-const ALARM_CODE = "TIMEOUT";
-
 export function requireQuorum(options: QuorumOptions): {
   promise: Promise<void>;
   handle: QuorumHandle;
@@ -44,41 +41,14 @@ export function requireQuorum(options: QuorumOptions): {
     rejectQuorum = rej;
   });
 
-  // Register kernel abort handler at startup
-  const registerKernelHandler = async () => {
-    try {
-      // @ts-ignore - runtime import
-      const kernel = await import("../../../kernel/alarm-and-abort.ts");
-      if (kernel?.register) {
-        kernel.register(OPERATION_ID, {
-          code: "TIMEOUT" as any,
-          refund: async () => {},
-        });
-      }
-    } catch {
-      // Kernel not available
-    }
-  };
-  registerKernelHandler();
-
-  const timeoutHandle = setTimeout(async () => {
+  const timeoutHandle = setTimeout(() => {
     if (settled) return;
     settled = true;
-
-    try {
-      // @ts-ignore - runtime import
-      const kernel = await import("../../../kernel/alarm-and-abort.ts");
-      if (kernel?.abort) {
-        await kernel.abort(OPERATION_ID, ALARM_CODE);
-      }
-    } catch {
-      console.error("[onyx-multica/quorum] Kernel abort unavailable on timeout.");
-    }
 
     rejectQuorum(
       new Error(
         `requireQuorum: timeout after ${timeoutMs}ms — ` +
-          `only ${currentWeight}/${threshold} weight reached`,
+        `only ${currentWeight}/${threshold} weight reached`,
       ),
     );
   }, timeoutMs);

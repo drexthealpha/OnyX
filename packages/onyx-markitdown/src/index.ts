@@ -1,6 +1,8 @@
 import path from "path";
 import { UnsupportedFileType } from "./types.js";
 
+export const NAME = 'onyx-markitdown';
+
 // ─── Extension → Parser Map ──────────────────────────────────────────────────
 
 type Parser = (filePath: string) => Promise<string>;

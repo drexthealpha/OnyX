@@ -2,7 +2,7 @@
  * @onyx/solana — BirdEye tools
  */
 
-import type { MCPTool } from "../types.js";
+import type { MCPTool } from "../types";
 
 export const getTokenPriceTool: MCPTool = {
   name: "getTokenPrice",

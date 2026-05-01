@@ -49,7 +49,7 @@ import type {
   QuizRequest,
   EvaluateRequest,
   PlanRequest,
-} from './stubs/index.js';
+} from '@onyx/agent';
 
 export type {
   OnyxRuntime,

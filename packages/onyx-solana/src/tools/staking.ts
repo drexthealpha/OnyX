@@ -2,7 +2,7 @@
  * @onyx/solana — Staking tools
  */
 
-import type { MCPTool } from "../types.js";
+import type { MCPTool } from "../types";
 
 export const stakeSOLTool: MCPTool = {
   name: "stakeSOL",

@@ -2,7 +2,7 @@
  * @onyx/solana — Umbra privacy tools
  */
 
-import type { MCPTool } from "../types.js";
+import type { MCPTool } from "../types";
 
 export const shieldAssetTool: MCPTool = {
   name: "shieldAsset",

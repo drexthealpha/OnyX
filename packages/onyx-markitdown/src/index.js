@@ -1,5 +1,6 @@
 import path from "path";
 import { UnsupportedFileType } from "./types.js";
+export const NAME = 'onyx-markitdown';
 const PARSER_MAP = {
     ".pdf": () => import("./parsers/pdf.js").then((m) => m.parse),
     ".docx": () => import("./parsers/docx.js").then((m) => m.parse),

@@ -3,19 +3,20 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "main": "./boot.ts",
+  "main": "./dist/boot.js",
   "exports": {
-    ".": "./boot.ts",
-    "./types": "./types.ts",
-    "./constants": "./constants.ts",
-    "./executive": "./executive.ts",
-    "./waitlist": "./waitlist.ts",
-    "./restart-tables": "./restart-tables.ts",
-    "./alarm-and-abort": "./alarm-and-abort.ts",
-    "./phase-table": "./phase-table.ts",
-    "./fresh-start": "./fresh-start.ts"
+    ".": "./dist/boot.js",
+    "./types": "./dist/types.js",
+    "./constants": "./dist/constants.js",
+    "./executive": "./dist/executive.js",
+    "./waitlist": "./dist/waitlist.js",
+    "./restart-tables": "./dist/restart-tables.js",
+    "./alarm-and-abort": "./dist/alarm-and-abort.js",
+    "./phase-table": "./dist/phase-table.js",
+    "./fresh-start": "./dist/fresh-start.js"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.json",
     "test": "pnpm vitest run"
   },
   "devDependencies": {

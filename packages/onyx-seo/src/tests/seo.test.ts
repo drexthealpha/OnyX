@@ -3,7 +3,7 @@
 // Tests for @onyx/seo — minimum 3 required
 // ============================================================
 
-import { describe, expect, test, mock, beforeEach, afterEach } from "vitest";
+import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
 
 // ─── Test 1: Content Analyzer returns string containing at least one of:
 //     'content', 'topic', 'keyword'
@@ -46,7 +46,7 @@ describe("ContentAnalyzer Agent", () => {
       expect(hasRequired).toBe(true);
 
       expect(capturedRequest).not.toBeNull();
-      const body = JSON.parse(capturedRequest?.body as string);
+      const body = JSON.parse(capturedRequest!.body as string);
       expect(body.system).toContain("content analyst");
     } finally {
       globalThis.fetch = originalFetch;
@@ -147,7 +147,7 @@ describe("writeArticle Pipeline", () => {
       const { writeArticle } = await import("../commands/write.js");
 
       // Mock dataforseo for research()
-      mock.module("../data/dataforseo.js", () => ({
+      vi.mock("../data/dataforseo.js", () => ({
         getKeywordMetrics: async (kws: string[]) =>
           kws.map((kw, i) => ({
             keyword: kw,
@@ -159,7 +159,7 @@ describe("writeArticle Pipeline", () => {
       }));
 
       // Mock intel for research()
-      mock.module("@onyx/intel", () => ({
+      vi.mock("@onyx/intel", () => ({
         runIntel: async () => ({
           topic: "seo strategies",
           brief: "SEO is evolving with AI and user intent focus.",

@@ -10,7 +10,7 @@
  */
 
 import { Readable } from 'node:stream';
-import { transcribe } from './whisper.js';
+import { transcribe } from './whisper';
 
 const CHUNK_MS = 2000;
 

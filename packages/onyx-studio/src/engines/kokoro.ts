@@ -8,7 +8,7 @@
 import { spawn } from 'node:child_process';
 import { readFile, rm } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
-import type { TTSEngine, VoiceConfig } from './index.js';
+import type { TTSEngine, VoiceConfig } from './index';
 
 export class KokoroEngine implements TTSEngine {
   name = 'kokoro';

@@ -2,7 +2,7 @@
  * @onyx/solana — SPL Token tools
  */
 
-import type { MCPTool } from "../types.js";
+import type { MCPTool } from "../types";
 
 export const createTokenTool: MCPTool = {
   name: "createToken",

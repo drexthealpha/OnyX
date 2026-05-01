@@ -2,7 +2,7 @@
  * @onyx/solana — FHE tools
  */
 
-import type { MCPTool } from "../types.js";
+import type { MCPTool } from "../types";
 
 export const encryptBalanceTool: MCPTool = {
   name: "encryptBalance",

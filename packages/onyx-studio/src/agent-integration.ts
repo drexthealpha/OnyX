@@ -9,7 +9,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { registerEngine, type TTSEngine, type VoiceConfig } from './index.js';
+import { registerEngine, type TTSEngine, type VoiceConfig } from './index';
 
 const DATA_DIR = './data';
 const ENGINES_FILE = join(DATA_DIR, 'tts-engines.json');

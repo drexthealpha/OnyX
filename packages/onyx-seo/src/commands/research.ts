@@ -38,9 +38,9 @@ export async function research(topic: string): Promise<ContentOpportunity[]> {
     const brief = await runIntel(topic);
     const mentionedTerms = brief.brief
       .split(/\s+/)
-      .filter((w) => w.length > 5)
+      .filter((w: string) => w.length > 5)
       .slice(0, 5);
-    intelKeywords = mentionedTerms.map((t) => `${topic} ${t}`);
+    intelKeywords = mentionedTerms.map((t: string) => `${topic} ${t}`);
   } catch {
     // @onyx/intel unavailable
   }

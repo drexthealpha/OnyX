@@ -1,3 +1,4 @@
+export declare const NAME = "onyx-markitdown";
 /**
  * Convert any supported document to Markdown.
  * Extension detection is case-insensitive.

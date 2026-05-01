@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -14,9 +14,8 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": false,
-    "types": ["node", "bun-types"],
-    "allowImportingTsExtensions": true,
-    "noEmit": false
+    "types": ["node", "bun-types", "vite/client"],
+    "noEmit": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "src/tests"]

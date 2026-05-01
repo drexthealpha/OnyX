@@ -5,35 +5,25 @@
  * Records per-user USD spend and provides daily/monthly rollups.
  */
 
-import * as path from "path";
-import * as fs from "fs";
-
-let Database: typeof import("../better-sqlite3-stub.js").default;
-try {
-  Database = require("better-sqlite3").default;
-} catch {
-  Database = require("./better-sqlite3-stub.js").default;
-}
+import path from "path";
+import fs from "fs";
+import Database from "better-sqlite3";
 
 const DB_PATH = process.env.ONYX_BUDGET_DB ?? path.join("data", "budget.db");
 
-let _db: InstanceType<typeof Database> | null = null;
+let _db: Database | null = null;
 
-function getDb(): InstanceType<typeof Database> {
+function getDb(): Database {
   if (_db) return _db;
 
-  // Ensure directory exists
   const dir = path.dirname(DB_PATH);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 
   _db = new Database(DB_PATH);
-
-  // WAL mode for concurrent reads
   _db.pragma("journal_mode = WAL");
 
-  // Create spend_events table
   _db.exec(`
     CREATE TABLE IF NOT EXISTS spend_events (
       id        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,13 +41,6 @@ function getDb(): InstanceType<typeof Database> {
   return _db;
 }
 
-/**
- * Record a spend event for a user.
- * @param userId    Unique user identifier
- * @param usdAmount Amount spent in USD
- * @param provider  Provider name (optional metadata)
- * @param model     Model name (optional metadata)
- */
 export function recordSpend(
   userId: string,
   usdAmount: number,
@@ -71,9 +54,6 @@ export function recordSpend(
   ).run(userId, usdAmount, provider ?? null, model ?? null);
 }
 
-/**
- * Get total spend for a user in the last 24 hours (UTC rolling window).
- */
 export function getDailySpend(userId: string): number {
   const db = getDb();
   const since = Date.now() - 24 * 60 * 60 * 1000;
@@ -87,9 +67,6 @@ export function getDailySpend(userId: string): number {
   return row.total;
 }
 
-/**
- * Get total spend for a user in the last 30 days (UTC rolling window).
- */
 export function getMonthlySpend(userId: string): number {
   const db = getDb();
   const since = Date.now() - 30 * 24 * 60 * 60 * 1000;
@@ -103,9 +80,6 @@ export function getMonthlySpend(userId: string): number {
   return row.total;
 }
 
-/**
- * Get total spend for a user in the last N hours.
- */
 export function getHourlySpend(userId: string, hours = 1): number {
   const db = getDb();
   const since = Date.now() - hours * 60 * 60 * 1000;
@@ -119,9 +93,6 @@ export function getHourlySpend(userId: string, hours = 1): number {
   return row.total;
 }
 
-/**
- * Get full spend breakdown for a user (for dashboard/diagnostics).
- */
 export function getSpendBreakdown(userId: string): {
   daily: number;
   monthly: number;
@@ -139,9 +110,6 @@ export function getSpendBreakdown(userId: string): {
   };
 }
 
-/**
- * Close the database connection (for graceful shutdown / testing).
- */
 export function closeDb(): void {
   if (_db) {
     _db.close();

@@ -1,7 +1,7 @@
 // packages/onyx-sdk/src/client.ts
 
 // ── Internal stub types (matching upstream signatures) ────────────────────────────────
-import type { OnyxRuntime, IntelBrief, ResearchState, TradeDecision, OrchestratorConfig } from './stubs/index.js';
+import type { OnyxRuntime, IntelBrief, ResearchState, TradeDecision, OrchestratorConfig } from '@onyx/agent';
 
 type RunResearchFn = (topic: string) => Promise<ResearchState>;
 type RunIntelFn = (topic: string) => Promise<IntelBrief>;

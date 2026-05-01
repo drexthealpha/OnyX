@@ -2,7 +2,7 @@
  * @onyx/solana — NFT tools
  */
 
-import type { MCPTool } from "../types.js";
+import type { MCPTool } from "../types";
 
 export const createNFTTool: MCPTool = {
   name: "createNFT",

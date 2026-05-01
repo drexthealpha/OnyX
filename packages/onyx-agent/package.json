@@ -19,7 +19,8 @@
   "dependencies": {
     "@elizaos/core": "npm:@elizaos/core@beta",
     "@elizaos/plugin-bootstrap": "npm:@elizaos/plugin-bootstrap@beta",
-    "@elizaos/plugin-openai": "npm:@elizaos/plugin-openai@beta"
+    "@elizaos/plugin-openai": "npm:@elizaos/plugin-openai@beta",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

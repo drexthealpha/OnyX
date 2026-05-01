@@ -9,6 +9,8 @@
  * Depends on: @onyx/hermes ACP server (via HTTP)
  */
 
+export const NAME = 'onyx-hermes-adapter';
+
 export interface HermesAcpRequest {
   method: string;
   skillName: string;

@@ -4,17 +4,25 @@
  * Wraps the @onyx/voice elevenlabs-tts implementation.
  */
 
-import type { TTSEngine, VoiceConfig } from './index.js';
+import type { TTSEngine, VoiceConfig } from './index';
 
 export class ElevenLabsEngine implements TTSEngine {
   name = 'elevenlabs';
 
   async synthesize(text: string, config?: VoiceConfig): Promise<Buffer> {
-    const elevenModule = await import('@onyx/voice/tts/elevenlabs.js');
-    const voiceId = config?.voice ?? process.env.ELEVENLABS_VOICE_ID;
-    if (!voiceId) {
-      throw new Error('[onyx-studio/elevenlabs] ELEVENLABS_VOICE_ID is required');
+    const { synthesize } = await import('@onyx/voice');
+    return synthesize(text, config?.voice ?? '21m00Tcm4TjDgg2Cwh6c');
+  }
+
+  async isAvailable(): Promise<boolean> {
+    try {
+      const { synthesize } = await import('@onyx/voice');
+      return typeof synthesize === 'function';
+    } catch {
+      return false;
     }
+  }
+}
     return elevenModule.synthesize(text, voiceId);
   }
 

@@ -86,7 +86,7 @@ export class WakeWordDetector extends EventEmitter {
 
   private _broadcastViaHerald(): void {
     import('@onyx/multica')
-      .then((herald) => herald.emit('voice:wakeWordDetected', { word: WAKE_WORD }))
+      .then((mod) => mod.globalHerald.publish('voice:wakeWordDetected', { word: WAKE_WORD }))
       .catch(() => {});
   }
 }

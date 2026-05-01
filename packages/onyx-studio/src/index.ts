@@ -22,18 +22,18 @@ export interface TTSEngine {
   isAvailable(): Promise<boolean>;
 }
 
-export { KokoroEngine } from './engines/kokoro.js';
-export { StyleTTS2Engine } from './engines/style-tts2.js';
-export { OrpheusEngine } from './engines/orpheus.js';
-export { EdgeTTSEngine } from './engines/edge-tts.js';
-export { ElevenLabsEngine } from './engines/elevenlabs.js';
+export { KokoroEngine } from './engines/kokoro';
+export { StyleTTS2Engine } from './engines/style-tts2';
+export { OrpheusEngine } from './engines/orpheus';
+export { EdgeTTSEngine } from './engines/edge-tts';
+export { ElevenLabsEngine } from './engines/elevenlabs';
 
 export {
   addEngine,
   listEngines,
   removeEngine,
   type CustomEngineConfig,
-} from './agent-integration.js';
+} from './agent-integration';
 
 const _registry = new Map<string, TTSEngine>();
 
@@ -70,11 +70,11 @@ export async function synthesizeWith(
   return engine.synthesize(text, config);
 }
 
-import { KokoroEngine } from './engines/kokoro.js';
-import { EdgeTTSEngine } from './engines/edge-tts.js';
-import { ElevenLabsEngine } from './engines/elevenlabs.js';
-import { StyleTTS2Engine } from './engines/style-tts2.js';
-import { OrpheusEngine } from './engines/orpheus.js';
+import { KokoroEngine } from './engines/kokoro';
+import { EdgeTTSEngine } from './engines/edge-tts';
+import { ElevenLabsEngine } from './engines/elevenlabs';
+import { StyleTTS2Engine } from './engines/style-tts2';
+import { OrpheusEngine } from './engines/orpheus';
 
 registerEngine(new KokoroEngine());
 registerEngine(new EdgeTTSEngine());

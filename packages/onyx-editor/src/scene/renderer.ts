@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import type { Scene } from '../types';
 
+type MeshType = THREE.Mesh;
+type LineType = THREE.Line;
+
 function geometryForType(type: string): THREE.BufferGeometry {
   switch (type) {
     case 'agent':
@@ -42,9 +45,6 @@ function colorForType(type: string): number {
   };
   return palette[type] ?? 0xddddff;
 }
-
-type MeshType = InstanceType<typeof THREE.Mesh>;
-type LineType = InstanceType<typeof THREE.Line>;
 
 export class SceneRenderer {
   private renderer!: THREE.WebGLRenderer;

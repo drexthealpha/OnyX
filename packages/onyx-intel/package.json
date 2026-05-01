@@ -12,8 +12,9 @@
     "youtube-transcript": "^1.2.1"
   },
   "devDependencies": {
-    "vitest": "latest",
-    "typescript": "^5.4.0"
+    "@types/better-sqlite3": "7.6.8",
+    "typescript": "^5.4.0",
+    "vitest": "latest"
   },
   "peerDependencies": {
     "@anthropic-ai/sdk": "^0.39.0"

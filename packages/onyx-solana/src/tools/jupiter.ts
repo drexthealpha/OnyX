@@ -2,7 +2,7 @@
  * @onyx/solana — Jupiter tools
  */
 
-import type { MCPTool } from "../types.js";
+import type { MCPTool } from "../types";
 
 export const swapTokensTool: MCPTool = {
   name: "swapTokens",

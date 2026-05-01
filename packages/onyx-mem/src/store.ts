@@ -39,9 +39,9 @@ function saveStore(data: StoreData): void {
 
 function getStore(): StoreData {
   if (!('_storeCache' in getStore)) {
-    (getStore as Record<string, unknown>)._storeCache = loadStore();
+    (getStore as unknown as Record<string, unknown>)._storeCache = loadStore();
   }
-  return (getStore as Record<string, unknown>)._storeCache as StoreData;
+  return (getStore as unknown as Record<string, unknown>)._storeCache as StoreData;
 }
 
 getStore._storeCache = loadStore();

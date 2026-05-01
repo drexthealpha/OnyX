@@ -1,4 +1,7 @@
-const ABORT_CODE_TIMEOUT = "TIMEOUT";
+/**
+ * quorum.ts
+ * Quorum-gated operation wrapper.
+ */
 export function requireQuorum(options) {
     const { threshold, operationFn, timeoutMs = 30_000, getWeight = () => 1, } = options;
     if (threshold <= 0) {

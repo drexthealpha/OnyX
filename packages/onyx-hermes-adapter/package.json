@@ -8,7 +8,8 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "test": "pnpm vitest run",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {},
@@ -17,7 +18,8 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitest": "latest"
   },
   "keywords": ["onyx", "hermes", "acp", "adapter", "skills"],
   "license": "MIT"

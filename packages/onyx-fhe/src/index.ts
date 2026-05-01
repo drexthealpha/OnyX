@@ -1,3 +1,5 @@
+export const NAME = 'onyx-fhe';
+
 export * from './types'
 export * from './program-id'
 export * from './encrypt-context'

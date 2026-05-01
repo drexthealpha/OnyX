@@ -3,6 +3,8 @@
  * Starts ACP HTTP server on port 5001 and exports all modules.
  */
 
+export const NAME = 'onyx-hermes';
+
 import { createAcpServer } from './acp/adapter';
 
 const PORT = parseInt(process.env.HERMES_PORT ?? '5001', 10);

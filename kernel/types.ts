@@ -49,6 +49,7 @@ export enum RestartState {
 // SLIPPAGE    → execution drift beyond deadline (analogous to WAITLIST OCT 1203)
 // TIMEOUT     → watchdog max-restart exhausted (analogous to AGC's CCSHOLE)
 // ---------------------------------------------------------------------------
+export const ALARM_TIMEOUT = "TIMEOUT";
 export enum AlarmCode {
   BUDGET_CAP       = "BUDGET_CAP",
   POLICY_VIOLATION = "POLICY_VIOLATION",

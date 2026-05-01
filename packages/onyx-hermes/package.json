@@ -8,7 +8,7 @@
     "build": "tsc",
     "dev": "ts-node src/index.ts",
     "start": "node dist/index.js",
-    "test": "jest --runInBand"
+    "test": "vitest run"
   },
   "dependencies": {
     "better-sqlite3": "^9.4.3",
@@ -20,17 +20,10 @@
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.8",
     "@types/express": "^4.17.21",
-    "@types/jest": "^29.5.11",
     "@types/node": "^20.11.5",
     "@types/node-cron": "^3.0.11",
     "@types/uuid": "^9.0.7",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.1.2",
-    "typescript": "^5.3.3"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "testMatch": ["**/*.test.ts"]
+    "typescript": "^5.3.3",
+    "vitest": "latest"
   }
 }

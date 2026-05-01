@@ -1,3 +1,7 @@
+/**
+ * quorum.ts
+ * Quorum-gated operation wrapper.
+ */
 export interface QuorumOptions {
     threshold: number;
     operationFn: () => Promise<void>;
