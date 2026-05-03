@@ -18,6 +18,15 @@ export { encryptPlugin } from "./plugins/encrypt";
 export { claudeMemPlugin, restoreMemoriesAction, persistMemoriesEvaluator } from "./plugins/claude-mem";
 export { deepTutorPlugin, checkProgressAction, learnerProfileProvider } from "./plugins/deep-tutor";
 export { last30DaysPlugin, recentIntelProvider } from "./plugins/last30days";
+export * from "@onyx/research";
+export { runIntel, getLatestIntel, getTrendingTopics, generateBrief } from "@onyx/intel";
+export type { IntelBrief, Source as IntelSource } from "@onyx/intel";
+export * from "@onyx/trading";
+export * from "@onyx/privacy";
+export * from "@onyx/compute";
+export * from "@onyx/tutor";
+export * from "@onyx/solana";
+
 
 export const NAME = "onyx-agent";
 export const VERSION = "0.1.0";

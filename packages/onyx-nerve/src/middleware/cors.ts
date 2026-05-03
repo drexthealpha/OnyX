@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from "hono";
 
 export const corsMiddleware: MiddlewareHandler = async (c, next) => {
-  const origins = process.env.NERVE_ALLOWED_ORIGINS ?? "*";
+  const origins = process.env['NERVE_ALLOWED_ORIGINS'] ?? "*";
   const origin = c.req.header("Origin") ?? "*";
   const allowed = origins === "*" || origins.split(",").map(s => s.trim()).includes(origin);
 

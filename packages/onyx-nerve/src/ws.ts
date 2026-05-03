@@ -4,7 +4,7 @@ export function initTradingWS(server: unknown): void {
   const wss = new WebSocketServer({ server: server as any, path: "/ws/trading" });
 
   wss.on("connection", (ws) => {
-    const token = process.env.DEFAULT_TRADING_TOKEN ?? "So11111111111111111111111111111111111111112";
+    const token = process.env['DEFAULT_TRADING_TOKEN'] ?? "So11111111111111111111111111111111111111112";
 
     const interval = setInterval(async () => {
       try {
@@ -15,7 +15,7 @@ export function initTradingWS(server: unknown): void {
           price = await trading.fetchPrice(token);
         } catch {
           // Fallback: direct Birdeye REST
-          const key = process.env.BIRDEYE_API_KEY ?? "";
+          const key = process.env['BIRDEYE_API_KEY'] ?? "";
           const res = await fetch(
             `https://public-api.birdeye.so/defi/price?address=${token}`,
             { headers: { "X-API-KEY": key } }

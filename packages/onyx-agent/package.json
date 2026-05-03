@@ -23,6 +23,11 @@
     "@onyx/multica": "workspace:*",
     "@onyx/solana": "workspace:*",
     "@onyx/compute": "workspace:*",
+    "@onyx/intel": "workspace:*",
+    "@onyx/research": "workspace:*",
+    "@onyx/trading": "workspace:*",
+    "@onyx/privacy": "workspace:*",
+    "@onyx/tutor": "workspace:*",
     "zod": "^3.23.8"
   },
   "devDependencies": {

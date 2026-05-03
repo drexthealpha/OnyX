@@ -18,6 +18,7 @@ export type {
   RiskDecision,
   TradeDecision,
   Portfolio,
+  Position,
   ExecutionResult,
   CompletedTrade,
   TradeSignal,

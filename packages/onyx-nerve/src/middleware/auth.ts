@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from "hono";
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
-  const token = process.env.ONYX_NERVE_TOKEN;
+  const token = process.env['ONYX_NERVE_TOKEN'];
   if (!token) {
     return next();
   }

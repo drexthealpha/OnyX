@@ -94,6 +94,7 @@ export async function sync(): Promise<Portfolio> {
   // 1. SOL
   const solPrice = await fetchPrice('SOL');
   positions['SOL'] = {
+    token: 'SOL',
     amount: solResult.sol,
     valueUsd: solResult.sol * solPrice,
     entryPrice: currentP.positions['SOL']?.entryPrice ?? solPrice,
@@ -113,6 +114,7 @@ export async function sync(): Promise<Portfolio> {
     const price = await fetchPrice(acc.mint);
     
     positions[symbol] = {
+      token: symbol,
       amount: acc.amount,
       valueUsd: acc.amount * price,
       entryPrice: currentP.positions[symbol]?.entryPrice ?? price,
@@ -151,12 +153,14 @@ export function recordBuy(token: string, amountUsd: number, price: number): void
     const totalValue = existing.valueUsd + amountUsd;
     const totalAmount = existing.amount + amountUsd / price;
     positions[token] = {
+      token,
       amount: totalAmount,
       valueUsd: totalValue,
       entryPrice: totalValue / totalAmount,
     };
   } else {
     positions[token] = {
+      token,
       amount: amountUsd / price,
       valueUsd: amountUsd,
       entryPrice: price,

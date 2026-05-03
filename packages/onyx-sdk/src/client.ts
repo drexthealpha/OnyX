@@ -35,17 +35,16 @@ export class OnyxClient {
 
   async getAgent(): Promise<OnyxRuntime> {
     if (!this._agent) {
-      const { createOnyxRuntime } = await import('./stubs/index.js');
-      this._agent = createOnyxRuntime({
-        gatewayUrl: this.config.nerveUrl,
-      });
+      const { createOnyxRuntime } = await import('@onyx/agent');
+      const { onyxCharacter } = await import('@onyx/agent');
+      this._agent = createOnyxRuntime(onyxCharacter, []);
     }
     return this._agent;
   }
 
   async getVault(): Promise<unknown> {
     if (!this._vault) {
-      const vault = await import('./stubs/index.js');
+      const vault = await import('@onyx/vault');
       this._vault = vault;
     }
     return this._vault;
@@ -53,10 +52,9 @@ export class OnyxClient {
 
   async getResearch(): Promise<RunResearchFn> {
     if (!this._research) {
-      const { ResearchGraph, runResearch } = await import('./stubs/index.js');
+      const { ResearchGraph, runResearch } = await import('@onyx/research');
       this._research = async (topic: string): Promise<ResearchState> => {
-        const graph = new ResearchGraph();
-        return runResearch(graph, topic);
+        return runResearch(topic);
       };
     }
     return this._research;
@@ -69,7 +67,7 @@ export class OnyxClient {
 
   async getIntel(): Promise<RunIntelFn> {
     if (!this._intel) {
-      const { runIntel } = await import('./stubs/index.js');
+      const { runIntel } = await import('@onyx/intel');
       this._intel = runIntel;
     }
     return this._intel;
@@ -82,7 +80,7 @@ export class OnyxClient {
 
   async getTrading(): Promise<RunAnalysisFn> {
     if (!this._trading) {
-      const { runAnalysis } = await import('./stubs/index.js');
+      const { runAnalysis } = await import('@onyx/trading');
       this._trading = runAnalysis;
     }
     return this._trading;
@@ -98,7 +96,7 @@ export class OnyxClient {
 
   async getPrivacy(signerOverride?: unknown): Promise<PrivacyClient> {
     if (!this._privacy) {
-      const { createUmbraClient } = await import('./stubs/index.js');
+      const { createUmbraClient } = await import('@onyx/privacy');
       if (!signerOverride) {
         throw new Error(
           '[OnyxClient] privacy requires a signer. Pass signerOverride to getPrivacy(signer).',
@@ -114,7 +112,7 @@ export class OnyxClient {
 
   async getCompute(): Promise<GetComputeFn> {
     if (!this._compute) {
-      const { getCompute } = await import('./stubs/index.js');
+      const { getCompute } = await import('@onyx/compute');
       this._compute = getCompute;
     }
     return this._compute;
@@ -127,7 +125,7 @@ export class OnyxClient {
 
   async getTutor(): Promise<TutorApp> {
     if (!this._tutor) {
-      const tutorMod = await import('./stubs/index.js');
+      const tutorMod = await import('@onyx/tutor');
       this._tutor = tutorMod as TutorApp;
     }
     return this._tutor;

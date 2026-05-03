@@ -88,9 +88,16 @@ export interface TradeDecision {
   timestamp: number;
 }
 
+export interface Position {
+  token: string;
+  amount: number;
+  valueUsd: number;
+  entryPrice: number;
+}
+
 export interface Portfolio {
   totalValueUsd: number;
-  positions: Record<string, { amount: number; valueUsd: number; entryPrice: number }>;
+  positions: Record<string, Position>;
   cashUsd: number;
   timestamp: number;
 }
