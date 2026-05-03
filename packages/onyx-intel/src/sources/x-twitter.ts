@@ -4,7 +4,7 @@
 // Bearer token: process.env.TWITTER_BEARER_TOKEN (operator cost: $0)
 // Returns top 10 tweets by engagement (likes + retweets + replies).
 
-import type { Source } from "../types.ts";
+import type { Source } from "../types.js";
 
 const BASE_URL = "https://api.twitter.com/2/tweets/search/recent";
 

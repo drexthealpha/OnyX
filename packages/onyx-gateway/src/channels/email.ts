@@ -18,7 +18,7 @@ export class EmailChannel implements Channel {
 
   async send(msg: { content: string }, to: string): Promise<void> {
     if (!this.transporter) throw new Error("EmailChannel not initialized");
-    await this.transporter.sendMail({ from: this.user, to, subject: "Message from ONYX", text: msg.content });
+    await this.transporter.sendMail({ from: this.user as string, to, subject: "Message from ONYX", text: msg.content });
   }
 
   onMessage(handler: (msg: IncomingMessage, from: string) => Promise<void>): void {

@@ -3,7 +3,7 @@
 // Prompt: "Synthesize these sources into a grounded intelligence brief.
 //          Cite every claim with [Source N]. Be concise. Max 200 words."
 
-import type { Source } from "../types.ts";
+import type { Source } from "../types.js";
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 const MODEL = "claude-sonnet-4-20250514";

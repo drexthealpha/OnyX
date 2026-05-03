@@ -2,7 +2,7 @@ import path from "path";
 
 interface WorkBook {
   SheetNames: string[];
-  Sheets: Record<string, unknown>;
+  Sheets: Record<string, any>;
 }
 
 async function getXlsx() {
@@ -71,7 +71,7 @@ export async function parse(filePath: string): Promise<string> {
   for (const sheetName of workbook.SheetNames) {
     const sheet = workbook.Sheets[sheetName];
     // Convert sheet to array of arrays (header row included)
-    const rows: unknown[][] = XLSX.utils.sheet_to_json(sheet, {
+    const rows: unknown[][] = XLSX.utils.sheet_to_json(sheet as any, {
       header: 1,
       defval: "",
       blankrows: false,

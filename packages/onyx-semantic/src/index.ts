@@ -16,7 +16,7 @@ export type { SemanticClient } from './client.js';
 
 export { embed } from './embed.js';
 
-export { search } from './search.js';
+export { search, search as semanticSearch } from './search.js';
 export type { SearchResult } from './search.js';
 
 export { memories } from './collections/memories.js';

@@ -77,7 +77,7 @@ export async function publish(
       return { success: false, error: `WordPress API error ${res.status}: ${err}` };
     }
 
-    const data = await res.json();
+    const data = await res.json() as any;
     return {
       success: true,
       url: data.link ?? `${url}/?p=${data.id}`,

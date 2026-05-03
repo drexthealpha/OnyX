@@ -1,3 +1,4 @@
+import { $ } from "bun";
 export type BrowserSandboxResult = { screenshot?: string; html?: string; error?: string };
 
 export async function runBrowserTask(url: string, opts: { timeoutMs?: number } = {}): Promise<BrowserSandboxResult> {

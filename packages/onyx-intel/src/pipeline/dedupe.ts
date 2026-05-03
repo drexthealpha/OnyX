@@ -2,7 +2,7 @@
 // Deduplication by URL and near-duplicate detection via Jaccard similarity on snippets.
 // Threshold: 0.8 Jaccard similarity → considered a near-duplicate, dropped.
 
-import type { Source } from "../types.ts";
+import type { Source } from "../types.js";
 
 const STOPWORDS = new Set([
   "the", "a", "an", "to", "for", "how", "is", "in", "of", "on",
@@ -45,7 +45,7 @@ export function deduplicateSources(sources: Source[]): Source[] {
 
   for (const source of sources) {
     // Step 1: URL dedup
-    const canonicalUrl = source.url.split("?")[0].replace(/\/$/, "");
+    const canonicalUrl = source.url?.split("?")[0]?.replace(/\/$/, "") || "";
     if (seenUrls.has(canonicalUrl)) continue;
     seenUrls.add(canonicalUrl);
 

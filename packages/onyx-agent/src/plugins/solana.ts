@@ -10,10 +10,12 @@ export const solanaNetworkProvider: Provider = {
   }
 };
 
+import { solanaTransferAction, solanaBalanceAction } from "../actions/solana.js";
+
 export const solanaPlugin: Plugin = {
   name: "onyx-solana",
   description: "Provides Solana blockchain context and transaction utilities",
-  actions: [],
+  actions: [solanaTransferAction, solanaBalanceAction],
   providers: [solanaNetworkProvider],
   evaluators: [],
   init: async (config: Record<string, string>, runtime: IAgentRuntime): Promise<void> => {

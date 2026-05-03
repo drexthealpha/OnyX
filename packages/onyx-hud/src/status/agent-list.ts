@@ -13,8 +13,8 @@ export async function getActiveAgents(): Promise<string[]> {
   // Attempt 1: @onyx/multica council.list()
   try {
     const multica = await import("@onyx/multica").catch(() => null);
-    if (multica?.council) {
-      return await multica.council.list() as string[];
+    if (multica?.globalCouncil) {
+      return (multica.globalCouncil as any).listMembers().map((m: any) => m.agentId);
     }
   } catch (err) {
     console.warn("[onyx-hud/agent-list] council.list() failed:", err);

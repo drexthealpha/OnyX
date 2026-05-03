@@ -132,7 +132,7 @@ describe("convert()", () => {
     expect(caughtError).not.toBeNull();
     expect(caughtError).toBeInstanceOf(UnsupportedFileType);
 
-    const err = caughtError as UnsupportedFileType;
+    const err = caughtError as any;
     // The extension must appear in the error message
     expect(err.message).toContain(unknownExt);
     expect(err.name).toBe("UnsupportedFileType");

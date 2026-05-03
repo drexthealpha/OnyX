@@ -9,8 +9,16 @@ export async function solanaTx(instruction: TransactionInstruction): Promise<str
 
   const tx = new Transaction().add(instruction);
   tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+  tx.feePayer = (await import('@solana/web3.js')).PublicKey.default; // Temporary placeholder, in real impl this would be vault.getPublicKey()
 
-  const signed = await vault.signTransaction(tx);
-  const sig = await sendAndConfirmTransaction(connection, signed, []);
+  const { PublicKey } = await import('@solana/web3.js');
+  const userPubkey = new PublicKey(await vault.getPublicKey());
+  tx.feePayer = userPubkey;
+
+  const message = tx.serializeMessage();
+  const signature = await vault.signTransaction(message);
+  
+  tx.addSignature(userPubkey, Buffer.from(signature));
+  const sig = await connection.sendRawTransaction(tx.serialize());
   return sig;
 }

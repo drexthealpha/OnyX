@@ -8,7 +8,7 @@
  * 3. Revenue router correctly converts USD to USDC lamports
  */
 
-import { describe, test, expect, mock, beforeAll, afterAll } from 'vitest';
+import { describe, test, expect, vi, beforeAll, afterAll } from 'vitest';
 import { usdToUsdcLamports } from '../revenue.js';
 
 describe('Revenue Router — USD to USDC lamports', () => {
@@ -39,7 +39,7 @@ describe('generateContent — type-appropriate output (mocked Claude)', () => {
   beforeAll(() => {
     process.env.ANTHROPIC_API_KEY = 'test-key-mock';
 
-    global.fetch = mock(async (url: string, opts?: RequestInit) => {
+    global.fetch = vi.fn(async (url: string, opts?: RequestInit) => {
       const urlStr = String(url);
 
       if (urlStr.includes('anthropic.com')) {
@@ -76,7 +76,7 @@ describe('generateContent — type-appropriate output (mocked Claude)', () => {
       }
 
       return originalFetch(url, opts);
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
   });
 
   afterAll(() => {
@@ -137,7 +137,7 @@ describe('crosspost — platform-specific reformatting', () => {
   beforeAll(() => {
     process.env.ANTHROPIC_API_KEY = 'test-key-mock';
 
-    global.fetch = mock(async (url: string, opts?: RequestInit) => {
+    global.fetch = vi.fn(async (url: string, opts?: RequestInit) => {
       const urlStr = String(url);
 
       if (urlStr.includes('anthropic.com')) {
@@ -162,7 +162,7 @@ describe('crosspost — platform-specific reformatting', () => {
       }
 
       return originalFetch(url, opts);
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
   });
 
   afterAll(() => {

@@ -15,7 +15,7 @@ export interface WebAuthnCredentialCreationOptions {
   rp: { id: string; name: string };
   user: { id: Uint8Array; name: string };
   challenge: Uint8Array;
-  pubKeyParams: Array<{
+  pubKeyCredParams: Array<{
     alg: number;
     type: string;
   }>;
@@ -58,6 +58,7 @@ export function derSignatureToRawRS(derSig: Uint8Array): Uint8Array {
     throw new Error('Invalid DER: expected r length marker');
   }
   const rLen = derSig[offset++];
+  if (rLen === undefined) throw new Error('Invalid DER: missing r length');
   const rBytes = derSig.subarray(offset, offset + rLen);
   offset += rLen;
   
@@ -65,6 +66,7 @@ export function derSignatureToRawRS(derSig: Uint8Array): Uint8Array {
     throw new Error('Invalid DER: expected s length marker');
   }
   const sLen = derSig[offset++];
+  if (sLen === undefined) throw new Error('Invalid DER: missing s length');
   const sBytes = derSig.subarray(offset, offset + sLen);
   
   const rPadded = new Uint8Array(32);
@@ -73,10 +75,12 @@ export function derSignatureToRawRS(derSig: Uint8Array): Uint8Array {
   const rStart = 32 - rBytes.length;
   const sStart = 32 - sBytes.length;
   
-  if (rBytes[0] & 0x80) {
+  const rFirst = rBytes[0];
+  if (rFirst !== undefined && (rFirst & 0x80)) {
     rPadded[0] = 0x00;
   }
-  if (sBytes[0] & 0x80) {
+  const sFirst = sBytes[0];
+  if (sFirst !== undefined && (sFirst & 0x80)) {
     sPadded[0] = 0x00;
   }
   
@@ -105,7 +109,7 @@ export async function createWebAuthnCredential(): Promise<WebAuthnCredential | n
     rp: { id: WEBAUTHN_RP_ID, name: WEBAUTHN_RP_NAME },
     user: { id: userId, name: 'ONYX User' },
     challenge,
-    pubKeyParams: [
+    pubKeyCredParams: [
       { alg: -7, type: 'public-key' },
     ],
     timeout: 60000,
@@ -114,7 +118,7 @@ export async function createWebAuthnCredential(): Promise<WebAuthnCredential | n
   
   try {
     const credential = await navigator.credentials.create({
-      publicKey: options as PublicKeyCredentialCreationOptions,
+      publicKey: options as any,
     }) as PublicKeyCredential | null;
     
     if (!credential) {
@@ -134,14 +138,14 @@ export async function createWebAuthnCredential(): Promise<WebAuthnCredential | n
     const hashBuffer = await crypto.subtle.digest('SHA-256', clientDataJSON);
     clientDataHash.set(new Uint8Array(hashBuffer));
     
-    const authenticatorData = new Uint8Array(credential.authenticatorResponse as any).attestationObject || 
-      new Uint8Array((credential as any).response.clientDataJSON);
+    const response = (credential as any).response;
+    const authenticatorData = response.attestationObject ? new Uint8Array(response.attestationObject) : new Uint8Array(response.clientDataJSON);
     
     return {
       id: credential.id,
       publicKey: rawId,
       sign: async (challenge: Uint8Array): Promise<Uint8Array> => {
-        return credential.sign(challenge);
+        return (credential as any).sign(challenge);
       },
     };
   } catch (error) {
@@ -168,7 +172,7 @@ export async function signWithWebAuthn(
   
   try {
     const assertion = await navigator.credentials.get({
-      publicKey: options as PublicKeyCredentialRequestOptions,
+      publicKey: options as any,
     }) as PublicKeyCredential | null;
     
     if (!assertion) {

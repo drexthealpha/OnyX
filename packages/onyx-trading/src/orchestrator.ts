@@ -51,13 +51,13 @@ export async function runAnalysis(
     ]);
 
     if (newsAnalysis.status === 'rejected') {
-      console.warn('[onyx-trading] News analyst failed:', newsAnalysis.reason);
+      throw new Error(`Hard Data Requirement Failed: News Analyst Error: ${newsAnalysis.reason}`);
     }
     if (fundamentalAnalysis.status === 'rejected') {
-      console.warn('[onyx-trading] Fundamental analyst failed:', fundamentalAnalysis.reason);
+      throw new Error(`Hard Data Requirement Failed: Fundamental Analyst Error: ${fundamentalAnalysis.reason}`);
     }
     if (socialAnalysis.status === 'rejected') {
-      console.warn('[onyx-trading] Social analyst failed:', socialAnalysis.reason);
+      throw new Error(`Hard Data Requirement Failed: Social Analyst Error: ${socialAnalysis.reason}`);
     }
   }
 

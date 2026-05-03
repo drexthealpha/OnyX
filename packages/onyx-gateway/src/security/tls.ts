@@ -9,7 +9,7 @@ export function buildTLSConfig(env: Record<string, string | undefined>): TLSOpti
   const certFile = env.TLS_CERT_FILE;
   const keyFile = env.TLS_KEY_FILE;
   if (!certFile || !keyFile) return undefined;
-  return { cert: readFileSync(certFile), key: readFileSync(keyFile) };
+  return { cert: readFileSync(certFile).toString(), key: readFileSync(keyFile).toString() };
 }
 
 export function isTLSEnabled(env: Record<string, string | undefined>): boolean {

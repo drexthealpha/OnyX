@@ -27,9 +27,9 @@ export enum SignatureAlgorithm {
 
 export const CPI_AUTHORITY_SEED = Buffer.from('__ika_cpi_authority');
 export const IKA_PROGRAM_ID = '87W54kGYFQ1rgWqMeu4XTPHWXWmXSQCcjm8vCTfiq1oY';
-export const IKA_GRPC_ENDPOINT = process.env.IKA_GRPC_ENDPOINT || 'pre-alpha-dev-1.ika.ika-network.net:443';
-export const SOLANA_RPC_ENDPOINT = process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com';
-export const BUDGET_CAP = BigInt(process.env.ONYX_DAILY_BUDGET_LAMPORTS || '5000000000');
+export const IKA_GRPC_ENDPOINT = process.env['IKA_GRPC_ENDPOINT'] || 'pre-alpha-dev-1.ika.ika-network.net:443';
+export const SOLANA_RPC_ENDPOINT = process.env['SOLANA_RPC_URL'] || 'https://api.devnet.solana.com';
+export const BUDGET_CAP = BigInt(process.env['ONYX_DAILY_BUDGET_LAMPORTS'] || '5000000000');
 
 export const STATUS_PENDING = 0;
 export const STATUS_SIGNED = 1;
@@ -101,6 +101,7 @@ export interface CreateDWalletOptions {
   curve?: Curve;
   signatureAlgorithm?: SignatureAlgorithm;
   authority?: Uint8Array;
+  signer?: import('@solana/web3.js').Keypair;
 }
 
 export interface SignMessageOptions {
@@ -110,6 +111,7 @@ export interface SignMessageOptions {
   messageMetadata?: Uint8Array;
   signatureScheme: SignatureScheme;
   userPubkey: Uint8Array;
+  signer: import('@solana/web3.js').Keypair;
 }
 
 export interface TransferOptions {
@@ -149,6 +151,7 @@ export interface CrossChainTransferOptions {
   dwalletInfo: DWalletInfo;
   splToken?: import('@solana/web3.js').PublicKey;
   isNft?: boolean;
+  signer: import('@solana/web3.js').Keypair;
 }
 
 export interface SharedAccessOptions {

@@ -39,9 +39,11 @@ async function performSync(): Promise<SyncResult> {
   // Step 2: Sync @onyx/mem crystals to remote Qdrant
   try {
     // Dynamically import to avoid hard dep at startup
-    const mem = await import('@onyx/mem');
-    if (typeof (mem as Record<string, unknown>).syncCrystals === 'function') {
-      const synced = await (mem as { syncCrystals: () => Promise<number> }).syncCrystals();
+    // @ts-ignore
+    const memModule = await import('@onyx/mem');
+    const mem = (memModule.default || memModule) as any;
+    if (typeof mem.syncCrystals === 'function') {
+      const synced = await mem.syncCrystals();
       result.crystalsSynced = synced;
     }
   } catch (err) {
@@ -50,9 +52,11 @@ async function performSync(): Promise<SyncResult> {
 
   // Step 3: Re-embed documents via @onyx/semantic
   try {
-    const semantic = await import('@onyx/semantic');
-    if (typeof (semantic as Record<string, unknown>).reEmbedPending === 'function') {
-      const reEmbedded = await (semantic as { reEmbedPending: () => Promise<number> }).reEmbedPending();
+    // @ts-ignore
+    const semanticModule = await import('@onyx/semantic');
+    const semantic = (semanticModule.default || semanticModule) as any;
+    if (typeof semantic.reEmbedPending === 'function') {
+      const reEmbedded = await semantic.reEmbedPending();
       result.docsReEmbedded = reEmbedded;
     }
   } catch (err) {

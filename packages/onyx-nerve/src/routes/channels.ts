@@ -14,23 +14,23 @@ router.get("/", async (c) => {
 
 router.post("/", async (c) => {
   const body = await c.req.json().catch(() => ({}));
-  const { name } = body as { name?: string };
+  const { name, type } = body as { name?: string; type?: string };
   try {
     const mod = await import("@onyx/multica");
-    const result = await mod.createChannel(name);
+    const result = await mod.createChannel(name, type);
     return c.json(result);
   } catch (err) {
     return c.json({ error: String(err), fallback: true }, 503);
   }
 });
 
-router.post("/:id/send", async (c) => {
+router.post("/:id/messages", async (c) => {
   const id = c.req.param("id");
   const body = await c.req.json().catch(() => ({}));
-  const { message } = body as { message?: string };
+  const { content } = body as { content?: string };
   try {
     const mod = await import("@onyx/multica");
-    await mod.sendMessage(id, message);
+    await mod.sendMessage(id, content);
     return c.json({ ok: true });
   } catch (err) {
     return c.json({ error: String(err), fallback: true }, 503);

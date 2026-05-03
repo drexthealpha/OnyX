@@ -1,4 +1,4 @@
-import { test, expect, mock, beforeEach } from 'vitest';
+import { test, expect, vi, beforeEach } from 'vitest';
 
 const originalFetch = globalThis.fetch;
 
@@ -32,13 +32,13 @@ test('Executor retries exactly 3 times then calls abort', async () => {
   const { Pipeline } = await import('../pipeline.js');
 
   const abortCalls: unknown[] = [];
-  globalThis.fetch = async (url: string | URL) => {
+  globalThis.fetch = (async (url: string | URL) => {
     const u = String(url);
     if (u.includes('alarm-and-abort')) {
       abortCalls.push(true);
     }
     return new Response('{}', { status: 200 });
-  };
+  }) as unknown as typeof fetch;
 
   let attempts = 0;
   let threw = false;
@@ -60,11 +60,11 @@ test('Executor retries exactly 3 times then calls abort', async () => {
 });
 
 test('Private payroll runs for single employee with mocked privacy', async () => {
-  mock.module('@onyx/privacy', () => ({
+  vi.mock('@onyx/privacy', () => ({
     shieldAsset: async () => ({ signature: 'mock-sig-123' }),
   }));
-
-  mock.module('@onyx/mem', () => ({
+  
+  vi.mock('@onyx/mem', () => ({
     store: async () => {},
     retrieve: async () => null,
   }));

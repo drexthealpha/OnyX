@@ -1,9 +1,5 @@
-/**
- * News sentiment analyst — uses Claude API (user's ANTHROPIC_API_KEY)
- * Operator cost: $0
- */
-
 import Anthropic from '@anthropic-ai/sdk';
+import { runAllSources } from '@onyx/intel';
 import { NewsAnalysis } from '../types.js';
 
 interface ContentBlock {
@@ -20,23 +16,31 @@ function getClient(): Anthropic {
 export async function analyzeNews(token: string): Promise<NewsAnalysis> {
   const client = getClient();
 
-  const systemPrompt = `You are a crypto news sentiment analyst. Given a token symbol or mint address,
-analyze its recent market sentiment based on your knowledge. Return ONLY valid JSON matching this schema:
+  // 1. Fetch real-world intel first
+  const sources = await runAllSources(`${token} crypto news`);
+  const intelData = sources.map((s, i) => `[Source ${i+1}]: ${s.title}\n${s.snippet}`).join('\n\n');
+
+  const systemPrompt = `You are a crypto news sentiment analyst. 
+Use the provided real-time INTEL SOURCES to analyze the market sentiment for the token.
+If no sources are provided or they are irrelevant, state that clearly and be neutral.
+Do NOT hallucinate events that are not in the sources.
+
+Return ONLY valid JSON matching this schema:
 {
   "sentiment": "BULLISH" | "BEARISH" | "NEUTRAL",
   "score": number between -1 (very bearish) and 1 (very bullish),
-  "headlines": string[] of 3-5 representative recent headlines or events (synthesized),
-  "summary": string brief 2-sentence summary of market narrative
+  "headlines": string[] of 3-5 specific headlines found in the sources,
+  "summary": string brief 2-sentence summary of the narrative supported by sources
 }`;
 
   const message = await client.messages.create({
-    model: 'claude-haiku-4-5',
-    max_tokens: 512,
+    model: 'claude-3-5-sonnet-20240620',
+    max_tokens: 1024,
     system: systemPrompt,
     messages: [
       {
         role: 'user',
-        content: `Analyze news sentiment for token: ${token}. Today's date: ${new Date().toISOString().split('T')[0]}.`,
+        content: `INTEL SOURCES:\n${intelData}\n\nAnalyze news sentiment for token: ${token}.`,
       },
     ],
   });
@@ -47,7 +51,7 @@ analyze its recent market sentiment based on your knowledge. Return ONLY valid J
   try {
     parsed = JSON.parse(text);
   } catch {
-    parsed = { sentiment: 'NEUTRAL', score: 0, headlines: [], summary: 'Unable to parse sentiment.' };
+    parsed = { sentiment: 'NEUTRAL', score: 0, headlines: [], summary: 'Unable to parse grounded sentiment.' };
   }
 
   const validSentiments = ['BULLISH', 'BEARISH', 'NEUTRAL'] as const;

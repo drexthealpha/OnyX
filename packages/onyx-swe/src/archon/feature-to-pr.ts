@@ -11,7 +11,6 @@
 import { planFromIssue } from '../agent/planner.js';
 import { executeStep } from '../agent/coder.js';
 import { runTestSuite } from '../agent/tester.js';
-import { reviewCode } from '../agent/reviewer.js';
 import { adversarialTest } from './adversarial-loop.js';
 import { createSandbox } from '../sandbox/docker.js';
 import { WorkspaceManager } from '../sandbox/workspace.js';

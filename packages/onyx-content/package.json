@@ -21,6 +21,9 @@
     "@onyx/privacy": "workspace:*"
   },
   "peerDependenciesMeta": {
-    "@onyx/privacy": { "optional": true }
-  }
+    "@onyx/privacy": {
+      "optional": true
+    }
+  },
+  "type": "module"
 }

@@ -3,7 +3,7 @@
 // @onyx/browser is S22 (not yet built) — import dynamically with try/catch fallback.
 // Falls back to empty array if @onyx/browser is unavailable.
 
-import type { Source } from "../types.ts";
+import type { Source } from "../types.js";
 
 interface WebResult {
   title: string;
@@ -21,8 +21,9 @@ export async function search(query: string): Promise<Source[]> {
 
   try {
     // Dynamic import — @onyx/browser is S22, may not be installed yet
+    // @ts-ignore - dynamic import of local package that might not be built yet
     const browser = await import("@onyx/browser");
-    googleSearch = browser.macros?.googleSearch ?? browser.googleSearch ?? null;
+    googleSearch = browser.macros?.googleSearch ?? (browser as any).googleSearch ?? null;
   } catch {
     // @onyx/browser not available — skip silently
     console.warn("[web] @onyx/browser not installed (S22 pending) — skipping web source");

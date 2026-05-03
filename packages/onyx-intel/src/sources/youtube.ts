@@ -4,7 +4,7 @@
 // API key: process.env.YOUTUBE_API_KEY (operator cost: $0)
 // Returns top 5 videos with transcripts via youtube-transcript package.
 
-import type { Source } from "../types.ts";
+import type { Source } from "../types.js";
 
 const SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
 const VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos";

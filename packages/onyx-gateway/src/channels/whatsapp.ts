@@ -29,7 +29,7 @@ export class WhatsAppChannel implements Channel {
   async handleWebhook(body: unknown): Promise<void> {
     if (!this.handler) return;
     try {
-      const entries = (body as { entry?: Array<{ changes?: Array<{ value?: { messages?: Array<{ from: string; text: { body: string }> }> }> }>[]>)?.entry;
+      const entries = (body as { entry?: Array<{ changes?: Array<{ value?: { messages?: Array<{ from: string; text: { body: string } }> } }> }> })?.entry;
       if (!entries) return;
       for (const entry of entries) {
         const changes = entry.changes;

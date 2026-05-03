@@ -4,7 +4,8 @@
 
 import Database, { type Database as DatabaseInstance } from "better-sqlite3";
 import { randomUUID } from "crypto";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import { mkdirSync, existsSync } from "fs";
 import type { ScheduledJob } from "./types";
 import { runResearch } from "./graph";

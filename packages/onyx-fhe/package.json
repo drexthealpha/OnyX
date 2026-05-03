@@ -22,5 +22,6 @@
   "vitest": {
     "preset": "vitest/presets/default",
     "testEnvironment": "node"
-  }
+  },
+  "type": "module"
 }

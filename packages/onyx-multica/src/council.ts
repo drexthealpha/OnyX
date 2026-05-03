@@ -162,3 +162,5 @@ export class Council {
 export function createCouncil(herald?: Herald): Council {
   return new Council(herald);
 }
+
+export const globalCouncil = createCouncil();

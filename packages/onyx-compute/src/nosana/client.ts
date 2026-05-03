@@ -21,6 +21,7 @@ let _client: NosanaClient | null = null;
 async function walletFromPrivateKey(base58Key: string): Promise<import('@nosana/kit').Wallet> {
   // Dynamic import so the module works in environments without @solana/kit
   const { createKeyPairSignerFromBytes } = await import('@solana/kit');
+  // @ts-ignore
   const bs58 = await import('bs58');
 
   const keyBytes = bs58.default.decode(base58Key);

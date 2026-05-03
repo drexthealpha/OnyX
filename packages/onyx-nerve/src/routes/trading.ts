@@ -2,45 +2,45 @@ import { Hono } from "hono";
 
 const router = new Hono();
 
-router.get("/price/:token", async (c) => {
-  const token = c.req.param("token");
+router.get("/stats", async (c) => {
   try {
+    // @ts-ignore - dynamic import of workspace package
     const mod = await import("@onyx/trading");
-    const result = await mod.getPrice(token);
-    return c.json({ token, price: result, timestamp: Date.now() });
-  } catch (err) {
-    return c.json({ error: String(err), fallback: true }, 503);
-  }
-});
-
-router.post("/analyze", async (c) => {
-  const body = await c.req.json().catch(() => ({}));
-  const { token } = body as { token?: string };
-  try {
-    const mod = await import("@onyx/trading");
-    const result = await mod.runAnalysis(token);
+    const result = await mod.getStats();
     return c.json(result);
   } catch (err) {
     return c.json({ error: String(err), fallback: true }, 503);
   }
 });
 
-router.get("/portfolio", async (c) => {
+router.post("/trade", async (c) => {
+  const body = await c.req.json().catch(() => ({}));
   try {
+    // @ts-ignore - dynamic import of workspace package
     const mod = await import("@onyx/trading");
-    const result = await mod.getPortfolio();
+    const result = await mod.executeTrade(body);
     return c.json(result);
   } catch (err) {
     return c.json({ error: String(err), fallback: true }, 503);
   }
 });
 
-router.post("/backtest", async (c) => {
-  const body = await c.req.json().catch(() => ({}));
-  const { token, days } = body as { token?: string; days?: number };
+router.get("/positions", async (c) => {
   try {
+    // @ts-ignore - dynamic import of workspace package
     const mod = await import("@onyx/trading");
-    const result = await mod.runBacktest(token, days);
+    const result = await mod.getPositions();
+    return c.json(result);
+  } catch (err) {
+    return c.json({ error: String(err), fallback: true }, 503);
+  }
+});
+
+router.get("/history", async (c) => {
+  try {
+    // @ts-ignore - dynamic import of workspace package
+    const mod = await import("@onyx/trading");
+    const result = await mod.getTradeHistory();
     return c.json(result);
   } catch (err) {
     return c.json({ error: String(err), fallback: true }, 503);

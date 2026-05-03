@@ -22,7 +22,7 @@ import {
   createHermesAdapter,
   type HermesAcpRequest,
   type OnyxSkillResult,
-} from "../../../onyx-hermes-adapter/src/index";
+} from "@onyx/hermes-adapter";
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 

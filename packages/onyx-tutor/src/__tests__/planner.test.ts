@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { DomainLevel } from '../types.ts';
+import { DomainLevel } from '../types.js';
 
 describe('createPlan', () => {
   test('returns between 3 and 5 steps', async () => {

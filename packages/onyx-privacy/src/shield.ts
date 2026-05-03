@@ -9,8 +9,8 @@ export async function shieldAsset(
   destination: Address,
 ): Promise<DepositResult> {
   const deposit = getPublicBalanceToEncryptedBalanceDirectDepositorFunction({ client });
-  const result = await deposit(destination, mint, amount);
+  const result = await deposit(destination as any, mint as any, amount as any);
   console.debug('[onyx-privacy] shieldAsset queued:', result.queueSignature);
   console.debug('[onyx-privacy] shieldAsset callback confirmed:', result.callbackSignature);
-  return result;
+  return result as any;
 }

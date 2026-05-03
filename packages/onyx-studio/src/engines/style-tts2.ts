@@ -8,7 +8,7 @@
 import { spawn } from 'node:child_process';
 import { readFile, rm } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
-import type { TTSEngine, VoiceConfig } from './index';
+import type { TTSEngine, VoiceConfig } from '../index.js';
 
 export class StyleTTS2Engine implements TTSEngine {
   name = 'style-tts2';

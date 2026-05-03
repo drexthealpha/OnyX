@@ -41,7 +41,9 @@ export class OnyxMultisig {
     instructionData.writeUInt8(threshold, 4);
     
     for (let i = 0; i < members.length; i++) {
-      Buffer.from(members[i].toBytes()).copy(instructionData, 5 + i * 32);
+      const member = members[i];
+      if (!member) continue;
+      Buffer.from(member.toBytes()).copy(instructionData, 5 + i * 32);
     }
     
     const initIx = new TransactionInstruction({
@@ -77,8 +79,8 @@ export class OnyxMultisig {
       
       const data = Buffer.from(accountInfo.data);
       const memberCount = data.readUInt32LE(0);
-      multisig.state.threshold = data[4];
-      multisig.state.nonce = data[5];
+      multisig.state.threshold = data.readUInt8(4);
+      multisig.state.nonce = data.readUInt8(5);
       
       for (let i = 0; i < memberCount; i++) {
         const memberBytes = data.subarray(6 + i * 32, 6 + (i + 1) * 32);
@@ -179,11 +181,17 @@ export class OnyxMultisig {
 export function computeMultisigPda(members: PublicKey[], programId: PublicKey, nonce: number = 0): [PublicKey, number] {
   const memberData = Buffer.alloc(32 * members.length);
   for (let i = 0; i < members.length; i++) {
-    Buffer.from(members[i].toBytes()).copy(memberData, i * 32);
+    const member = members[i];
+    if (member) {
+      Buffer.from(member.toBytes()).copy(memberData, i * 32);
+    }
   }
   
   const seeds = [Buffer.from('multisig'), memberData, Buffer.alloc(1)];
-  seeds[2].writeUInt8(nonce, 0);
+  const nonceSeed = seeds[2];
+  if (nonceSeed) {
+    nonceSeed.writeUInt8(nonce, 0);
+  }
   
   return PublicKey.findProgramAddressSync(seeds, programId);
 }

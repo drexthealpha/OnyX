@@ -41,8 +41,8 @@ export function optimize(
     const groupMean = groupRewards.reduce((s, r) => s + r, 0) / groupRewards.length;
 
     for (let i = 0; i < group.length; i++) {
-      const t = group[i];
-      const r = groupRewards[i];
+      const t = group[i]!;
+      const r = groupRewards[i]!;
       const relativeReward = r - groupMean;
       allRelativeRewards.push(relativeReward);
 

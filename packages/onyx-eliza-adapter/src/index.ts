@@ -82,9 +82,8 @@ export interface ElizaAdapter {
   /**
    * Subscribe to @onyx/multica 'telemetry' topic and forward each
    * event to elizaRuntime.createMemory() in the 'conversations' table.
-   * Logs errors via KERNEL_URL/alarm-and-abort on persistent failure.
    */
-  bridge(gatewayUrl: string, elizaRuntime: AgentRuntime): void;
+  bridge(elizaRuntime: AgentRuntime): void;
 }
 
 // ─── toElizaMemory ────────────────────────────────────────────────────────────
@@ -140,7 +139,7 @@ function fromElizaResult(
 
 // ─── bridge ──────────────────────────────────────────────────────────────────
 
-function makeBridge(gatewayUrl: string, elizaRuntime: AgentRuntime): void {
+function makeBridge(elizaRuntime: AgentRuntime): void {
   (async () => {
     const { globalHerald } = await import("@onyx/multica");
 
@@ -165,14 +164,13 @@ function makeBridge(gatewayUrl: string, elizaRuntime: AgentRuntime): void {
         console.error(`[onyx-eliza-adapter] createMemory failed: ${errMsg}`);
 
         try {
-          await fetch(`${gatewayUrl}/alarm-and-abort`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              phase: "eliza-adapter",
-              error: errMsg,
-              conversationId: telemetry.conversationId,
-            }),
+          const { alarm } = await import("@onyx/kernel/alarm-and-abort");
+          const { AlarmCode } = await import("@onyx/kernel/types");
+
+          alarm("eliza-adapter", AlarmCode.POLICY_VIOLATION, {
+            error: errMsg,
+            conversationId: telemetry.conversationId,
+            timestamp: Date.now(),
           });
         } catch {
           // kernel unreachable — swallow
@@ -201,8 +199,8 @@ export function createElizaAdapter(
   const adapter: ElizaAdapter = {
     toElizaMemory,
     fromElizaResult,
-    bridge(gUrl: string, runtime: AgentRuntime) {
-      makeBridge(gUrl, runtime);
+    bridge(runtime: AgentRuntime) {
+      makeBridge(runtime);
     },
   };
 

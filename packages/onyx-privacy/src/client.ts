@@ -10,7 +10,7 @@ export interface OnyxUmbraConfig {
   deferMasterSeedSignature?: boolean;
 }
 
-export async function createUmbraClient(config: OnyxUmbraConfig) {
+export async function createUmbraClient(config: OnyxUmbraConfig): Promise<any> {
   const network = (config.network
     ?? (process.env['UMBRA_NETWORK'] as UmbraNetwork | undefined)
     ?? 'devnet') as UmbraNetwork;

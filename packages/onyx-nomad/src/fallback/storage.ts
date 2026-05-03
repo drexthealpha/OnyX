@@ -13,19 +13,19 @@ const DB_PATH = path.resolve('./data/offline-storage.db');
  * Performance note: not as accurate as Qdrant vector search,
  * but works completely offline with zero external dependencies.
  */
-let _db: Database | null = null;
+let _db: Database.Database | null = null;
 
-function getDb(): Database {
+function getDb(): Database.Database {
   if (_db) return _db;
 
   mkdirSync(path.dirname(DB_PATH), { recursive: true });
   _db = new Database(DB_PATH);
 
   // Enable WAL for concurrent reads
-  _db.run('PRAGMA journal_mode=WAL;');
+  _db.exec('PRAGMA journal_mode=WAL;');
 
   // FTS5 virtual table — content is the searchable field
-  _db.run(`
+  _db.exec(`
     CREATE VIRTUAL TABLE IF NOT EXISTS fts_docs USING fts5(
       id UNINDEXED,
       collection UNINDEXED,
@@ -47,11 +47,10 @@ export function indexDocument(
 ): void {
   const db = getDb();
   // Delete existing entry then re-insert (FTS5 does not support UPDATE)
-  db.run(`DELETE FROM fts_docs WHERE id = ?`, [id]);
-  db.run(
-    `INSERT INTO fts_docs (id, collection, content) VALUES (?, ?, ?)`,
-    [id, collection, content]
-  );
+  db.prepare(`DELETE FROM fts_docs WHERE id = ?`).run(id);
+  db.prepare(
+    `INSERT INTO fts_docs (id, collection, content) VALUES (?, ?, ?)`
+  ).run(id, collection, content);
 }
 
 /**
@@ -68,10 +67,7 @@ export function searchOffline(
 
   try {
     const rows = db
-      .query<
-        { id: string; collection: string; content: string; rank: number },
-        [string, string]
-      >(
+      .prepare(
         `
         SELECT id, collection, content, rank
         FROM fts_docs
@@ -81,14 +77,14 @@ export function searchOffline(
         LIMIT 10
       `
       )
-      .all(query, collection);
+      .all(query, collection) as any[];
 
-    return rows.map((row) => ({
+    return rows.map((row: any) => ({
       id: row.id,
       collection: row.collection,
       content: row.content,
       // FTS5 rank is negative (lower = better). Normalise to 0–1 score.
-      score: Math.max(0, 1 + row.rank / 10),
+      score: Math.max(0, 1 + (row.rank || 0) / 10),
     }));
   } catch {
     return [];

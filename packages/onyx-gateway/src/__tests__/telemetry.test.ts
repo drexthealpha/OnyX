@@ -6,11 +6,11 @@ describe("telemetry.emit()", () => {
 
   beforeEach(() => {
     fetchCalls = [];
-    globalThis.fetch = async (url: string | URL | Request, init?: RequestInit) => {
+    globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
       const body = init?.body ? JSON.parse(init.body as string) : null;
       fetchCalls.push({ url: String(url), body });
       return new Response(JSON.stringify({ ok: true }), { status: 200 });
-    };
+    }) as any;
   });
 
   afterEach(() => { globalThis.fetch = originalFetch; });

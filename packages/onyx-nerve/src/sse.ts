@@ -21,8 +21,8 @@ export function initSSE(c: Context): Response {
   // Subscribe to @onyx/multica herald events
   (async () => {
     try {
-      const multica = await import("@onyx/multica");
-      multica.subscribe("herald", (msg: { type: string; data: unknown }) => {
+      const mod = await import("@onyx/multica");
+      const unsubscribe = mod.subscribe("*", (msg: any) => {
         broadcastEvent(msg.type, msg.data);
       });
     } catch {

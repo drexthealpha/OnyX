@@ -10,8 +10,9 @@ export function initTradingWS(server: unknown): void {
       try {
         let price: unknown;
         try {
+          // @ts-ignore
           const trading = await import("@onyx/trading");
-          price = await trading.getPrice(token);
+          price = await trading.fetchPrice(token);
         } catch {
           // Fallback: direct Birdeye REST
           const key = process.env.BIRDEYE_API_KEY ?? "";

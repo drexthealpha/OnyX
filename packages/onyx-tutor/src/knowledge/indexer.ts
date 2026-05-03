@@ -1,4 +1,4 @@
-import type { LoadedDocument } from './loader.ts';
+import type { LoadedDocument } from './loader.js';
 
 export interface IndexedChunk {
   documentPath: string;

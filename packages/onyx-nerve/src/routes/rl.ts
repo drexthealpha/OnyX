@@ -4,10 +4,9 @@ const router = new Hono();
 
 router.post("/outcome", async (c) => {
   const body = await c.req.json().catch(() => ({}));
-  const { tradeId, pnl, metadata } = body as { tradeId?: string; pnl?: number; metadata?: unknown };
   try {
     const mod = await import("@onyx/rl");
-    await mod.recordOutcome(tradeId, pnl, metadata);
+    await mod.recordOutcome(body);
     return c.json({ ok: true });
   } catch (err) {
     return c.json({ error: String(err), fallback: true }, 503);

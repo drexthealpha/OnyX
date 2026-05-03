@@ -64,18 +64,19 @@ export class OnyxBridge {
     });
     
     const signature = await signMessage({
-      connection: fromConnection,
+      connection: this.fromConnection,
       dwalletInfo,
       message,
       signatureScheme: 5,
       userPubkey: dwalletInfo.authority,
+      signer: options.signer,
     });
     
     this.spendingLimiter.recordSpend(dwalletId, amountLamports);
     
     if (splToken) {
       return this.executeSplTransfer({
-        connection: fromConnection,
+        connection: this.fromConnection,
         recipient,
         amountLamports,
         tokenMint: splToken,
@@ -119,37 +120,37 @@ export class OnyxBridge {
   }): Promise<string> {
     const { connection, recipient, amountLamports, tokenMint, dwalletPda, signature } = options;
     
-    const { Token } = await import('@solana/spl-token');
+    const { getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, createTransferInstruction, TOKEN_PROGRAM_ID } = await import('@solana/spl-token');
     
-    const fromTokenAccount = await Token.getAssociatedTokenAddress(
+    const fromTokenAccount = await getAssociatedTokenAddress(
       tokenMint,
       dwalletPda,
       true
     );
     
-    const toTokenAccount = await Token.getAssociatedTokenAddress(
+    const toTokenAccount = await getAssociatedTokenAddress(
       tokenMint,
       recipient,
       true
     );
     
-    const token = new Token(connection, tokenMint, Token.programId, dwalletPda);
+    // Functional API used below, no need for Token instance
     
     try {
       const toAccountInfo = await connection.getAccountInfo(toTokenAccount);
       if (!toAccountInfo) {
-        const createIx = Token.createAssociatedTokenAccountInstruction(
+        const createIx = createAssociatedTokenAccountInstruction(
           dwalletPda,
           toTokenAccount,
           dwalletPda,
           tokenMint
         );
         
-        const transferIx = Token.createTransferInstruction(
+        const transferIx = createTransferInstruction(
           fromTokenAccount,
           toTokenAccount,
           dwalletPda,
-          Number(amountLamports)
+          amountLamports
         );
         
         const tx = new Transaction().add(createIx).add(transferIx);
@@ -160,11 +161,11 @@ export class OnyxBridge {
     } catch {
     }
     
-    const transferIx = Token.createTransferInstruction(
+    const transferIx = createTransferInstruction(
       fromTokenAccount,
       toTokenAccount,
       dwalletPda,
-      Number(amountLamports)
+      amountLamports
     );
     
     const tx = new Transaction().add(transferIx);
@@ -173,19 +174,18 @@ export class OnyxBridge {
     return await sendAndConfirmTransaction(connection, tx, [payer]);
   }
   
-  async bridgeAsset(options: CrossChainTransferOptions): Promise<{ transactionSignature: string; bridgedAmount: bigint }> {
-    const { fromConnection, toConnection, amountLamports, recipient, dwalletInfo, splToken, isNft } = options;
-    
-    if (!dwalletInfo) {
-      throw new Error('DWallet required for bridging');
-    }
-    
+  async shieldAsset(options: CrossChainTransferOptions): Promise<{ transactionSignature: string; shieldedAmount: bigint }> {
+    const { amountLamports } = options;
     const txSig = await this.bridgeSign(options);
     
     return {
       transactionSignature: txSig,
-      bridgedAmount: amountLamports,
+      shieldedAmount: amountLamports,
     };
+  }
+
+  async bridgeAsset(options: CrossChainTransferOptions): Promise<{ transactionSignature: string; bridgedAmount: bigint }> {
+    return this.shieldAsset(options) as any;
   }
   
   async unshieldAsset(options: CrossChainTransferOptions): Promise<{ transactionSignature: string; unshieldedAmount: bigint }> {
@@ -210,6 +210,7 @@ export class OnyxBridge {
       message,
       signatureScheme: 5,
       userPubkey: dwalletInfo.authority,
+      signer: options.signer,
     });
     
     return {

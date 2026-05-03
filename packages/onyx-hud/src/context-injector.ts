@@ -53,9 +53,9 @@ async function publishToHerald(ctx: ScreenContext): Promise<void> {
   // Attempt 1: @onyx/multica herald (same-process, preferred)
   try {
     const multica = await import("@onyx/multica").catch(() => null);
-    if (multica?.herald) {
-      await multica.herald.publish("screen-context", ctx);
-      console.log("[onyx-hud/context-injector] Published to herald topic: screen-context");
+    if (multica?.globalHerald) {
+      await (multica.globalHerald as any).publish("screen-context", ctx);
+      console.log("[onyx-hud/context-injector] Published to globalHerald topic: screen-context");
       return;
     }
   } catch (err) {

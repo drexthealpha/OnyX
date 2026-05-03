@@ -1,4 +1,4 @@
-import type { LearnerProfile } from '../types.ts';
+import type { LearnerProfile } from '../types.js';
 
 export type PreferenceKey =
   | 'response_length'

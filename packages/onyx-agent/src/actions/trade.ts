@@ -13,31 +13,47 @@ export const tradeAction: Action = {
   handler: async (runtime, message, state, options, callback): Promise<ActionResult | undefined> => {
     const text = message.content?.text || "";
     const amountMatch = text.match(/(\d+(?:\.\d+)?)\s*(sol|usdc|eth|btc)/i);
-    const amount = amountMatch?.[1] || "1";
-    const token = amountMatch?.[2] || "SOL";
+    const amountStr = amountMatch?.[1] || "1";
+    const tokenSymbol = amountMatch?.[2] || "SOL";
+    
     try {
-      const response = await runtime.fetch?.("http://localhost:" + (process.env.TRADING_PORT ?? "5010") + "/trade", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          inputToken: token.toUpperCase(),
-          outputToken: token.toUpperCase() === "SOL" ? "USDC" : "SOL",
-          amount: parseFloat(amount),
-          agentId: runtime.agentId,
-        }),
+      // 1. Dynamic import of trading module (library mode)
+      const { execute, resolveToken, getPortfolio, runAnalysis } = await import("@onyx/trading");
+      
+      // 2. Resolve token info
+      const tokenInfo = await resolveToken(tokenSymbol);
+      
+      // 3. Run analysis to get a decision
+      const decision = await runAnalysis(tokenInfo.mint);
+      
+      // 4. Get current portfolio
+      const portfolio = getPortfolio();
+
+      // 5. Execute trade directly
+      const result = await execute(tokenInfo.mint, decision, portfolio, {
+        dryRun: false, // REAL TRADE
+        usePrivacy: true
       });
-      if (response?.ok) {
+
+      if (result.success) {
+        const responseText = `Trade executed successfully!
+Signature: ${result.txHash}
+Action: ${decision.action} ${decision.size * 100}% of portfolio
+Reasoning: ${decision.reasoning.split('\n')[0]}`;
+
         await runtime.createMemory({
-          content: { text: "Trade executed: " + amount + " " + token.toUpperCase() },
+          content: { text: responseText },
           entityId: message.entityId!,
           roomId: message.roomId!,
           agentId: runtime.agentId,
         }, "actions");
-        if (callback) await callback({ text: "Trade executed: " + amount + " " + token.toUpperCase() + " swapped. Please confirm the transaction was successful." });
-        return { text: "Trade executed: " + amount + " " + token.toUpperCase() + " swapped. Please confirm the transaction was successful.", success: true };
+
+        if (callback) await callback({ text: responseText });
+        return { text: responseText, success: true };
       } else {
-        if (callback) await callback({ text: "Trade execution failed: non-OK response" });
-        return { text: "Trade execution failed: non-OK response", success: false };
+        const errorText = `Trade execution failed: ${result.error || 'Unknown error'}`;
+        if (callback) await callback({ text: errorText });
+        return { text: errorText, success: false };
       }
     } catch (error) {
       if (callback) await callback({ text: "Trade execution failed: " + (error as Error).message });

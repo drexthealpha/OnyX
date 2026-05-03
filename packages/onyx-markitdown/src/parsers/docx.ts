@@ -14,7 +14,7 @@ export async function parse(filePath: string): Promise<string> {
 
   let result: { value: string; messages: Array<{ message: string }> };
   try {
-    result = await mammoth.convertToMarkdown({ path: filePath });
+    result = await (mammoth as any).convertToMarkdown({ path: filePath });
   } catch (err) {
     throw new Error(`DOCX parsing failed for "${path.basename(filePath)}": ${String(err)}`);
   }

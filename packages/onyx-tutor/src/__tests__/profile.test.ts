@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach } from 'vitest';
-import { ProfileStore } from '../learner/profile.ts';
-import { DomainLevel } from '../types.ts';
+import { ProfileStore } from '../learner/profile.js';
+import { DomainLevel } from '../types.js';
 import { unlinkSync, existsSync } from 'node:fs';
 
 const TEST_DB = './data/test-profiles.db';

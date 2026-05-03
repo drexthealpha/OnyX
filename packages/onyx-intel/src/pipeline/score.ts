@@ -2,7 +2,7 @@
 // Scoring formula for individual sources.
 // final = keywordMatch*0.3 + authorityWeight*0.2 + engagementNorm*0.2 + recencyDecay*0.3
 
-import type { Source } from "../types.ts";
+import type { Source } from "../types.js";
 
 // Authority weights per platform [0-1]
 const PLATFORM_WEIGHTS: Record<string, number> = {

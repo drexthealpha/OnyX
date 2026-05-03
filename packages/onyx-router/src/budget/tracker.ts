@@ -8,12 +8,13 @@
 import path from "path";
 import fs from "fs";
 import Database from "better-sqlite3";
+import type { Database as DatabaseType } from "better-sqlite3";
 
 const DB_PATH = process.env.ONYX_BUDGET_DB ?? path.join("data", "budget.db");
 
-let _db: Database | null = null;
+let _db: DatabaseType | null = null;
 
-function getDb(): Database {
+function getDb(): DatabaseType {
   if (_db) return _db;
 
   const dir = path.dirname(DB_PATH);
@@ -21,10 +22,10 @@ function getDb(): Database {
     fs.mkdirSync(dir, { recursive: true });
   }
 
-  _db = new Database(DB_PATH);
-  _db.pragma("journal_mode = WAL");
+  const db = new Database(DB_PATH) as any;
+  db.pragma("journal_mode = WAL");
 
-  _db.exec(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS spend_events (
       id        INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id   TEXT    NOT NULL,
@@ -38,7 +39,8 @@ function getDb(): Database {
       ON spend_events(user_id, ts);
   `);
 
-  return _db;
+  _db = db as any;
+  return _db as any;
 }
 
 export function recordSpend(
@@ -59,9 +61,7 @@ export function getDailySpend(userId: string): number {
   const since = Date.now() - 24 * 60 * 60 * 1000;
   const row = db
     .prepare(
-      `SELECT COALESCE(SUM(amount_usd), 0) AS total
-       FROM spend_events
-       WHERE user_id = ? AND ts >= ?`,
+      `SELECT COALESCE(SUM(amount_usd), 0) AS total FROM spend_events WHERE user_id = ? AND ts >= ?`,
     )
     .get(userId, since) as { total: number };
   return row.total;
@@ -72,9 +72,7 @@ export function getMonthlySpend(userId: string): number {
   const since = Date.now() - 30 * 24 * 60 * 60 * 1000;
   const row = db
     .prepare(
-      `SELECT COALESCE(SUM(amount_usd), 0) AS total
-       FROM spend_events
-       WHERE user_id = ? AND ts >= ?`,
+      `SELECT COALESCE(SUM(amount_usd), 0) AS total FROM spend_events WHERE user_id = ? AND ts >= ?`,
     )
     .get(userId, since) as { total: number };
   return row.total;
@@ -85,11 +83,18 @@ export function getHourlySpend(userId: string, hours = 1): number {
   const since = Date.now() - hours * 60 * 60 * 1000;
   const row = db
     .prepare(
-      `SELECT COALESCE(SUM(amount_usd), 0) AS total
-       FROM spend_events
-       WHERE user_id = ? AND ts >= ?`,
+      `SELECT COALESCE(SUM(amount_usd), 0) AS total FROM spend_events WHERE user_id = ? AND ts >= ?`,
     )
     .get(userId, since) as { total: number };
+  return row.total;
+}
+
+/** Added for nerve cockpit integration */
+export function getSpent(userId: string): number {
+  const db = getDb();
+  const row = db
+    .prepare(`SELECT COALESCE(SUM(amount_usd), 0) AS total FROM spend_events WHERE user_id = ?`)
+    .get(userId) as { total: number };
   return row.total;
 }
 
@@ -101,18 +106,30 @@ export function getSpendBreakdown(userId: string): {
   return {
     daily: getDailySpend(userId),
     monthly: getMonthlySpend(userId),
-    total: (() => {
-      const row = getDb()
-        .prepare(`SELECT COALESCE(SUM(amount_usd), 0) AS total FROM spend_events WHERE user_id = ?`)
-        .get(userId) as { total: number };
-      return row.total;
-    })(),
+    total: getSpent(userId),
+  };
+}
+
+export function getSummary(): any {
+  const db = getDb();
+  return {
+    totalUSD: (db.prepare(`SELECT SUM(amount_usd) FROM spend_events`).get() as any)[
+      "SUM(amount_usd)"
+    ],
+    userCount: (db.prepare(`SELECT COUNT(DISTINCT user_id) FROM spend_events`).get() as any)[
+      "COUNT(DISTINCT user_id)"
+    ],
+    topUsers: db
+      .prepare(
+        `SELECT user_id, SUM(amount_usd) as total FROM spend_events GROUP BY user_id ORDER BY total DESC LIMIT 5`,
+      )
+      .all(),
   };
 }
 
 export function closeDb(): void {
   if (_db) {
-    _db.close();
+    (_db as any).close();
     _db = null;
   }
 }

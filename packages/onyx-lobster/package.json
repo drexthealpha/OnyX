@@ -10,9 +10,8 @@
     "test": "pnpm vitest run"
   },
   "dependencies": {
-    "@solana/web3.js": "^1.95.0"
-  },
-  "peerDependencies": {
+    "@onyx/kernel": "workspace:*",
+    "@solana/web3.js": "^1.95.0",
     "@onyx/gateway": "workspace:*",
     "@onyx/router": "workspace:*",
     "@onyx/privacy": "workspace:*",
@@ -21,18 +20,12 @@
     "@onyx/intel": "workspace:*",
     "@onyx/research": "workspace:*",
     "@onyx/content": "workspace:*",
-    "@onyx/browser": "workspace:*"
+    "@onyx/browser": "workspace:*",
+    "@onyx/trading": "workspace:*"
+  },
+  "peerDependencies": {
   },
   "peerDependenciesMeta": {
-    "@onyx/gateway": { "optional": true },
-    "@onyx/router": { "optional": true },
-    "@onyx/privacy": { "optional": true },
-    "@onyx/vault": { "optional": true },
-    "@onyx/mem": { "optional": true },
-    "@onyx/intel": { "optional": true },
-    "@onyx/research": { "optional": true },
-    "@onyx/content": { "optional": true },
-    "@onyx/browser": { "optional": true }
   },
   "devDependencies": {
     "typescript": "^5.4.0",

@@ -1,4 +1,4 @@
-import { getTab, deleteTab } from "./state";
+import { getTab, deleteTab } from "../state";
 
 export async function closeTab(tabId: string): Promise<void> {
   const page = getTab(tabId);

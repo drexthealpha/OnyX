@@ -31,14 +31,10 @@ interface OnyxRuntimeOptions {
   adapter?: IDatabaseAdapter;
   settings?: RuntimeSettings;
   allAvailablePlugins?: Plugin[];
-  gatewayUrl?: string;
 }
 
 export class OnyxRuntime extends AgentRuntime {
-  private gatewayUrl: string;
-
   constructor(opts: OnyxRuntimeOptions) {
-    const gatewayUrl = opts.gatewayUrl ?? process.env.GATEWAY_URL ?? "http://localhost:4000";
     super({
       conversationLength: opts.conversationLength,
       agentId: opts.agentId,
@@ -49,7 +45,6 @@ export class OnyxRuntime extends AgentRuntime {
       settings: opts.settings,
       allAvailablePlugins: opts.allAvailablePlugins,
     });
-    this.gatewayUrl = gatewayUrl;
     this._setupTelemetry();
   }
 
@@ -67,18 +62,9 @@ export class OnyxRuntime extends AgentRuntime {
           source: "onyx-agent",
           metadata: eventPayload.metadata as Record<string, unknown> | undefined,
         };
-        const fetchFn = this.fetch;
-        const logger = this.logger;
-        if (fetchFn) {
-          const response = await fetchFn(this.gatewayUrl + "/telemetry", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(telemetry),
-          });
-          if (!response?.ok && logger?.warn) {
-            logger.warn("Telemetry emission failed: non-OK response");
-          }
-        }
+
+        const { globalHerald } = await import("@onyx/multica");
+        globalHerald.publish("telemetry", telemetry);
       } catch (error) {
         const logger = this.logger;
         if (logger?.warn) {

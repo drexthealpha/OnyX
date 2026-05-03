@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "ONYX cockpit backend (Hono) + React 19 dashboard UI",
   "type": "module",
-  "main": "src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "pnpm src/index.ts",
@@ -15,19 +16,7 @@
     "@hono/node-server": "^2.0.0",
     "hono": "^4.12.15",
     "pino": "^10.3.1",
-    "ws": "^8.20.0"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "@types/ws": "^8.18.1",
-    "typescript": "~5.9.3",
-    "vite": "^7.2.4",
-    "@vitejs/plugin-react": "^5.1.1",
-    "tailwindcss": "^4.1.18",
-    "@tailwindcss/vite": "^4.1.18",
-    "vitest": "latest"
-  },
-  "peerDependencies": {
+    "ws": "^8.20.0",
     "@onyx/agent": "workspace:*",
     "@onyx/multica": "workspace:*",
     "@onyx/vault": "workspace:*",
@@ -39,36 +28,14 @@
     "@onyx/tutor": "workspace:*",
     "@onyx/mem": "workspace:*"
   },
-  "peerDependenciesMeta": {
-    "@onyx/agent": {
-      "optional": true
-    },
-    "@onyx/multica": {
-      "optional": true
-    },
-    "@onyx/vault": {
-      "optional": true
-    },
-    "@onyx/trading": {
-      "optional": true
-    },
-    "@onyx/research": {
-      "optional": true
-    },
-    "@onyx/intel": {
-      "optional": true
-    },
-    "@onyx/router": {
-      "optional": true
-    },
-    "@onyx/rl": {
-      "optional": true
-    },
-    "@onyx/tutor": {
-      "optional": true
-    },
-    "@onyx/mem": {
-      "optional": true
-    }
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/ws": "^8.18.1",
+    "typescript": "~5.9.3",
+    "vite": "^7.2.4",
+    "@vitejs/plugin-react": "^5.1.1",
+    "tailwindcss": "^4.1.18",
+    "@tailwindcss/vite": "^4.1.18",
+    "vitest": "latest"
   }
 }

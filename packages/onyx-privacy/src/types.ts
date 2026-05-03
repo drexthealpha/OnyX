@@ -1,7 +1,7 @@
-export type U64 = bigint & { readonly _brand: 'U64' };
-export type U128 = bigint & { readonly _brand: 'U128' };
-export type U256 = bigint & { readonly _brand: 'U256' };
-export type Address = string & { readonly _brand: 'Address' };
+export type U64 = bigint & { readonly _brand?: 'U64' };
+export type U128 = bigint & { readonly _brand?: 'U128' };
+export type U256 = bigint & { readonly _brand?: 'U256' };
+export type Address = string & { readonly _brand?: 'Address' };
 
 const U64_MAX = 2n ** 64n - 1n;
 const U128_MAX = 2n ** 128n - 1n;

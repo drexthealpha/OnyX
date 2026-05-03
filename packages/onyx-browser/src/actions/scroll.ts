@@ -1,4 +1,4 @@
-import { getTab } from "./state";
+import { getTab } from "../state";
 
 export async function scroll(
   tabId: string,

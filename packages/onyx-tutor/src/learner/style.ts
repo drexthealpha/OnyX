@@ -1,4 +1,4 @@
-import type { LearningStyle } from '../types.ts';
+import type { LearningStyle } from '../types.js';
 
 const STYLE_VOCAB: Record<LearningStyle, string[]> = {
   visual: [

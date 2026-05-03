@@ -5,17 +5,18 @@
 
 import { RiskDecision, ExecutionResult, Portfolio } from './types.js';
 import { executePrivate } from './private-execution.js';
+import { resolveToken } from './data/tokens.js';
+import { fetchPrice } from './data/birdeye.js';
+import * as solana from '@onyx/solana';
 
 export interface TraderConfig {
   usePrivacy: boolean;
   maxSlippageBps: number;
-  dryRun: boolean;
 }
 
 const DEFAULT_CONFIG: TraderConfig = {
-  usePrivacy: true,
+  usePrivacy: false,
   maxSlippageBps: 100,
-  dryRun: false,
 };
 
 export async function execute(
@@ -49,41 +50,48 @@ export async function execute(
     };
   }
 
-  if (cfg.dryRun) {
-    return {
-      success: true,
-      txHash: `dry-run-${Date.now()}`,
-      amountExecuted: tradeValueUsd,
-      priceExecuted: 0,
-      slippage: 0,
-      timestamp: Date.now(),
-    };
-  }
+
 
   if (cfg.usePrivacy) {
-    return executePrivate({
-      token,
-      action: decision.action as 'BUY' | 'SELL',
-      amountUsd: tradeValueUsd,
-      slippageBps: cfg.maxSlippageBps,
-    });
+    try {
+      const result = await executePrivate({
+        token,
+        action: decision.action as 'BUY' | 'SELL',
+        amountUsd: tradeValueUsd,
+        slippageBps: cfg.maxSlippageBps,
+      });
+      if (result.success) return result;
+      console.warn('[onyx-trading] Private execution failed, falling back to direct Jupiter swap:', result.error);
+    } catch (err) {
+      console.warn('[onyx-trading] Private execution threw an error, falling back to direct Jupiter swap:', err);
+    }
   }
 
   try {
-    const solana = await import('@onyx/solana');
+    const [inputToken, outputToken, currentPrice] = await Promise.all([
+      resolveToken(decision.action === 'BUY' ? 'USDC' : token),
+      resolveToken(decision.action === 'BUY' ? token : 'USDC'),
+      fetchPrice(token),
+    ]);
+
+    const amountInSmallestUnit = Math.round(
+      (decision.action === 'BUY' 
+        ? tradeValueUsd 
+        : (tradeValueUsd / currentPrice)) * Math.pow(10, inputToken.decimals)
+    );
     const result = await solana.executeTool('swapTokens', {
-      fromToken: decision.action === 'BUY' ? 'USDC' : token,
-      toToken: decision.action === 'BUY' ? token : 'USDC',
-      amountUsd: tradeValueUsd,
+      inputMint: inputToken.mint,
+      outputMint: outputToken.mint,
+      amount: amountInSmallestUnit,
       slippageBps: cfg.maxSlippageBps,
-    }) as { txHash: string; executionPrice?: number; actualSlippageBps?: number };
+    }) as { signature: string; outputAmount?: string; price?: number };
 
     return {
       success: true,
-      txHash: result.txHash,
+      txHash: result.signature,
       amountExecuted: tradeValueUsd,
-      priceExecuted: result.executionPrice ?? 0,
-      slippage: result.actualSlippageBps ?? 0,
+      priceExecuted: currentPrice,
+      slippage: result.price ?? 0,
       timestamp: Date.now(),
     };
   } catch (err) {

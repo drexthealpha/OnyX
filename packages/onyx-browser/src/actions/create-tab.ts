@@ -1,6 +1,6 @@
 import { chromium } from "playwright";
 import type { Tab } from "../types";
-import { setTab, getRefMap, getTabsMap, getAllTabs } from "./state";
+import { setTab, getRefMap, getTabsMap, getAllTabs } from "../state";
 
 let browserInstance: any = null;
 

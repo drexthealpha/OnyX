@@ -1,4 +1,5 @@
-export { onyxCharacter } from "./character";
+import { onyxCharacter } from "./character.js";
+export { onyxCharacter };
 export { OnyxRuntime, createOnyxRuntime, MEMORY_TABLES, ConversationTelemetry } from "./runtime";
 export * from "./actions";
 export { walletStateProvider } from "./providers/wallet";
@@ -18,3 +19,86 @@ export { last30DaysPlugin, recentIntelProvider } from "./plugins/last30days";
 
 export const NAME = "onyx-agent";
 export const VERSION = "0.1.0";
+
+/**
+ * Agent Management API (Library Mode)
+ */
+
+export async function listAgents() {
+  return [
+    {
+      id: onyxCharacter.id,
+      name: onyxCharacter.name,
+      status: "ready",
+      version: VERSION,
+    },
+  ];
+}
+
+export async function getAgent(id: string) {
+  if (id === onyxCharacter.id || id === "onyx") {
+    return {
+      id: onyxCharacter.id,
+      name: onyxCharacter.name,
+      config: onyxCharacter,
+    };
+  }
+  throw new Error(`Agent not found: ${id}`);
+}
+
+export async function createAgent(name?: string, config?: any) {
+  return {
+    id: `custom-${Date.now()}`,
+    name: name ?? "Custom Agent",
+    config: { ...onyxCharacter, ...config },
+    status: "created",
+  };
+}
+
+const eliza = new (await import("@elizaos/core")).ElizaOS();
+
+export async function runAgent(id: string, prompt?: string) {
+  const agent = await getAgent(id);
+  
+  let runtime = eliza.getAgent(agent.id as any);
+  if (!runtime) {
+    const { solanaPlugin } = await import("./plugins/solana.js");
+    const { nosanaPlugin } = await import("./plugins/nosana.js");
+    const { ikaPlugin } = await import("./plugins/ika.js");
+    const { umbraPlugin } = await import("./plugins/umbra.js");
+    const { encryptPlugin } = await import("./plugins/encrypt.js");
+
+    await eliza.addAgents([{
+      character: agent.config,
+      plugins: [
+        solanaPlugin,
+        nosanaPlugin,
+        ikaPlugin,
+        umbraPlugin,
+        encryptPlugin,
+      ],
+    }], { autoStart: true });
+    
+    runtime = eliza.getAgent(agent.id as any)!;
+  }
+
+  const result = await eliza.handleMessage(runtime, {
+    content: { text: prompt || "" },
+    entityId: (await import("@elizaos/core")).stringToUuid("user"),
+    roomId: (await import("@elizaos/core")).stringToUuid("default-room"),
+  });
+
+  return {
+    agentId: id,
+    prompt,
+    response: result.responses[0]?.text || "No response",
+    timestamp: Date.now(),
+  };
+}
+
+export async function deleteAgent(id: string) {
+  if (id === onyxCharacter.id) {
+    throw new Error("Cannot delete the system character");
+  }
+  return { ok: true };
+}

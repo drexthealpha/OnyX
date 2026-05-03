@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -12,11 +11,25 @@
     "declarationMap": true,
     "sourceMap": true,
     "paths": {
-      "@onyx/mem": ["../onyx-mem/src/index.ts"],
-      "@onyx/semantic": ["../onyx-semantic/src/index.ts"],
-      "@onyx/markitdown": ["../onyx-markitdown/src/index.ts"]
-    }
+      "@onyx/mem": [
+        "../onyx-mem/src/index.ts"
+      ],
+      "@onyx/semantic": [
+        "../onyx-semantic/src/index.ts"
+      ],
+      "@onyx/markitdown": [
+        "../onyx-markitdown/src/index.ts"
+      ]
+    },
+    "moduleResolution": "Bundler",
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "extends": "../../tsconfig.base.json"
 }

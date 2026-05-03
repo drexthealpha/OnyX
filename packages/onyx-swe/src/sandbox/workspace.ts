@@ -134,7 +134,7 @@ export class WorkspaceManager {
   /**
    * List files in the workspace (for context building).
    */
-  async listFiles(repoPath: string, pattern = '**/*.ts'): Promise<string[]> {
+  async listFiles(repoPath: string): Promise<string[]> {
     const result = await this.sandbox.exec(
       `find ${repoPath} -name "*.ts" -not -path "*/node_modules/*" -not -path "*/.git/*" 2>/dev/null`,
     );

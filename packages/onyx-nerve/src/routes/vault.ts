@@ -14,10 +14,9 @@ router.get("/balance", async (c) => {
 
 router.post("/sign", async (c) => {
   const body = await c.req.json().catch(() => ({}));
-  const { transaction } = body as { transaction?: string };
   try {
     const mod = await import("@onyx/vault");
-    const result = await mod.signTransaction(transaction);
+    const result = await mod.signTransaction(body);
     return c.json(result);
   } catch (err) {
     return c.json({ error: String(err), fallback: true }, 503);

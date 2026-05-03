@@ -1,7 +1,8 @@
-import Database from 'better-sqlite3';
+import DatabaseConstructor from 'better-sqlite3';
+import type { Database } from 'better-sqlite3';
 import { mkdirSync } from 'node:fs';
-import type { LearnerProfile, DomainRecord } from '../types.ts';
-import { DomainLevel } from '../types.ts';
+import type { LearnerProfile, DomainRecord } from '../types.js';
+import { DomainLevel } from '../types.js';
 
 const DB_PATH = './data/learner-profiles.db';
 
@@ -12,7 +13,7 @@ export class ProfileStore {
   private db: Database;
 
   constructor(dbPath: string = DB_PATH) {
-    this.db = new Database(dbPath);
+    this.db = new DatabaseConstructor(dbPath);
     this.init();
   }
 

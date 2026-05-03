@@ -3,7 +3,7 @@
 // URL: https://hn.algolia.com/api/v1/search?query={query}&tags=story
 // Returns top 10 by Algolia relevance score.
 
-import type { Source } from "../types.ts";
+import type { Source } from "../types.js";
 
 const BASE_URL = "https://hn.algolia.com/api/v1/search";
 

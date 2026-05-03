@@ -1,4 +1,4 @@
-import { GATEWAY_PORT } from "../../../kernel/constants.ts";
+const GATEWAY_PORT = 18789;
 
 import { Hono } from "hono";
 import { pino } from "pino";

@@ -6,17 +6,17 @@ import type { IntelBrief } from '../types';
 
 const DB_PATH = path.resolve('./data/offline-knowledge.db');
 
-let _db: Database | null = null;
+let _db: Database.Database | null = null;
 
-function getDb(): Database {
+function getDb(): Database.Database {
   if (_db) return _db;
 
   mkdirSync(path.dirname(DB_PATH), { recursive: true });
   _db = new Database(DB_PATH);
-  _db.run('PRAGMA journal_mode=WAL;');
+  _db.exec('PRAGMA journal_mode=WAL;');
 
   // Structured table for IntelBrief blobs
-  _db.run(`
+  _db.exec(`
     CREATE TABLE IF NOT EXISTS knowledge (
       topic     TEXT PRIMARY KEY,
       brief_json TEXT NOT NULL,
@@ -25,7 +25,7 @@ function getDb(): Database {
   `);
 
   // FTS5 index over summaries for BM25 search (see offline-search.ts)
-  _db.run(`
+  _db.exec(`
     CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_fts USING fts5(
       topic,
       summary,
@@ -35,13 +35,13 @@ function getDb(): Database {
   `);
 
   // Keep FTS in sync with the main table via triggers
-  _db.run(`
+  _db.exec(`
     CREATE TRIGGER IF NOT EXISTS knowledge_ai AFTER INSERT ON knowledge BEGIN
       INSERT INTO knowledge_fts (rowid, topic, summary)
       VALUES (new.rowid, new.topic, json_extract(new.brief_json, '$.summary'));
     END;
   `);
-  _db.run(`
+  _db.exec(`
     CREATE TRIGGER IF NOT EXISTS knowledge_ad AFTER DELETE ON knowledge BEGIN
       INSERT INTO knowledge_fts (knowledge_fts, rowid, topic, summary)
       VALUES ('delete', old.rowid, old.topic, json_extract(old.brief_json, '$.summary'));
@@ -54,12 +54,11 @@ function getDb(): Database {
 /**
  * preload — fetches IntelBrief for each topic via @onyx/intel
  * and stores the result locally in SQLite for offline access.
- *
- * Topics already stored (and < 24h old) are skipped to avoid
- * redundant API calls.
  */
 export async function preload(topics: string[]): Promise<void> {
-  const { runIntel } = await import('@onyx/intel');
+  // @ts-ignore
+  const intelModule = await import('@onyx/intel');
+  const { runIntel } = (intelModule.default || intelModule) as any;
   const db = getDb();
   const ONE_DAY_MS = 24 * 60 * 60 * 1000;
   const now = Date.now();
@@ -67,10 +66,8 @@ export async function preload(topics: string[]): Promise<void> {
   for (const topic of topics) {
     // Check freshness
     const existing = db
-      .query<{ fetched_at: number }, [string]>(
-        'SELECT fetched_at FROM knowledge WHERE topic = ?'
-      )
-      .get(topic);
+      .prepare('SELECT fetched_at FROM knowledge WHERE topic = ?')
+      .get(topic) as { fetched_at: number } | undefined;
 
     if (existing && now - existing.fetched_at < ONE_DAY_MS) {
       continue; // Still fresh — skip
@@ -79,14 +76,13 @@ export async function preload(topics: string[]): Promise<void> {
     try {
       const brief = await runIntel(topic);
 
-      db.run(
+      db.prepare(
         `INSERT INTO knowledge (topic, brief_json, fetched_at)
          VALUES (?, ?, ?)
          ON CONFLICT(topic) DO UPDATE SET
            brief_json = excluded.brief_json,
-           fetched_at = excluded.fetched_at`,
-        [topic, JSON.stringify(brief), now]
-      );
+           fetched_at = excluded.fetched_at`
+      ).run(topic, JSON.stringify(brief), now);
     } catch (err) {
       console.warn(`[nomad:preload] Failed to fetch intel for "${topic}":`, err);
     }
@@ -100,10 +96,8 @@ export async function preload(topics: string[]): Promise<void> {
 export function getOfflineKnowledge(topic: string): IntelBrief | null {
   const db = getDb();
   const row = db
-    .query<{ brief_json: string }, [string]>(
-      'SELECT brief_json FROM knowledge WHERE topic = ?'
-    )
-    .get(topic);
+    .prepare('SELECT brief_json FROM knowledge WHERE topic = ?')
+    .get(topic) as { brief_json: string } | undefined;
 
   if (!row) return null;
 

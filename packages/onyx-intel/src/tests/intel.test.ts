@@ -4,11 +4,11 @@
 // 2. Score returns lower value for content 100h old vs 1h old
 // 3. Cache returns null after TTL expires (mock Date.now)
 
-import { describe, it, expect, beforeEach, afterEach, mock } from "vitest";
-import { search as redditSearch } from "../sources/reddit.ts";
-import { scoreSource } from "../pipeline/score.ts";
-import { get as cacheGet, set as cacheSet, isExpired } from "../cache.ts";
-import type { Source, IntelBrief } from "../types.ts";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { search as redditSearch } from "../sources/reddit.js";
+import { scoreSource } from "../pipeline/score.js";
+import { get as cacheGet, set as cacheSet, isExpired } from "../cache.js";
+import type { Source, IntelBrief } from "../types.js";
 
 // ---------------------------------------------------------------------------
 // Test 1: Reddit source returns array (may be empty in test env — structure check)

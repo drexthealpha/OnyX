@@ -1,7 +1,6 @@
 /**
  * Social sentiment analyst — uses @onyx/intel x-twitter source
- * Falls back to neutral if intel package unavailable
- * Operator cost: $0 — user provides TWITTER_BEARER_TOKEN
+ * Grounded in real-time intelligence and engagement-weighted scoring.
  */
 
 import { SocialAnalysis } from '../types.js';
@@ -9,53 +8,89 @@ import { SocialAnalysis } from '../types.js';
 async function tryFetchTweets(query: string): Promise<{ text: string; likes: number }[]> {
   try {
     const intel = await import('@onyx/intel');
-    const results = await intel.searchTwitter({ query, maxResults: 50 });
-    return results.map((r: { text: string; publicMetrics?: { like_count?: number } }) => ({
-      text: r.text,
-      likes: r.publicMetrics?.like_count ?? 0,
+    const sources = await intel.runAllSources(query);
+    
+    // Filter for social sources (e.g. x-twitter, reddit)
+    const socialSources = sources.filter(s => 
+      s.platform === 'x-twitter' || 
+      s.platform === 'reddit' || 
+      s.platform.includes('social')
+    );
+    
+    return socialSources.map(s => ({
+      text: s.title + ' ' + (s.snippet || ''),
+      // Use engagement if available, otherwise fallback to score-based weight
+      likes: s.engagement ?? Math.round((s.score || 0) * 100),
     }));
-  } catch {
+  } catch (err) {
+    console.error('[social-analyst] Failed to fetch intel:', err);
     return [];
   }
 }
 
-function scoreSentiment(tweets: { text: string; likes: number }[]): number {
+/**
+ * LLM-based sentiment scoring via @onyx/router
+ */
+async function scoreSentiment(tweets: { text: string; likes: number }[]): Promise<number> {
   if (tweets.length === 0) return 0;
 
-  const bullishWords = ['moon', 'pump', 'buy', 'bullish', 'green', 'up', 'gain', 'rally', 'breakout', 'ath'];
-  const bearishWords = ['dump', 'sell', 'bearish', 'red', 'down', 'crash', 'rug', 'scam', 'falling', 'rekt'];
+  const intelData = tweets.map((t, i) => `[Tweet ${i+1} (Engagement: ${t.likes})]: ${t.text}`).join('\n\n');
 
-  let totalScore = 0;
-  let totalWeight = 0;
+  try {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error("ANTHROPIC_API_KEY not set");
 
-  for (const tweet of tweets) {
-    const text = tweet.text.toLowerCase();
-    let tweetScore = 0;
-    bullishWords.forEach(w => { if (text.includes(w)) tweetScore += 1; });
-    bearishWords.forEach(w => { if (text.includes(w)) tweetScore -= 1; });
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 20,
+        system: `You are a crypto social sentiment analyst. 
+Analyze the provided tweets and return a sentiment score between -1 (extremely bearish) and 1 (extremely bullish).
+Weight high-engagement tweets more heavily.
+Return ONLY a single number.`,
+        messages: [{ role: 'user', content: `TWEETS:\n${intelData}` }]
+      })
+    });
+    const data = (await res.json()) as any;
+    const result = data.content?.[0]?.text ?? '0';
 
-    const weight = 1 + Math.log1p(tweet.likes);
-    totalScore += tweetScore * weight;
-    totalWeight += weight;
+    const score = parseFloat(result);
+    return isNaN(score) ? 0 : Math.max(-1, Math.min(1, score));
+  } catch (err) {
+    console.warn('[social-analyst] LLM scoring failed, falling back to neutral:', err);
+    return 0;
   }
-
-  return totalWeight > 0 ? Math.max(-1, Math.min(1, totalScore / totalWeight / 3)) : 0;
 }
 
 export async function analyzeSocial(token: string): Promise<SocialAnalysis> {
-  const query = `${token} crypto OR solana`;
+  const query = `${token} crypto sentiment OR solana ${token}`;
   const tweets = await tryFetchTweets(query);
 
-  const sentimentScore = scoreSentiment(tweets);
+  const sentimentScore = await scoreSentiment(tweets);
   const mentionCount = tweets.length;
+  
+  // Trending score based on volume (normalized to 100 mentions)
   const trendingScore = Math.min(1, mentionCount / 100);
 
   let signal: 'BUY' | 'SELL' | 'HOLD';
   let confidence: number;
 
-  if (sentimentScore > 0.3) { signal = 'BUY'; confidence = sentimentScore; }
-  else if (sentimentScore < -0.3) { signal = 'SELL'; confidence = Math.abs(sentimentScore); }
-  else { signal = 'HOLD'; confidence = 0.3; }
+  if (sentimentScore > 0.25) { 
+    signal = 'BUY'; 
+    confidence = Math.min(1, sentimentScore * 1.5); 
+  } else if (sentimentScore < -0.25) { 
+    signal = 'SELL'; 
+    confidence = Math.min(1, Math.abs(sentimentScore) * 1.5); 
+  } else { 
+    signal = 'HOLD'; 
+    confidence = 0.5; 
+  }
 
   return {
     token,

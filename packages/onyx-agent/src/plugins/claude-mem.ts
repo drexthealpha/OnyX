@@ -1,4 +1,4 @@
-import { Plugin, Action, Evaluator, IAgentRuntime, Memory, State, ActionResult } from "@elizaos/core";
+import { Plugin, Action, Evaluator, IAgentRuntime, Memory, State, ActionResult, stringToUuid } from "@elizaos/core";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 
 export const restoreMemoriesAction: Action = {
@@ -90,8 +90,8 @@ export const claudeMemPlugin: Plugin = {
         await runtime.createMemory({
           content: { text: entry.content.text },
           agentId: runtime.agentId,
-          roomId: "default",
-          entityId: "system",
+          roomId: stringToUuid("00000000-0000-0000-0000-000000000000"),
+          entityId: stringToUuid("00000000-0000-0000-0000-000000000000"),
         }, entry.tableName, true);
       }
     } catch (error) {

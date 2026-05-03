@@ -17,7 +17,7 @@ export async function runResearch(topic: string): Promise<void> {
       const { state } = input as { state: Record<string, unknown>; podcastScript: string };
       const content = await import('@onyx/content');
       const summary = String(state.report ?? topic);
-      await content.crosspost(summary, ['twitter-thread', 'linkedin']);
+      await content.crosspost(summary, ['twitter', 'linkedin']);
       return { topic, done: true };
     });
 

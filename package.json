@@ -16,11 +16,6 @@
     "dev:desktop": "pnpm --filter onyx-desktop dev",
     "format": "prettier --write \"packages/**/*.{ts,tsx,json,md}\""
   },
-  "workspaces": [
-    "kernel",
-    "packages/*",
-    "apps/*"
-  ],
   "devDependencies": {
     "@types/node": "^20.11.0",
     "prettier": "^3.2.5",
@@ -38,18 +33,24 @@
     "@umbra-privacy/sdk": "2.0.3",
     "utf-8-validate": "^5.0.2",
     "whatwg-url": "7.1.0",
-    "zod": "^3.23.8"
+    "zod": "^3.25.76"
   },
   "pnpm": {
     "overrides": {
-      "zod": "^3.23.8",
+      "react": "19.0.0",
+      "react-dom": "19.0.0",
+      "@types/react": "19.2.14",
+      "@types/react-dom": "19.2.3",
+      "zod": "^3.25.76",
       "whatwg-url": "7.1.0",
       "utf-8-validate": "^5.0.2",
       "@umbra-privacy/sdk": "2.0.3",
       "@solana/sysvars": "^5.0"
     },
     "peerDependencyOverrides": {
-      "whatwg-url": "7.1.0"
+      "whatwg-url": "7.1.0",
+      "react": "19.0.0",
+      "react-dom": "19.0.0"
     }
   }
 }

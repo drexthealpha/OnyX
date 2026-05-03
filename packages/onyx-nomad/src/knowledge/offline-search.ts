@@ -14,7 +14,7 @@ const DB_PATH = path.resolve('./data/offline-knowledge.db');
  * Returns up to 10 matching IntelBrief objects.
  */
 export function searchKnowledge(query: string): IntelBrief[] {
-  let db: Database;
+  let db: Database.Database;
   try {
     db = new Database(DB_PATH, { readonly: true });
   } catch {
@@ -24,10 +24,7 @@ export function searchKnowledge(query: string): IntelBrief[] {
 
   try {
     const rows = db
-      .query<
-        { topic: string; brief_json: string; rank: number },
-        [string]
-      >(
+      .prepare(
         `
         SELECT k.topic, k.brief_json, kf.rank
         FROM knowledge_fts kf
@@ -37,9 +34,9 @@ export function searchKnowledge(query: string): IntelBrief[] {
         LIMIT 10
       `
       )
-      .all(query);
+      .all(query) as any[];
 
-    return rows.flatMap((row) => {
+    return rows.flatMap((row: any) => {
       try {
         return [JSON.parse(row.brief_json) as IntelBrief];
       } catch {

@@ -4,6 +4,7 @@
   "description": "Ika dWallet MPC integration for ONYX keyless signing",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -15,8 +16,11 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.10.0",
     "@mysten/bcs": "^1.0.0",
+    "@onyx/kernel": "workspace:*",
+    "@solana/spl-token": "^0.4.0",
     "@solana/web3.js": "^1.91.0",
-    "better-sqlite3": "^9.4.0"
+    "better-sqlite3": "^9.4.0",
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.8",

@@ -46,7 +46,9 @@ function readQueue(): OfflineOperation[] {
 async function executeOperation(op: OfflineOperation): Promise<void> {
   switch (op.type) {
     case 'intel': {
-      const { runIntel } = await import('@onyx/intel');
+      // @ts-ignore
+      const intelModule = await import('@onyx/intel');
+      const { runIntel } = (intelModule.default || intelModule) as any;
       await runIntel((op.params as { topic: string }).topic);
       break;
     }

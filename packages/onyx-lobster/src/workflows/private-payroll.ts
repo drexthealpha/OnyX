@@ -14,18 +14,24 @@ export async function runPayroll(employees: Employee[]): Promise<void> {
 
     const pipeline = new Pipeline()
       .step('shield-usdc', async (_input) => {
-        const receipt = await umbraShield(USDC_MINT, amountLamports);
+        const receipt = await umbraShield(USDC_MINT, amountLamports, employee.address);
         return { employee: employee.address, receipt, amountUsdc: employee.amountUsdc };
       })
       .step('store-record', async (input) => {
         const mem = await import('@onyx/mem');
         const record = input as { employee: string; receipt: { signature: string }; amountUsdc: number };
-        await mem.store(`payroll:${record.employee}:${Date.now()}`, JSON.stringify({
-          address: record.employee,
-          amountUsdc: record.amountUsdc,
-          signature: record.receipt.signature,
-          paidAt: new Date().toISOString(),
-        }));
+        await mem.store({
+          id: `payroll-${record.employee}-${Date.now()}`,
+          sessionId: 'payroll-workflow',
+          timestamp: Date.now(),
+          mode: 'finance',
+          facts: [`Paid ${record.amountUsdc} USDC to ${record.employee}`],
+          decisions: [],
+          preferences: [],
+          errors: [],
+          rawTokenCount: 0,
+          compressedTokenCount: 0,
+        });
         return record;
       });
 

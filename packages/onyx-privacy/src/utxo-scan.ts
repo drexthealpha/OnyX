@@ -8,7 +8,8 @@ export async function scanUTXOs(
   startInsertionIndex: number,
 ): Promise<UTXOScanResult> {
   const scanner = getClaimableUtxoScannerFunction({ client });
-  const result = await scanner(treeIndex, startInsertionIndex);
+  // SDK expects U32 which is represented as bigint in this version
+  const result = await scanner(BigInt(treeIndex) as any, BigInt(startInsertionIndex) as any);
   return {
     selfBurnable: result.selfBurnable ?? [],
     received: result.received ?? [],

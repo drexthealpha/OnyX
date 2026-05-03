@@ -10,6 +10,8 @@ export { learnAction } from "./learn.js";
 export { memorizeAction } from "./memorize.js";
 export { browseAction } from "./browse.js";
 export { recallAction } from "./recall.js";
+export { solanaTransferAction, solanaBalanceAction } from "./solana.js";
+export { ikaSignAction } from "./ika.js";
 
 import { gatewayAction } from "./gateway.js";
 import { searchAction } from "./search.js";
@@ -21,6 +23,8 @@ import { learnAction } from "./learn.js";
 import { memorizeAction } from "./memorize.js";
 import { browseAction } from "./browse.js";
 import { recallAction } from "./recall.js";
+import { solanaTransferAction, solanaBalanceAction } from "./solana.js";
+import { ikaSignAction } from "./ika.js";
 
 export const allActions: Action[] = [
   gatewayAction,
@@ -33,4 +37,7 @@ export const allActions: Action[] = [
   memorizeAction,
   browseAction,
   recallAction,
+  solanaTransferAction,
+  solanaBalanceAction,
+  ikaSignAction,
 ];

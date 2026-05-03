@@ -257,14 +257,12 @@ export type BcsTypes = ReturnType<typeof defineBcsTypes>;
 
 export function serializeUserSignatureEd25519(signature: Uint8Array, publicKey: Uint8Array): Uint8Array {
   const { UserSignature } = defineBcsTypes();
-  return Buffer.from(
-    UserSignature.serialize({
-      Ed25519: {
-        signature: Array.from(signature),
-        public_key: Array.from(publicKey),
-      },
-    })
-  );
+  return UserSignature.serialize({
+    Ed25519: {
+      signature: Array.from(signature),
+      public_key: Array.from(publicKey),
+    },
+  }).toBytes();
 }
 
 export function serializeSignedRequestData(
@@ -276,13 +274,11 @@ export function serializeSignedRequestData(
   const { SignedRequestData } = defineBcsTypes();
   const sessionId = new Uint8Array(32);
   
-  return Buffer.from(
-    SignedRequestData.serialize({
-      session_identifier_preimage: Array.from(sessionId),
-      epoch: Number(epoch),
-      chain_id: chainId,
-      intended_chain_sender: Array.from(sender),
-      request: request,
-    })
-  );
+  return SignedRequestData.serialize({
+    session_identifier_preimage: Array.from(sessionId),
+    epoch: epoch.toString(),
+    chain_id: (chainId === 'Solana' ? { Solana: null } : { Sui: null }),
+    intended_chain_sender: Array.from(sender),
+    request: request as any,
+  }).toBytes();
 }

@@ -25,5 +25,6 @@
     "@types/uuid": "^9.0.7",
     "typescript": "^5.3.3",
     "vitest": "latest"
-  }
+  },
+  "type": "module"
 }

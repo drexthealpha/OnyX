@@ -13,8 +13,9 @@ export class SlackChannel implements Channel {
 
     this.app = new App({ token, signingSecret: secret, logLevel: LogLevel.ERROR });
     this.app.message(async ({ message, say }) => {
-      if (!this.handler || message.subtype === "bot_message" || message.subtype === "app_message") return;
-      await this.handler({ content: message.text, raw: message }, message.user);
+      const msg = message as any;
+      if (!this.handler || msg.subtype === "bot_message" || msg.subtype === "app_message") return;
+      await this.handler({ content: msg.text, raw: msg }, msg.user);
     });
     const port = parseInt(config.SLACK_PORT || "3001", 10);
     await this.app.start(port);

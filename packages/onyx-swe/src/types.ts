@@ -52,3 +52,17 @@ export interface PRInfo {
   number: number;
   branch: string;
 }
+
+export interface SandboxOptions {
+  memoryLimitMb?: number;
+  cpuQuota?: number;
+  networkEnabled?: boolean;
+}
+
+export interface SandboxResult {
+  id: string;
+  output: string;
+  error: string;
+  exitCode: number;
+  duration: number;
+}

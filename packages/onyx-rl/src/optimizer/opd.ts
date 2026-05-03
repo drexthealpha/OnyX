@@ -57,8 +57,8 @@ export function distill(
 
   for (let i = 0; i < pairs; i++) {
     hints.push({
-      teacherResponse: teachers[i].trajectory.response,
-      studentResponse: students[i].trajectory.response,
+      teacherResponse: teachers[i]!.trajectory.response,
+      studentResponse: students[i]!.trajectory.response,
       advantageDirection: 1, // teacher is better → correct toward teacher
     });
   }

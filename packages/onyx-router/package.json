@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@onyx/kernel": "workspace:*",
     "better-sqlite3": "^9.4.3",
     "zod": "^3.22.4"
   },

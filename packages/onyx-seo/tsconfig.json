@@ -2,15 +2,25 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
+    "strict": false,
+    "strictNullChecks": false,
+    "exactOptionalPropertyTypes": false,
     "skipLibCheck": true,
     "outDir": "./dist",
     "rootDir": "./src",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ],
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "noPropertyAccessFromIndexSignature": false
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/**/*"
+  ],
+  "extends": "../../tsconfig.base.json"
 }

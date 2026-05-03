@@ -1,9 +1,10 @@
 {
-  "name": "kernel",
+  "name": "@onyx/kernel",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "main": "./dist/boot.js",
+  "types": "./dist/boot.d.ts",
   "exports": {
     ".": "./dist/boot.js",
     "./types": "./dist/types.js",
@@ -17,10 +18,17 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "pnpm vitest run"
+    "test": "vitest run",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.0",
+    "pino": "^9.3.2"
   },
   "devDependencies": {
-    "vitest": "latest",
-    "better-sqlite3": "^9.4.0"
+    "@types/better-sqlite3": "^7.6.11",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.5.3",
+    "vitest": "latest"
   }
 }

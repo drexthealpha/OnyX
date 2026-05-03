@@ -3,7 +3,7 @@ export { Herald, createHerald, globalHerald } from "./herald.js";
 export type { HeraldHandler, HeraldUnsubscribe } from "./herald.js";
 
 // council — multi-agent deliberation
-export { Council, createCouncil } from "./council.js";
+export { Council, createCouncil, globalCouncil } from "./council.js";
 export type { CouncilMember, CouncilProposal, CouncilDecision } from "./council.js";
 
 // consensus — weighted vote tallying
@@ -35,3 +35,42 @@ export type {
 // shared-memory — shared state store for agents in same council
 export { SharedMemory, createSharedMemory } from "./shared-memory.js";
 export type { MemoryEntry, MemorySnapshot } from "./shared-memory.js";
+
+/**
+ * Channel Management API (Library Mode)
+ */
+
+export async function listChannels() {
+  return [
+    { id: "broadcast", name: "Broadcast", type: "system" },
+    { id: "telemetry", name: "Telemetry", type: "system" },
+    { id: "herald", name: "Herald", type: "system" },
+  ];
+}
+
+export async function createChannel(name?: string, type?: string) {
+  return {
+    id: `ch-${Date.now()}`,
+    name: name ?? "New Channel",
+    type: type ?? "custom",
+    status: "created",
+  };
+}
+
+export async function sendMessage(channelId: string, content?: string) {
+  const { globalHerald } = await import("./herald.js");
+  globalHerald.publish(channelId, {
+    type: "message",
+    data: { content, timestamp: Date.now() },
+  });
+  return { ok: true };
+}
+
+export async function deleteChannel(id: string) {
+  return { ok: true };
+}
+
+export async function subscribe(topic: string, callback: (msg: any) => void) {
+  const { globalHerald } = await import("./herald.js");
+  return globalHerald.subscribe(topic, callback);
+}

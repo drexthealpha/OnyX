@@ -1,5 +1,5 @@
 import type { Snapshot, Element } from "../types";
-import { getTab, getRefMap, setRef } from "./state";
+import { getTab, getRefMap, setRef } from "../state";
 
 export async function getSnapshot(tabId: string): Promise<Snapshot> {
   const page = getTab(tabId);
@@ -18,7 +18,7 @@ export async function getSnapshot(tabId: string): Promise<Snapshot> {
     const box = await handle.boundingBox().catch(() => null);
     if (!box) continue;
 
-    const text = await handle.textContent().catch(() => "").then((t: string) => t?.trim() || "");
+    const text = await handle.textContent().catch(() => "").then((t: string | null) => t?.trim() || "");
     const role = await handle.getAttribute("role").catch(() => null);
     const ref = `el-${tabId}-${i}`;
 

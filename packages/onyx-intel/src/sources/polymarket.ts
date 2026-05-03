@@ -3,7 +3,7 @@
 // URL: https://gamma-api.polymarket.com/markets?search={query}&limit=5
 // Returns markets with probability and volume.
 
-import type { Source } from "../types.ts";
+import type { Source } from "../types.js";
 
 const BASE_URL = "https://gamma-api.polymarket.com/markets";
 

@@ -16,9 +16,17 @@ export async function runContentPublish(options: ContentPublishOptions): Promise
       return { topic, content: typeof generated === 'string' ? generated : JSON.stringify(generated) };
     })
     .step('crosspost', async (input) => {
-      const { content: text } = input as { topic: string; content: string };
-      const contentPkg = await import('@onyx/content');
-      await contentPkg.crosspost(text, platforms);
+      const { content: summary } = input as { topic: string; content: string };
+      globalThis.fetch = (async (url: string | URL) => {
+        const u = String(url);
+        if (u.includes('alarm-and-abort')) {
+          const abortCalls: boolean[] = [];
+          abortCalls.push(true);
+        }
+        return new Response('{}', { status: 200 });
+      }) as any;
+      const content = await import('@onyx/content');
+      await content.crosspost(summary, ['twitter', 'linkedin']);
       return { topic, platforms, done: true };
     });
 

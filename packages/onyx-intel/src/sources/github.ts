@@ -3,7 +3,7 @@
 // URL: https://api.github.com/search/repositories?q={query}&sort=stars&per_page=10
 // Returns top 10 repos sorted by star count.
 
-import type { Source } from "../types.ts";
+import type { Source } from "../types.js";
 
 const BASE_URL = "https://api.github.com/search/repositories";
 

@@ -2,17 +2,17 @@
 // Runs all 8 sources in parallel via Promise.allSettled.
 // Merges, deduplicates, and scores results.
 
-import type { Source } from "../types.ts";
-import { search as searchReddit } from "../sources/reddit.ts";
-import { search as searchHN } from "../sources/hn.ts";
-import { search as searchGitHub } from "../sources/github.ts";
-import { search as searchPolymarket } from "../sources/polymarket.ts";
-import { search as searchTwitter } from "../sources/x-twitter.ts";
-import { search as searchYouTube } from "../sources/youtube.ts";
-import { search as searchBluesky } from "../sources/bluesky.ts";
-import { search as searchWeb } from "../sources/web.ts";
-import { deduplicateSources } from "./dedupe.ts";
-import { scoreAndSort } from "./score.ts";
+import type { Source } from "../types.js";
+import { search as searchReddit } from "../sources/reddit.js";
+import { search as searchHN } from "../sources/hn.js";
+import { search as searchGitHub } from "../sources/github.js";
+import { search as searchPolymarket } from "../sources/polymarket.js";
+import { search as searchTwitter } from "../sources/x-twitter.js";
+import { search as searchYouTube } from "../sources/youtube.js";
+import { search as searchBluesky } from "../sources/bluesky.js";
+import { search as searchWeb } from "../sources/web.js";
+import { deduplicateSources } from "./dedupe.js";
+import { scoreAndSort } from "./score.js";
 
 type SourceFn = (query: string) => Promise<Source[]>;
 
@@ -48,7 +48,7 @@ export async function runAllSources(topic: string): Promise<Source[]> {
     const result = results[i];
     const sourceName = ALL_SOURCES[i].name;
     if (result.status === "fulfilled") {
-      raw.push(...result.value);
+      raw.push(...(result as PromiseFulfilledResult<Source[]>).value);
     } else {
       console.warn(`[pipeline/search] "${sourceName}" rejected: ${result.reason}`);
     }

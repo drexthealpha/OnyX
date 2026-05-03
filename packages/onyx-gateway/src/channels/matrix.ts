@@ -11,7 +11,7 @@ export class MatrixChannel implements Channel {
     const token = config.MATRIX_ACCESS_TOKEN;
     const userId = config.MATRIX_USER_ID;
     if (!homeserver || !token || !userId) throw new Error("MATRIX_HOMESERVER, MATRIX_ACCESS_TOKEN, MATRIX_USER_ID required");
-    this.client = createClient(homeserver, userId, token);
+    this.client = createClient({ baseUrl: homeserver, accessToken: token, userId });
     this.client.startClient();
   }
 

@@ -1,11 +1,12 @@
 import Database from "better-sqlite3";
+import type { Database as DatabaseType } from "better-sqlite3";
 import { mkdirSync } from "node:fs";
 import type { Trajectory, OutcomeRecord, FeedbackRecord, PolicyUpdate } from "./types.js";
 
 // Ensure data directory exists
 mkdirSync("./data", { recursive: true });
 
-export const db = new Database("./data/rl.db", { create: true });
+export const db: DatabaseType = new Database("./data/rl.db");
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
 
@@ -54,16 +55,14 @@ db.exec(`
 
 // ─── Typed query helpers ─────────────────────────────────────────────────────
 
-const _insertTrajectory = db.prepare<void, [
-  string, string, string, string, string, number, number, number
-]>(`
+const _insertTrajectory = db.prepare(`
   INSERT OR IGNORE INTO trajectories
     (id, conversationId, message, response, toolsUsed, latencyMs, tokensUsed, timestamp)
   VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 `);
 
 export function insertTrajectory(t: Trajectory): void {
-  _insertTrajectory.run(
+  _insertTrajectory.run([
     t.id,
     t.conversationId,
     t.message,
@@ -72,16 +71,13 @@ export function insertTrajectory(t: Trajectory): void {
     t.latencyMs,
     t.tokensUsed,
     t.timestamp,
-  );
+  ]);
 }
 
-const _getTrajectory = db.prepare<{
-  id: string; conversationId: string; message: string; response: string;
-  toolsUsed: string; latencyMs: number; tokensUsed: number; timestamp: number; processed: number;
-}, [string]>(`SELECT * FROM trajectories WHERE id = ?`);
+const _getTrajectory = db.prepare(`SELECT * FROM trajectories WHERE id = ?`);
 
 export function getTrajectory(id: string): Trajectory | null {
-  const row = _getTrajectory.get(id);
+  const row = _getTrajectory.get(id) as any;
   if (!row) return null;
   return {
     id: row.id,
@@ -95,13 +91,10 @@ export function getTrajectory(id: string): Trajectory | null {
   };
 }
 
-const _unprocessedTrajectories = db.prepare<{
-  id: string; conversationId: string; message: string; response: string;
-  toolsUsed: string; latencyMs: number; tokensUsed: number; timestamp: number;
-}, []>(`SELECT * FROM trajectories WHERE processed = 0 ORDER BY timestamp ASC LIMIT 200`);
+const _unprocessedTrajectories = db.prepare(`SELECT * FROM trajectories WHERE processed = 0 ORDER BY timestamp ASC LIMIT 200`);
 
 export function loadUnprocessedTrajectories(): Trajectory[] {
-  return _unprocessedTrajectories.all().map(row => ({
+  return (_unprocessedTrajectories.all() as any[]).map(row => ({
     id: row.id,
     conversationId: row.conversationId,
     message: row.message,
@@ -113,73 +106,73 @@ export function loadUnprocessedTrajectories(): Trajectory[] {
   }));
 }
 
-const _markProcessed = db.prepare<void, [string]>(
+const _markProcessed = db.prepare(
   `UPDATE trajectories SET processed = 1 WHERE id = ?`
 );
 
 export function markTrajectoryProcessed(id: string): void {
-  _markProcessed.run(id);
+  _markProcessed.run([id]);
 }
 
-const _countUnprocessed = db.prepare<{ count: number }, []>(
+const _countUnprocessed = db.prepare(
   `SELECT COUNT(*) as count FROM trajectories WHERE processed = 0`
 );
 
 export function countUnprocessedTrajectories(): number {
-  return _countUnprocessed.get()?.count ?? 0;
+  return (_countUnprocessed.get() as any)?.count ?? 0;
 }
 
 // ─── Outcome helpers ─────────────────────────────────────────────────────────
 
-const _insertOutcome = db.prepare<void, [string, number, string, number]>(`
+const _insertOutcome = db.prepare(`
   INSERT OR REPLACE INTO outcomes (trajectoryId, success, details, recordedAt)
   VALUES (?, ?, ?, ?)
 `);
 
 export function insertOutcome(o: OutcomeRecord): void {
-  _insertOutcome.run(o.trajectoryId, o.success ? 1 : 0, o.details, o.recordedAt);
+  _insertOutcome.run([o.trajectoryId, o.success ? 1 : 0, o.details, o.recordedAt]);
 }
 
-const _getOutcome = db.prepare<{ trajectoryId: string; success: number; details: string; recordedAt: number }, [string]>(
+const _getOutcome = db.prepare(
   `SELECT * FROM outcomes WHERE trajectoryId = ?`
 );
 
 export function getOutcome(trajectoryId: string): OutcomeRecord | null {
-  const row = _getOutcome.get(trajectoryId);
+  const row = _getOutcome.get(trajectoryId) as any;
   if (!row) return null;
   return { trajectoryId: row.trajectoryId, success: Boolean(row.success), details: row.details, recordedAt: row.recordedAt };
 }
 
 // ─── Feedback helpers ────────────────────────────────────────────────────────
 
-const _insertFeedback = db.prepare<void, [string, number, number]>(`
+const _insertFeedback = db.prepare(`
   INSERT OR REPLACE INTO feedback (trajectoryId, thumbsUp, recordedAt)
   VALUES (?, ?, ?)
 `);
 
 export function insertFeedback(f: FeedbackRecord): void {
-  _insertFeedback.run(f.trajectoryId, f.thumbsUp ? 1 : 0, f.recordedAt);
+  _insertFeedback.run([f.trajectoryId, f.thumbsUp ? 1 : 0, f.recordedAt]);
 }
 
-const _getFeedback = db.prepare<{ trajectoryId: string; thumbsUp: number; recordedAt: number }, [string]>(
+const _getFeedback = db.prepare(
   `SELECT * FROM feedback WHERE trajectoryId = ?`
 );
 
 export function getFeedback(trajectoryId: string): FeedbackRecord | null {
-  const row = _getFeedback.get(trajectoryId);
+  const row = _getFeedback.get(trajectoryId) as any;
   if (!row) return null;
   return { trajectoryId: row.trajectoryId, thumbsUp: Boolean(row.thumbsUp), recordedAt: row.recordedAt };
 }
 
 // ─── Policy update helpers ───────────────────────────────────────────────────
 
-const _insertPolicyUpdate = db.prepare<void, [number, number, string]>(`
+const _insertPolicyUpdate = db.prepare(`
   INSERT INTO policy_updates (timestamp, gradientSignal, affectedSkills)
   VALUES (?, ?, ?)
 `);
 
 export function savePolicyUpdate(u: PolicyUpdate): void {
-  _insertPolicyUpdate.run(u.timestamp, u.gradientSignal, JSON.stringify(u.affectedSkills));
+  _insertPolicyUpdate.run([u.timestamp, u.gradientSignal, JSON.stringify(u.affectedSkills)]);
 }
 
 // ─── Skill score query ───────────────────────────────────────────────────────
@@ -187,7 +180,7 @@ export function savePolicyUpdate(u: PolicyUpdate): void {
 // Stored in toolsUsed JSON array; we use LIKE for a fast approximation.
 
 export function getSkillAverageReward(_skillName: string): number {
-  const stmt = db.prepare<{ value: number | null }, [string]>(`
+  const stmt = db.prepare(`
     SELECT AVG(CASE WHEN o.success = 1 THEN 1.0 ELSE 0.0 END) as value
     FROM (
       SELECT t.id
@@ -201,6 +194,6 @@ export function getSkillAverageReward(_skillName: string): number {
     LEFT JOIN outcomes o ON o.trajectoryId = recent.id
   `);
 
-  const row = stmt.get(_skillName);
+  const row = stmt.get(_skillName) as any;
   return row?.value ?? 0.5;
 }

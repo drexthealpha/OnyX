@@ -1,6 +1,6 @@
-import { DomainLevel } from '../types.ts';
-import type { Question, Score } from '../types.ts';
-import { ProfileStore } from '../learner/profile.ts';
+import { DomainLevel } from '../types.js';
+import type { Question, Score } from '../types.js';
+import { ProfileStore } from '../learner/profile.js';
 
 const profiles = new ProfileStore();
 
@@ -8,7 +8,7 @@ export async function generateQuiz(
   topic: string,
   level: DomainLevel,
 ): Promise<Question[]> {
-  const { CryptoTutor } = await import('../tutorbots/crypto-tutor.ts');
+  const { CryptoTutor } = await import('../tutorbots/crypto-tutor.js');
   const bot = new CryptoTutor();
   const questions = await bot.quiz(topic);
 
@@ -34,7 +34,7 @@ export async function evaluateAnswers(
     throw new Error(`Answer count (${answers.length}) must match question count (${questions.length})`);
   }
 
-  const { CryptoTutor } = await import('../tutorbots/crypto-tutor.ts');
+  const { CryptoTutor } = await import('../tutorbots/crypto-tutor.js');
   const bot = new CryptoTutor();
 
   const scores: Score[] = await Promise.all(

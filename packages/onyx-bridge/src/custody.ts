@@ -29,7 +29,7 @@ export async function transferToCPIAuthority(options: TransferOptions): Promise<
   const [cpiAuthority] = getCPIAuthority(programId);
   
   const { SystemProgram } = await import('@solana/web3.js');
-  const { Token } = await import('@solana/spl-token');
+  const { getAccount } = await import('@solana/spl-token');
   
   const accounts: Array<{
     pubkey: PublicKey;
@@ -41,8 +41,7 @@ export async function transferToCPIAuthority(options: TransferOptions): Promise<
   ];
   
   try {
-    const tokenProgram = new Token(connection, dwalletPda, programId, payer);
-    const accountInfo = await tokenProgram.getAccountInfo(dwalletPda);
+    const accountInfo = await getAccount(connection, dwalletPda);
     
     if (accountInfo) {
       accounts.push(

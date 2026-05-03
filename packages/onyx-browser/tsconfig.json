@@ -2,8 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "node",
-    "strict": false,
+    "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "outDir": "./dist",
@@ -14,9 +13,23 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": false,
-    "types": ["node", "bun-types", "vite/client"],
-    "noEmit": true
+    "types": [
+      "node",
+      "bun-types",
+      "vite/client"
+    ],
+    "noEmit": true,
+    "moduleResolution": "Bundler",
+    "allowSyntheticDefaultImports": true,
+    "noPropertyAccessFromIndexSignature": false
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/tests"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/tests"
+  ],
+  "extends": "../../tsconfig.base.json"
 }

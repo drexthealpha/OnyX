@@ -1,5 +1,5 @@
 import type { Snapshot } from "../types";
-import { getTab } from "./state";
+import { getTab } from "../state";
 import { getSnapshot } from "./get-snapshot";
 
 export async function navigate(tabId: string, url: string): Promise<Snapshot> {

@@ -6,6 +6,7 @@ import { defineBcsTypes } from './bcs-types';
 import { createGrpcClient, buildUserSignature, buildSignedRequestData, buildSignRequest, buildPresignRequest } from './grpc-client';
 import { getDWalletPda } from './dwallet';
 import { createHash } from 'crypto';
+import nacl from 'tweetnacl';
 
 export function computeMessageDigest(message: Uint8Array): Uint8Array {
   const hash = createHash('sha256');
@@ -30,8 +31,9 @@ export function computeMessageApprovalPda(
   }
   
   seeds.push(Buffer.from('message_approval'));
-  seeds.push(Buffer.alloc(2));
-  seeds[seeds.length - 1].writeUInt16LE(scheme, 0);
+  const schemeSeed = Buffer.alloc(2);
+  schemeSeed.writeUInt16LE(scheme, 0);
+  seeds.push(schemeSeed);
   seeds.push(Buffer.from(messageDigest));
   
   const programIdObj = new PublicKey(programId || IKA_PROGRAM_ID);
@@ -71,9 +73,10 @@ export async function requestPresign(options: {
   connection: Connection;
   dwalletInfo: DWalletInfo;
   userPubkey: Uint8Array;
+  signer: import('@solana/web3.js').Keypair;
   signatureAlgorithm?: number;
 }): Promise<Uint8Array> {
-  const { connection, dwalletInfo, userPubkey, signatureAlgorithm = 3 } = options;
+  const { connection, dwalletInfo, userPubkey, signer, signatureAlgorithm = 3 } = options;
   
   const programId = new PublicKey(IKA_PROGRAM_ID);
   
@@ -104,13 +107,15 @@ export async function requestPresign(options: {
       }
     );
     
-    const userSig = buildUserSignature(userPubkey);
     const signedData = buildSignedRequestData(userPubkey, presignRequest, 0n);
+    const signature = nacl.sign.detached(signedData, signer.secretKey);
+    
+    const userSig = buildUserSignature(signature, userPubkey);
     
     const responseData = await grpcClient.submitTransaction(userSig, signedData);
     
     const { TransactionResponseData, VersionedPresignDataAttestation } = defineBcsTypes();
-    const parsed = TransactionResponseData.parse(Array.from(responseData));
+    const parsed = TransactionResponseData.parse(new Uint8Array(responseData));
     
     let attestationData: Uint8Array;
     
@@ -122,7 +127,7 @@ export async function requestPresign(options: {
       attestationData = new Uint8Array(parsed.Attestation.attestation_data);
     }
     
-    const versionedPresign = VersionedPresignDataAttestation.parse(Array.from(attestationData));
+    const versionedPresign = VersionedPresignDataAttestation.parse(new Uint8Array(attestationData));
     
     let presignSessionIdentifier: Uint8Array;
     
@@ -146,6 +151,7 @@ export async function signMessage(options: SignMessageOptions): Promise<Uint8Arr
     messageMetadata = new Uint8Array(0),
     signatureScheme,
     userPubkey,
+    signer,
   } = options;
   
   const messageDigest = computeMessageDigest(message);
@@ -163,6 +169,7 @@ export async function signMessage(options: SignMessageOptions): Promise<Uint8Arr
       connection,
       dwalletInfo,
       userPubkey,
+      signer: options.signer,
       signatureAlgorithm: 3,
     });
     
@@ -178,13 +185,15 @@ export async function signMessage(options: SignMessageOptions): Promise<Uint8Arr
       new Uint8Array(64)
     );
     
-    const userSig = buildUserSignature(userPubkey);
     const signedData = buildSignedRequestData(userPubkey, signRequest, 0n);
+    const signature = nacl.sign.detached(signedData, signer.secretKey);
+    
+    const userSig = buildUserSignature(signature, userPubkey);
     
     const responseData = await grpcClient.submitTransaction(userSig, signedData);
     
     const { TransactionResponseData } = defineBcsTypes();
-    const parsed = TransactionResponseData.parse(Array.from(responseData));
+    const parsed = TransactionResponseData.parse(new Uint8Array(responseData));
     
     if ('Signature' in parsed) {
       return new Uint8Array(parsed.Signature.signature);
@@ -216,13 +225,13 @@ export async function approveMessage(options: {
     messageDigest
   );
   
-  const instructionData = Buffer.alloc(100);
+  const instructionData = Buffer.alloc(130);
   instructionData.writeUInt8(8, 0);
   instructionData.writeUInt8(approvalBump, 1);
-  instructionData.write(messageDigest.toString('hex'), 32, 'hex');
-  instructionData.write(new Uint8Array(32).toString('hex'), 64, 'hex');
-  instructionData.write(userPubkey.toString('hex'), 96, 'hex');
-  instructionData.writeUInt16LE(signatureScheme, 128);
+  Buffer.from(messageDigest).copy(instructionData, 2);
+  Buffer.from(new Uint8Array(32)).copy(instructionData, 34);
+  Buffer.from(userPubkey).copy(instructionData, 66);
+  instructionData.writeUInt16LE(signatureScheme, 98);
   
   const programId = new PublicKey(IKA_PROGRAM_ID);
   

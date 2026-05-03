@@ -97,6 +97,7 @@ export function readDWalletAccount(data: Buffer): {
   const curve = data.readUInt16LE(34);
   const state = data[36];
   const publicKeyLen = data[37];
+  if (publicKeyLen === undefined) throw new Error('Missing public key length');
   const publicKey = data.subarray(38, 38 + publicKeyLen);
   const createdEpoch = data.readBigUInt64LE(103);
   const noaPublicKey = data.subarray(111, 143);
@@ -105,7 +106,7 @@ export function readDWalletAccount(data: Buffer): {
   return {
     authority,
     curve,
-    state,
+    state: data[36] ?? 0,
     publicKey,
     createdEpoch,
     noaPublicKey,
@@ -130,18 +131,25 @@ export async function createDWallet(options: CreateDWalletOptions): Promise<DWal
   try {
     const userPublicKey = new Uint8Array(32);
     if (authority) {
-      authority.copy(userPublicKey);
+      userPublicKey.set(authority);
     }
     
+    const { signer } = options;
     const dkgRequest = buildDkgRequest(curve, userPublicKey);
-    
-    const userSig = buildUserSignature(userPublicKey);
     const signedData = buildSignedRequestData(userPublicKey, dkgRequest, 0n);
+    
+    let signature = new Uint8Array(64);
+    if (signer) {
+      const nacl = (await import('tweetnacl')).default;
+      signature = new Uint8Array(nacl.sign.detached(signedData, signer.secretKey));
+    }
+    
+    const userSig = buildUserSignature(signature, userPublicKey);
     
     const responseData = await grpcClient.submitTransaction(userSig, signedData);
     
     const { TransactionResponseData, VersionedDWalletDataAttestation } = defineBcsTypes();
-    const parsed = TransactionResponseData.parse(Array.from(responseData));
+    const parsed = TransactionResponseData.parse(new Uint8Array(responseData));
     
     let attestationData: Uint8Array;
     
@@ -153,7 +161,7 @@ export async function createDWallet(options: CreateDWalletOptions): Promise<DWal
       attestationData = new Uint8Array(parsed.Attestation.attestation_data);
     }
     
-    const versionedAttestation = VersionedDWalletDataAttestation.parse(Array.from(attestationData));
+    const versionedAttestation = VersionedDWalletDataAttestation.parse(new Uint8Array(attestationData));
     
     let publicKey: Uint8Array;
     
@@ -173,7 +181,7 @@ export async function createDWallet(options: CreateDWalletOptions): Promise<DWal
       pubkey: publicKey,
       curve,
       authority: authority || new Uint8Array(32),
-      pda: new Uint8Array(pda.toBytes()),
+      pda: new Uint8Array(pda.toBuffer()),
       bump,
       state: parsedDWallet.state,
       createdEpoch: parsedDWallet.createdEpoch,
@@ -210,8 +218,8 @@ export async function readCoordinatorAccount(connection: Connection, programId: 
     }
     
     return {
-      version: data[1],
-      nonce: data[2],
+      version: data[1] ?? 0,
+      nonce: data[2] ?? 0,
       createdEpoch: data.readBigUInt64LE(8),
       activeDwallets: data.readUInt16LE(16),
     };

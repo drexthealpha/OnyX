@@ -2,7 +2,7 @@
 // Reddit search via public JSON endpoint — no auth required.
 // URL: https://www.reddit.com/search.json?q={query}&sort=relevance&limit=10
 
-import type { Source } from "../types.ts";
+import type { Source } from "../types.js";
 
 const BASE_URL = "https://www.reddit.com/search.json";
 

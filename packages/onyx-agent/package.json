@@ -20,6 +20,9 @@
     "@elizaos/core": "npm:@elizaos/core@beta",
     "@elizaos/plugin-bootstrap": "npm:@elizaos/plugin-bootstrap@beta",
     "@elizaos/plugin-openai": "npm:@elizaos/plugin-openai@beta",
+    "@onyx/multica": "workspace:*",
+    "@onyx/solana": "workspace:*",
+    "@onyx/compute": "workspace:*",
     "zod": "^3.23.8"
   },
   "devDependencies": {

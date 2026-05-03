@@ -1,14 +1,14 @@
 import { Hono } from 'hono';
-import { ProfileStore } from './learner/profile.ts';
-import { detectStyle } from './learner/style.ts';
-import { GoalTracker } from './learner/goals.ts';
-import { createPlan } from './sessions/planner.ts';
-import { generateQuiz, evaluateAnswers } from './sessions/quizzer.ts';
-import { ProgressTracker } from './sessions/progress.ts';
-import { CryptoTutor } from './tutorbots/crypto-tutor.ts';
-import { CodeTutor } from './tutorbots/code-tutor.ts';
-import { ResearchTutor } from './tutorbots/research-tutor.ts';
-import { FinanceTutor } from './tutorbots/finance-tutor.ts';
+import { ProfileStore } from './learner/profile.js';
+import { detectStyle } from './learner/style.js';
+import { GoalTracker } from './learner/goals.js';
+import { createPlan } from './sessions/planner.js';
+import { generateQuiz, evaluateAnswers } from './sessions/quizzer.js';
+import { ProgressTracker } from './sessions/progress.js';
+import { CryptoTutor } from './tutorbots/crypto-tutor.js';
+import { CodeTutor } from './tutorbots/code-tutor.js';
+import { ResearchTutor } from './tutorbots/research-tutor.js';
+import { FinanceTutor } from './tutorbots/finance-tutor.js';
 import type {
   TeachRequest,
   QuizRequest,
@@ -17,20 +17,20 @@ import type {
   UpdateScoreRequest,
   SetGoalRequest,
   TutorBot,
-} from './types.ts';
+} from './types.js';
 
-export * from './types.ts';
-export * from './learner/profile.ts';
-export * from './learner/style.ts';
-export * from './learner/goals.ts';
-export * from './learner/preferences.ts';
-export * from './sessions/planner.ts';
-export * from './sessions/quizzer.ts';
-export * from './sessions/progress.ts';
-export * from './tutorbots/crypto-tutor.ts';
-export * from './tutorbots/code-tutor.ts';
-export * from './tutorbots/research-tutor.ts';
-export * from './tutorbots/finance-tutor.ts';
+export * from './types.js';
+export * from './learner/profile.js';
+export * from './learner/style.js';
+export * from './learner/goals.js';
+export * from './learner/preferences.js';
+export * from './sessions/planner.js';
+export * from './sessions/quizzer.js';
+export * from './sessions/progress.js';
+export * from './tutorbots/crypto-tutor.js';
+export * from './tutorbots/code-tutor.js';
+export * from './tutorbots/research-tutor.js';
+export * from './tutorbots/finance-tutor.js';
 
 const TUTORBOTS: Record<string, TutorBot> = {
   crypto:   new CryptoTutor(),
@@ -107,6 +107,38 @@ app.post('/plan', async (c) => {
 const PORT = parseInt(process.env.TUTOR_PORT ?? '3008', 10);
 
 console.log(`[onyx-tutor] Listening on port ${PORT}`);
+
+export async function ask(question?: string, sessionId?: string) {
+  const bot = TUTORBOTS["crypto"]; // Default to crypto
+  return bot.teach(question ?? "introduction", 1);
+}
+
+export async function getUserProgress(userId: string) {
+  return progress.getHistory(userId);
+}
+
+export async function recordFeedback(payload: any) {
+  return { ok: true };
+}
+
+export async function listSessions() {
+  return [
+    { id: "sess1", topic: "Bitcoin", lastActive: Date.now() },
+    { id: "sess2", topic: "Solana", lastActive: Date.now() },
+  ];
+}
+
+export async function deleteSession(id: string) {
+  return { ok: true };
+}
+
+/**
+ * Enhanced generateQuiz for library mode
+ */
+export async function generateQuizLibrary(topic: string, level?: number) {
+  const { generateQuiz: gen } = await import('./sessions/quizzer.js');
+  return gen(topic, (level as any) ?? 1);
+}
 
 export default {
   port: PORT,

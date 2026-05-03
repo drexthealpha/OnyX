@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { DomainLevel } from '../types.ts';
-import type { TutorBot, Question, Score } from '../types.ts';
+import { DomainLevel } from '../types.js';
+import type { TutorBot, Question, Score } from '../types.js';
 
 function getClient(): Anthropic {
   const apiKey = process.env.ANTHROPIC_API_KEY;

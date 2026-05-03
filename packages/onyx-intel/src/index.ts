@@ -2,16 +2,40 @@
 // Main entry point: runIntel(topic) → Promise<IntelBrief>
 // Checks cache first. If miss, runs full pipeline, synthesizes, caches, returns.
 
-import type { IntelBrief } from "./types.ts";
-import { get as cacheGet, set as cacheSet } from "./cache.ts";
-import { runAllSources } from "./pipeline/search.ts";
-import { synthesize } from "./pipeline/synthesize.ts";
+import type { IntelBrief } from "./types.js";
+import { get as cacheGet, set as cacheSet, listCachedTopics, evictCache } from "./cache.js";
+import { runAllSources } from "./pipeline/search.js";
+import { synthesize } from "./pipeline/synthesize.js";
 
-export type { IntelBrief, Source } from "./types.ts";
-export { runAllSources } from "./pipeline/search.ts";
-export { scoreSource } from "./pipeline/score.ts";
-export { deduplicateSources } from "./pipeline/dedupe.ts";
-export { synthesize } from "./pipeline/synthesize.ts";
+export type { IntelBrief, Source } from "./types.js";
+export { runAllSources } from "./pipeline/search.js";
+export { scoreSource } from "./pipeline/score.js";
+export { deduplicateSources } from "./pipeline/dedupe.js";
+export { synthesize } from "./pipeline/synthesize.js";
+export { listCachedTopics, evictCache };
+
+/**
+ * Returns the most recent N briefs from the cache.
+ */
+export async function getLatestIntel(limit = 10): Promise<IntelBrief[]> {
+  const topics = listCachedTopics().slice(0, limit);
+  return topics.map((t) => cacheGet(t)).filter(Boolean) as IntelBrief[];
+}
+
+/**
+ * Placeholder for trending topics. In a real system, this would analyze
+ * social signals or frequent cache hits.
+ */
+export async function getTrendingTopics(): Promise<string[]> {
+  return listCachedTopics().slice(0, 5);
+}
+
+/**
+ * Alias for runIntel to match nerve expectations.
+ */
+export async function generateBrief(topic: string): Promise<IntelBrief> {
+  return runIntel(topic);
+}
 
 /**
  * Run the full intelligence pipeline for a topic.

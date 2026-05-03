@@ -4,33 +4,13 @@
  * Loads keypair from ONYX_WALLET_PATH (user-provided — operator cost: $0).
  * Private key stored ONLY in closure — never on `this`, never returned.
  *
- * Apollo-11 law: sovereign agent controls its own keys.
- * Apollo-11 law: private key bytes NEVER leave the closure after init.
+ * Grounded in real cryptography (tweetnacl) and real chain state (@solana/web3.js).
  */
 
 import { readFileSync } from "node:fs";
+import { Connection, Keypair } from "@solana/web3.js";
+import nacl from "tweetnacl";
 import type { Wallet, WalletConfig } from "./types.js";
-
-/**
- * Simple base58 encoder/decoder (dependency-free)
- */
-function base58Encode(data: Uint8Array): string {
-  const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-  let result = "";
-  for (const byte of data) {
-    result = ALPHABET[byte % 58] + result;
-  }
-  return result;
-}
-
-/**
- * Simple nacl.sign.detached mock (insecure, for tests only)
- */
-function mockSign(message: Uint8Array, _secretKey: Uint8Array): Uint8Array {
-  // In real impl, this uses tweetnacl
-  // For tests, we just return a mock signature
-  return new Uint8Array([...message].slice(0, 64));
-}
 
 /** Create an OnyxWallet from the keypair at ONYX_WALLET_PATH.
  * The private key is stored in the closure and NEVER exposed on the
@@ -58,14 +38,12 @@ export function createWallet(config?: Partial<WalletConfig>): Wallet {
 
   // Load keypair — private key stored in closure ONLY
   const rawBytes = JSON.parse(readFileSync(keypairPath, "utf-8")) as number[];
-  const secretKey = Uint8Array.from(rawBytes);
-  const publicKey = base58Encode(secretKey.slice(0, 32));
+  const keypair = Keypair.fromSecretKey(Uint8Array.from(rawBytes));
+  const publicKey = keypair.publicKey.toBase58();
+  const connection = new Connection(rpcUrl, "confirmed");
 
   // Zero out the source array immediately after keypair creation
   rawBytes.fill(0);
-
-  // Mock balance (in real impl, this calls RPC)
-  let mockBalance = 1_000_000_000n;
 
   // Public API (no private key visible)
   const wallet: Wallet = {
@@ -74,21 +52,22 @@ export function createWallet(config?: Partial<WalletConfig>): Wallet {
     },
 
     async sign(transaction: Uint8Array): Promise<Uint8Array> {
-      return mockSign(transaction, secretKey);
+      // nacl.sign.detached produces a 64-byte Ed25519 signature
+      return nacl.sign.detached(transaction, keypair.secretKey);
     },
 
     async signMessage(message: Uint8Array): Promise<Uint8Array> {
-      // nacl.sign.detached uses the 64-byte secret key inline
-      return mockSign(message, secretKey);
+      return nacl.sign.detached(message, keypair.secretKey);
     },
 
     async getBalance(): Promise<bigint> {
-      return mockBalance;
+      const balance = await connection.getBalance(keypair.publicKey);
+      return BigInt(balance);
     },
   };
 
   console.log(
-    `[onyx-vault] ✅ Wallet loaded: ${publicKey.slice(0, 8)}...`
+    `[onyx-vault] ✅ Wallet grounded & loaded: ${publicKey.slice(0, 8)}...`
   );
 
   return wallet;

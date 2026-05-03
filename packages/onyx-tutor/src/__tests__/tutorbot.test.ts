@@ -1,5 +1,5 @@
 import { describe, test, expect, mock } from 'vitest';
-import { DomainLevel } from '../types.ts';
+import { DomainLevel } from '../types.js';
 
 describe('TutorBot interface', () => {
   test('teach() contract: returns non-empty string', async () => {

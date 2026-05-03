@@ -3,7 +3,7 @@
 // URL: https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts?q={query}
 // No auth required for public posts.
 
-import type { Source } from "../types.ts";
+import type { Source } from "../types.js";
 
 const BASE_URL = "https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts";
 

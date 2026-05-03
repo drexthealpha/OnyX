@@ -1,4 +1,4 @@
-import { getTab, getRefMap } from "./state";
+import { getTab, getRefMap } from "../state";
 
 export async function typeText(
   tabId: string,

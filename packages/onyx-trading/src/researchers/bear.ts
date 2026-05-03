@@ -49,24 +49,17 @@ Make the strongest case AGAINST buying this token right now.`;
     messages: [{ role: 'user', content: prompt }],
   });
 
-  const text = (message.content.find((b: unknown) => (b as ContentBlock).type === 'text') as ContentBlock | undefined)?.text ?? '{}';
-  let parsed: { thesis: string; supportingPoints: string[]; risks: string[]; confidence: number };
-
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    parsed = {
-      thesis: 'Overbought conditions suggest downside risk.',
-      supportingPoints: ['RSI elevated, near overbought territory', 'MACD divergence forming'],
-      risks: ['Strong momentum could continue short term'],
-      confidence: 0.55,
-    };
+  const text = (message.content.find((b: unknown) => (b as ContentBlock).type === 'text') as ContentBlock | undefined)?.text;
+  if (!text) {
+    throw new Error('Bear researcher: No text content in AI response');
   }
 
+  const parsed: { thesis: string; supportingPoints: string[]; risks: string[]; confidence: number } = JSON.parse(text);
+
   return {
-    thesis: parsed.thesis ?? '',
-    supportingPoints: parsed.supportingPoints ?? [],
-    risks: parsed.risks ?? [],
+    thesis: parsed.thesis,
+    supportingPoints: parsed.supportingPoints,
+    risks: parsed.risks,
     confidence: Math.max(0, Math.min(1, parsed.confidence ?? 0.5)),
     stance: 'BEAR',
   };

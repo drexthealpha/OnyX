@@ -41,19 +41,19 @@ export async function selectMarket(strategy: MarketStrategy): Promise<Market> {
   switch (strategy) {
     case 'CHEAPEST':
       // Sort by jobPrice ascending — user pays least
-      sorted = [...pool].sort((a, b) => a.jobPrice - b.jobPrice);
+      sorted = [...pool].sort((a, b) => Number(a.jobPrice) - Number(b.jobPrice));
       break;
 
     case 'FASTEST':
       // Sort by nodeXnosMinimum descending — higher stake = better hardware
-      sorted = [...pool].sort((a, b) => b.nodeXnosMinimum - a.nodeXnosMinimum);
+      sorted = [...pool].sort((a, b) => Number(b.nodeXnosMinimum) - Number(a.nodeXnosMinimum));
       break;
 
     case 'BALANCED': {
       // Sort by price-per-stake-unit ascending (low cost, high quality)
       // Guard against division by zero
       const score = (m: Market): number =>
-        m.nodeXnosMinimum > 0 ? m.jobPrice / m.nodeXnosMinimum : Infinity;
+        Number(m.nodeXnosMinimum) > 0 ? Number(m.jobPrice) / Number(m.nodeXnosMinimum) : Infinity;
       sorted = [...pool].sort((a, b) => score(a) - score(b));
       break;
     }

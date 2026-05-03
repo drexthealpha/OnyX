@@ -1,4 +1,4 @@
-import { RL_PORT } from "../../../kernel/constants.ts";
+const RL_PORT = 30000;
 
 export type ConversationTelemetry = {
   conversationId: string;

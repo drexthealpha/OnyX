@@ -70,7 +70,7 @@ export async function getPagePerformance(
     throw new Error(`GA4 API error ${res.status}: ${err}`);
   }
 
-  const data = await res.json();
+  const data = await res.json() as any;
 
   if (!data.rows || data.rows.length === 0) {
     return { sessions: 0, bounce: 0, avgTime: 0 };

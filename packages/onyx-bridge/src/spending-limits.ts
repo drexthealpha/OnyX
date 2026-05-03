@@ -38,18 +38,16 @@ export class SpendingLimitEnforcer {
     const totalAfter = currentSpend + amountLamports;
     
     if (totalAfter > this.dailyLimit) {
-      const kernelUrl = process.env.KERNEL_URL || 'http://localhost:3000';
-      
-      fetch(`${kernelUrl}/kernel/alarm-and-abort`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dwalletId,
-          attemptedAmount: amountLamports.toString(),
-          currentSpend: currentSpend.toString(),
-          dailyLimit: this.dailyLimit.toString(),
-          timestamp: Date.now(),
-        }),
+      // Trigger kernel alarm directly (library mode)
+      import('@onyx/kernel/alarm-and-abort').then(({ alarm }) => {
+        import('@onyx/kernel/types').then(({ AlarmCode }) => {
+          alarm(dwalletId, AlarmCode.BUDGET_CAP, {
+            attemptedAmount: amountLamports.toString(),
+            currentSpend: currentSpend.toString(),
+            dailyLimit: this.dailyLimit.toString(),
+            timestamp: Date.now(),
+          });
+        });
       }).catch(() => {});
       
       throw new Error(

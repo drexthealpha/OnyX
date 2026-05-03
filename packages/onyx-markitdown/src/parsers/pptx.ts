@@ -6,7 +6,7 @@ import { createRequire } from "module";
 async function getJSZip() {
   // @ts-ignore
   const mod = await import("jszip");
-  return mod.default ?? mod;
+  return (mod.default ?? mod) as any;
 }
 
 async function getXml2js() {
@@ -51,7 +51,7 @@ function extractTextRuns(obj: unknown): string[] {
 function extractSlideTitle(slideXml: Record<string, unknown>): string | null {
   try {
     const spTree =
-      (slideXml["p:sld"] as Record<string, unknown>)?.["p:cSld"]?.[0]?.["p:spTree"]?.[0] as
+      (slideXml["p:sld"] as any)?.[0]?.["p:cSld"]?.[0]?.["p:spTree"]?.[0] as
         | Record<string, unknown>
         | undefined;
 

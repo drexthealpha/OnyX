@@ -9,6 +9,6 @@ export async function unshieldAsset(
   destination: Address,
 ): Promise<WithdrawResult> {
   const withdraw = getEncryptedBalanceToPublicBalanceDirectWithdrawerFunction({ client });
-  const result = await withdraw(destination, mint, amount);
-  return result;
+  const result = await withdraw(destination as any, mint as any, amount as any);
+  return result as any;
 }

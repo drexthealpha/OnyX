@@ -1,1 +1,0 @@
-{"version":3,"file":"memory-writer.d.ts","sourceRoot":"","sources":["memory-writer.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,EAAE,aAAa,EAAE,MAAM,YAAY,CAAC;AAIhD,MAAM,WAAW,WAAW;IAC1B,OAAO,EAAE,OAAO,CAAC;IACjB,EAAE,CAAC,EAAE,MAAM,CAAC;IACZ,KAAK,CAAC,EAAE,MAAM,CAAC;CAChB;AAED,wBAAsB,eAAe,CAAC,MAAM,EAAE,aAAa,GAAG,OAAO,CAAC,WAAW,CAAC,CA4CjF"}

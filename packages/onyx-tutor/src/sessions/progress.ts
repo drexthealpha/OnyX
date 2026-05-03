@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import { mkdirSync } from 'node:fs';
-import type { ProgressRecord } from '../types.ts';
-import { DomainLevel } from '../types.ts';
+import type { ProgressRecord } from '../types.js';
+import { DomainLevel } from '../types.js';
 
 const DB_PATH = './data/learner-profiles.db';
 mkdirSync('./data', { recursive: true });

@@ -34,7 +34,7 @@ export {
 export { compress } from './compress.js';
 
 // Store
-export { saveCrystal, getCrystal, listCrystals } from './store.js';
+export { saveCrystal, getCrystal, listCrystals, saveCrystal as store } from './store.js';
 
 // Inject
 export { inject } from './inject.js';

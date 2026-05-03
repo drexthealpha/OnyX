@@ -1,18 +1,4 @@
-import { Plugin, Provider, IAgentRuntime, Memory, State, ProviderResult } from "@elizaos/core";
-
-export interface NosanaJobDefinition {
-  ops: Array<{
-    id: string;
-    args: {
-      image: string;
-      expose: number;
-      env: Record<string, string>;
-    };
-    execution: { group: string };
-    type: string;
-  }>;
-  version: string;
-}
+import { Plugin, Provider, IAgentRuntime, Memory, State, ProviderResult, Action, HandlerCallback, ActionResult } from "@elizaos/core";
 
 export const nosanaStatusProvider: Provider = {
   name: "nosana-status",
@@ -33,28 +19,60 @@ export const nosanaStatusProvider: Provider = {
   }
 };
 
-export function buildNosanaJobDef(imageTag: string, envVars: Record<string, string>): NosanaJobDefinition {
-  return {
-    ops: [
-      {
-        id: "agent",
-        args: {
-          image: imageTag,
-          expose: 3000,
-          env: envVars,
-        },
-        execution: { group: "run" },
-        type: "container/run",
-      },
-    ],
-    version: "0.1",
-  };
-}
+export const submitJobAction: Action = {
+  name: "SUBMIT_GPU_JOB",
+  description: "Submit a GPU compute job to the Nosana network for training or inference.",
+  simulated: false,
+  validate: async (runtime: IAgentRuntime, message: Memory) => {
+    return !!(process.env.NOSANA_PRIVATE_KEY && process.env.NOSANA_RPC_URL);
+  },
+  handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: HandlerCallback): Promise<ActionResult> => {
+    const text = message.content?.text || "";
+    const imageMatch = text.match(/image\s+([a-zA-Z0-9.\-_/:]+)/i);
+    const image = imageMatch?.[1] || "nosana/ai-training:latest";
+
+    try {
+      const { getNosanaClient, JobBuilder } = await import("@onyx/compute");
+      const client = await getNosanaClient();
+      
+      const builder = new JobBuilder();
+      const jobDef = builder
+        .setImage(image)
+        .setEnv({
+          ONYX_AGENT_ID: runtime.agentId,
+          ONYX_TASK: "compute-on-demand"
+        })
+        .setExpose(3000)
+        .buildObject();
+
+      // nosana-kit API: client.jobs.post(jobDef)
+      const result = await (client as any).jobs.post(jobDef);
+
+      const responseText = `Nosana GPU job submitted successfully!
+Job ID: ${result.job}
+Market: ${result.market}
+Image: ${image}`;
+
+      if (callback) await callback({ text: responseText });
+      return { text: responseText, success: true };
+    } catch (error: any) {
+      const err = `Nosana job submission failed: ${error.message}`;
+      if (callback) await callback({ text: err });
+      return { text: err, success: false };
+    }
+  },
+  examples: [
+    [
+      { user: "{{user1}}", content: { text: "Deploy a GPU job with image pytorch/pytorch for training" } },
+      { user: "{{user2}}", content: { text: "Submitting GPU job to Nosana network...", action: "SUBMIT_GPU_JOB" } }
+    ]
+  ]
+};
 
 export const nosanaPlugin: Plugin = {
   name: "onyx-nosana",
   description: "Submits and manages Nosana GPU compute jobs for ONYX agents",
-  actions: [],
+  actions: [submitJobAction],
   providers: [nosanaStatusProvider],
   evaluators: [],
   services: [],

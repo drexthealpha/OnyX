@@ -23,7 +23,7 @@ export class DiscordChannel implements Channel {
     if (!this.client) throw new Error("DiscordChannel not initialized");
     const channel = await this.client.channels.fetch(to);
     if (!channel?.isTextBased()) throw new Error(`Channel ${to} is not text-based`);
-    await channel.send(msg.content);
+    await (channel as any).send(msg.content);
   }
 
   onMessage(handler: (msg: IncomingMessage, from: string) => Promise<void>): void {

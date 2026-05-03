@@ -1,4 +1,4 @@
-import { getTab, getRefMap } from "./state";
+import { getTab, getRefMap } from "../state";
 
 export async function click(tabId: string, elementRef: string): Promise<void> {
   const page = getTab(tabId);

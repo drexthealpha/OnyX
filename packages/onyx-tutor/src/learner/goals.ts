@@ -1,4 +1,4 @@
-import type { LearnerProfile } from '../types.ts';
+import type { LearnerProfile } from '../types.js';
 
 export class GoalTracker {
   inferGoals(profile: LearnerProfile): string[] {

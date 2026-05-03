@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { ProfileStore } from '../learner/profile.ts';
-import { DomainLevel } from '../types.ts';
-import type { StudyPlan, LearnerProfile } from '../types.ts';
+import { ProfileStore } from '../learner/profile.js';
+import { DomainLevel } from '../types.js';
+import type { StudyPlan, LearnerProfile } from '../types.js';
 
 const profiles = new ProfileStore();
 

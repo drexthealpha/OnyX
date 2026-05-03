@@ -5,7 +5,7 @@ import path from "path";
 async function getPdfParse() {
   // @ts-ignore
   const mod = await import("pdf-parse");
-  return mod.default ?? mod;
+  return (mod.default ?? mod) as any;
 }
 
 /**

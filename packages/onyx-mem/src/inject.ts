@@ -11,8 +11,6 @@ import { listCrystals } from './store.js';
 const MAX_INJECT_RESULTS = 3;
 const INJECT_PREFIX = 'From previous sessions:';
 
-import { semanticSearch } from '@onyx/semantic';─────────────────────────────────────────────────
-
 /**
  * Attempt to call @onyx/semantic for vector search.
  * Returns null if the package is not available (graceful degradation).

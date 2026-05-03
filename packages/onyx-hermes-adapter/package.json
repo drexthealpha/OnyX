@@ -3,9 +3,13 @@
   "version": "0.1.0",
   "description": "ONYX ↔ Hermes ACP adapter — routes Hermes skill requests to ONYX skill execution",
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

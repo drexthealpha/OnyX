@@ -1,29 +1,29 @@
 import type { Pipeline } from './pipeline.js';
 import type { PipelineResult, StepResult } from './context.js';
 
-const KERNEL_URL = process.env.KERNEL_URL ?? 'http://localhost:3000';
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 
 async function phaseLog(stepName: string, status: 'start' | 'end' | 'error', ms?: number): Promise<void> {
   try {
-    await fetch(`${KERNEL_URL}/phase-table`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phase: 'lobster', stepName, status, ms }),
+    const { phaseLog: kernelLog } = await import('@onyx/kernel/phase-table');
+    kernelLog({
+      service: 'lobster',
+      from: 'active',
+      to: status === 'error' ? 'error' : 'active',
+      timestamp: Date.now(),
+      metadata: { stepName, status, ms },
     });
   } catch {
-    // kernel logging is best-effort; never block the pipeline
+    // best-effort
   }
 }
 
 async function registerAbort(stepName: string, reason: string): Promise<void> {
   try {
-    await fetch(`${KERNEL_URL}/alarm-and-abort`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ stepName, reason }),
-    });
+    const { alarm } = await import('@onyx/kernel/alarm-and-abort');
+    const { AlarmCode } = await import('@onyx/kernel/types');
+    alarm('lobster', AlarmCode.POLICY_VIOLATION, { stepName, reason });
   } catch {
     // best-effort
   }
