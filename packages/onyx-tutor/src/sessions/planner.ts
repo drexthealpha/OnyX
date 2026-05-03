@@ -6,7 +6,7 @@ import type { StudyPlan, LearnerProfile } from '../types.js';
 const profiles = new ProfileStore();
 
 function getClient(): Anthropic {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env['ANTHROPIC_API_KEY'];
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
   return new Anthropic({ apiKey });
 }
@@ -27,14 +27,17 @@ function buildProfileContext(profile: LearnerProfile, topic: string): string {
   let relevantLevel = DomainLevel.BEGINNER;
   for (const domain of domainKeys) {
     if (topicLower.includes(domain)) {
-      relevantLevel = profile.domains[domain].level;
-      break;
+      const record = profile.domains[domain];
+      if (record) {
+        relevantLevel = record.level;
+        break;
+      }
     }
   }
 
   if (domainKeys.length > 0 && relevantLevel === DomainLevel.BEGINNER) {
     relevantLevel = Math.max(
-      ...domainKeys.map((d) => profile.domains[d].level),
+      ...domainKeys.map((d) => profile.domains[d]?.level ?? DomainLevel.BEGINNER),
     ) as DomainLevel;
   }
 
@@ -74,16 +77,18 @@ Return ONLY valid JSON (no markdown) with this shape:
   });
 
   const content = response.content[0];
-  if (content.type !== 'text') throw new Error('Unexpected response type');
+  if (!content || content.type !== 'text') throw new Error('Unexpected response type');
 
   let parsed: { steps: string[]; estimatedMinutes: number };
 
   try {
-    parsed = JSON.parse(content.text.trim());
+    const text = (content as any).text || '';
+    parsed = JSON.parse(text.trim());
   } catch {
-    const match = content.text.match(/\{[\s\S]*\}/);
+    const text = (content as any).text || '';
+    const match = text.match(/\{[\s\S]*\}/);
     if (!match) throw new Error('Could not parse study plan from Claude response');
-    parsed = JSON.parse(match[0]);
+    parsed = JSON.parse(match[0]!);
   }
 
   if (!Array.isArray(parsed.steps) || parsed.steps.length < 3) {

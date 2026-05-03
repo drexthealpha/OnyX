@@ -8,6 +8,7 @@ export async function browserAction<T>(
   url: string,
   extractFn: (snapshot: Snapshot) => T,
 ): Promise<T> {
+  // @ts-ignore
   const browser = await import('@onyx/browser');
 
   const tab = await browser.createTab(url);

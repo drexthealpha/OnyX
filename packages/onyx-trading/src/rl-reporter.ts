@@ -18,7 +18,7 @@ function computeSharpe(returns: number[], riskFreeRate = 0.05 / 365): number {
 }
 
 export async function reportTrade(trade: CompletedTrade): Promise<void> {
-  const rlPort = process.env.RL_PORT ?? '4000';
+  const rlPort = process.env['RL_PORT'] ?? '4000';
   const rlUrl = `http://localhost:${rlPort}/outcome`;
 
   const recentTrades = getLastNTrades(30);

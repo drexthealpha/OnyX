@@ -1,11 +1,17 @@
 import { Plugin, Provider, IAgentRuntime, Memory, State, ProviderResult, Action, HandlerCallback, ActionResult } from "@elizaos/core";
 
+export interface NosanaJobDefinition {
+  image: string;
+  env?: Record<string, string>;
+  expose?: number;
+}
+
 export const nosanaStatusProvider: Provider = {
   name: "nosana-status",
   position: 20,
   description: "Provides Nosana RPC connection status",
   get: async (runtime: IAgentRuntime, message: Memory, state: State): Promise<ProviderResult> => {
-    const rpcUrl = runtime.getSetting?.("NOSANA_RPC_URL") ?? process.env.NOSANA_RPC_URL;
+    const rpcUrl = runtime.getSetting?.("NOSANA_RPC_URL") ?? process.env['NOSANA_RPC_URL'];
     if (!rpcUrl) {
       return { text: "Nosana RPC: not configured", values: { online: false as string | boolean } };
     }
@@ -19,14 +25,25 @@ export const nosanaStatusProvider: Provider = {
   }
 };
 
+export function buildNosanaJobDef(image: string, env: Record<string, string> = {}): NosanaJobDefinition {
+  return {
+    image,
+    env: {
+      ONYX_TASK: "compute",
+      ...env
+    },
+    expose: 3000
+  };
+}
+
 export const submitJobAction: Action = {
   name: "SUBMIT_GPU_JOB",
   description: "Submit a GPU compute job to the Nosana network for training or inference.",
   simulated: false,
   validate: async (runtime: IAgentRuntime, message: Memory) => {
-    return !!(process.env.NOSANA_PRIVATE_KEY && process.env.NOSANA_RPC_URL);
+    return !!(process.env['NOSANA_PRIVATE_KEY'] && process.env['NOSANA_RPC_URL']);
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     const imageMatch = text.match(/image\s+([a-zA-Z0-9.\-_/:]+)/i);
     const image = imageMatch?.[1] || "nosana/ai-training:latest";
@@ -63,8 +80,8 @@ Image: ${image}`;
   },
   examples: [
     [
-      { user: "{{user1}}", content: { text: "Deploy a GPU job with image pytorch/pytorch for training" } },
-      { user: "{{user2}}", content: { text: "Submitting GPU job to Nosana network...", action: "SUBMIT_GPU_JOB" } }
+      { name: "{{user1}}", content: { text: "Deploy a GPU job with image pytorch/pytorch for training" } },
+      { name: "{{user2}}", content: { text: "Submitting GPU job to Nosana network...", action: "SUBMIT_GPU_JOB" } }
     ]
   ]
 };
@@ -77,8 +94,8 @@ export const nosanaPlugin: Plugin = {
   evaluators: [],
   services: [],
   init: async (config: Record<string, string>, runtime: IAgentRuntime): Promise<void> => {
-    const rpcUrl = config.NOSANA_RPC_URL ?? process.env.NOSANA_RPC_URL;
-    const privateKey = config.NOSANA_PRIVATE_KEY ?? process.env.NOSANA_PRIVATE_KEY;
+    const rpcUrl = config['NOSANA_RPC_URL'] ?? process.env['NOSANA_RPC_URL'];
+    const privateKey = config['NOSANA_PRIVATE_KEY'] ?? process.env['NOSANA_PRIVATE_KEY'];
     const logger = runtime.logger;
     if (!rpcUrl || !privateKey) {
       if (logger?.warn) logger.warn("onyx-nosana: NOSANA_RPC_URL or NOSANA_PRIVATE_KEY not set. Nosana jobs disabled.");

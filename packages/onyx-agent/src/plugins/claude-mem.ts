@@ -10,7 +10,7 @@ export const restoreMemoriesAction: Action = {
     return text.includes("restore memories") || text.includes("load memories");
   },
   handler: async (runtime, message, state, options, callback): Promise<ActionResult | undefined> => {
-    const memPath = process.env.CLAUDE_MEM_PATH ?? "./data/claude-mem.json";
+    const memPath = process.env['CLAUDE_MEM_PATH'] ?? "./data/claude-mem.json";
     try {
       if (!existsSync(memPath)) {
         if (callback) await callback({ text: "No persisted memories found." });
@@ -50,7 +50,7 @@ export const persistMemoriesEvaluator: Evaluator = {
     return true;
   },
   handler: async (runtime: IAgentRuntime, message: Memory, state?: State): Promise<ActionResult | undefined> => {
-    const memPath = process.env.CLAUDE_MEM_PATH ?? "./data/claude-mem.json";
+    const memPath = process.env['CLAUDE_MEM_PATH'] ?? "./data/claude-mem.json";
     const logger = runtime.logger;
     try {
       const memories = await runtime.getMemories({
@@ -77,7 +77,7 @@ export const claudeMemPlugin: Plugin = {
   providers: [],
   evaluators: [persistMemoriesEvaluator],
   init: async (_config: Record<string, string>, runtime: IAgentRuntime): Promise<void> => {
-    const memPath = process.env.CLAUDE_MEM_PATH ?? "./data/claude-mem.json";
+    const memPath = process.env['CLAUDE_MEM_PATH'] ?? "./data/claude-mem.json";
     const logger = runtime.logger;
     try {
       if (!existsSync(memPath)) {

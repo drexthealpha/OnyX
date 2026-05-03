@@ -61,7 +61,7 @@ export interface NosanaOp {
   };
 }
 
-interface JobDefinition {
+export interface JobDefinition {
   version: typeof SCHEMA_VERSION;
   ops: NosanaOp[];
   meta?: {

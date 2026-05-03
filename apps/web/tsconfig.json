@@ -24,7 +24,9 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "target": "ES2017",
+    "moduleResolution": "node"
   },
   "include": [
     "next-env.d.ts",

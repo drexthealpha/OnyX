@@ -21,7 +21,7 @@ export async function executePrivate(params: PrivateTradeParams): Promise<Execut
   const { token, action, amountUsd, slippageBps = 100 } = params;
 
   try {
-    const walletPath = process.env.ONYX_WALLET_PATH;
+    const walletPath = process.env['ONYX_WALLET_PATH'];
     if (!walletPath) {
       throw new Error(
         'ONYX_WALLET_PATH env var not set — set it to the path of your Solana keypair JSON file',

@@ -1,7 +1,7 @@
 import { Pipeline } from '../pipeline.js';
 import { umbraShield } from '../stdlib/umbra-shield.js';
 
-const USDC_MINT = process.env.USDC_MINT ?? 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+const USDC_MINT = process.env['USDC_MINT'] ?? 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
 
 export interface Employee {
   address: string;

@@ -1,9 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "lib": [
-      "ES2022"
+      "ES2022",
+      "DOM"
     ],
     "jsx": "react-jsx",
     "jsxImportSource": "react",
@@ -14,8 +16,8 @@
     "declaration": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "moduleResolution": "Bundler",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "composite": false
   },
   "include": [
     "src/**/*"

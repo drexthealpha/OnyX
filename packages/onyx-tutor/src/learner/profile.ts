@@ -33,7 +33,7 @@ export class ProfileStore {
 
   getProfile(userId: string): LearnerProfile {
     const row = this.db
-      .query('SELECT * FROM profiles WHERE user_id = ?')
+      .prepare('SELECT * FROM profiles WHERE user_id = ?')
       .get(userId) as Record<string, string> | null;
 
     if (!row) {
@@ -47,25 +47,26 @@ export class ProfileStore {
     }
 
     return {
-      userId: row.user_id,
-      domains: JSON.parse(row.domains),
-      style: row.style as LearnerProfile['style'],
-      goals: JSON.parse(row.goals),
-      preferences: JSON.parse(row.preferences),
+      userId: row['user_id']!,
+      domains: JSON.parse(row['domains']!),
+      style: row['style'] as LearnerProfile['style'],
+      goals: JSON.parse(row['goals']!),
+      preferences: JSON.parse(row['preferences']!),
     };
   }
 
   // ── Write ─────────────────────────────────────────────────────────────────
 
   private upsert(profile: LearnerProfile): void {
-    this.db.run(
+    this.db.prepare(
       `INSERT INTO profiles (user_id, domains, style, goals, preferences)
        VALUES (?, ?, ?, ?, ?)
        ON CONFLICT(user_id) DO UPDATE SET
          domains     = excluded.domains,
          style       = excluded.style,
          goals       = excluded.goals,
-         preferences = excluded.preferences`,
+         preferences = excluded.preferences`
+    ).run(
       [
         profile.userId,
         JSON.stringify(profile.domains),

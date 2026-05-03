@@ -24,7 +24,7 @@ Return ONLY valid JSON matching exactly this schema:
 Be specific. Reference the indicator values. Highlight overvaluation, overbought signals, red flags.`;
 
 export async function research(analysis: MarketAnalysis): Promise<ResearchReport> {
-  const key = process.env.ANTHROPIC_API_KEY;
+  const key = process.env['ANTHROPIC_API_KEY'];
   if (!key) throw new Error('ANTHROPIC_API_KEY env var not set');
   const client = new Anthropic({ apiKey: key });
 

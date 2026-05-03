@@ -5,9 +5,9 @@ export const ikaSignAction: Action = {
   similes: ["SIGN_MESSAGE", "MPC_SIGN", "IKA_AUTHORIZE"],
   description: "Sign a message using the Ika decentralized wallet network.",
   validate: async (runtime: IAgentRuntime, message: Memory) => {
-    return !!(process.env.ONYX_WALLET_PATH);
+    return !!(process.env['ONYX_WALLET_PATH']);
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     // Extract message (crude extraction)
     const msgMatch = text.match(/sign\s+(?:message|text)?\s+["'](.+?)["']/i) || text.match(/message:\s*(.+)/i);
@@ -25,7 +25,7 @@ export const ikaSignAction: Action = {
       return { text: err, success: false };
     }
 
-    const messageToSign = Buffer.from(msgMatch[1]).toString("base64");
+    const messageToSign = Buffer.from(msgMatch[1]!).toString("base64");
     const dwalletPubkey = dwalletMatch[0];
 
     try {
@@ -51,8 +51,8 @@ Wallet: ${dwalletPubkey}`;
   },
   examples: [
     [
-      { user: "{{user1}}", content: { text: "Sign message 'Approve Transaction 123' with wallet 4vMzy9Tst8EwW3V6N7V7Z7N7V7Z7N7V7Z7N7V7Z7N7V7" } },
-      { user: "{{user2}}", content: { text: "Initiating Ika MPC signature...", action: "IKA_SIGN" } }
+      { name: "{{user1}}", content: { text: "Sign message 'Approve Transaction 123' with wallet 4vMzy9Tst8EwW3V6N7V7Z7N7V7Z7N7V7Z7N7V7Z7N7V7" } },
+      { name: "{{user2}}", content: { text: "Initiating Ika MPC signature...", action: "IKA_SIGN" } }
     ]
   ]
 };

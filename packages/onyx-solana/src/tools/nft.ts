@@ -7,7 +7,7 @@ import axios from "axios";
 import type { MCPTool } from "../types.js";
 
 function getApiKey(): string {
-  const key = process.env.HELIUS_API_KEY;
+  const key = process.env['HELIUS_API_KEY'];
   if (!key) throw new Error("HELIUS_API_KEY not set");
   return key;
 }

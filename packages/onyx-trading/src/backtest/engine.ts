@@ -46,7 +46,7 @@ export async function run(
   let lastEquity = cfg.startingEquity;
 
   for (let i = 0; i < candles.length; i++) {
-    const candle = candles[i];
+    const candle = candles[i]!;
     currentPrice = candle.close;
 
     const signal = strategyFn(candle, i, candles.slice(0, i + 1));
@@ -104,7 +104,7 @@ export async function run(
   const completedPairs = Math.min(buyTrades.length, sellTrades.length);
   let wins = 0;
   for (let i = 0; i < completedPairs; i++) {
-    if (sellTrades[i].price > buyTrades[i].price) wins++;
+    if (sellTrades[i]!.price > buyTrades[i]!.price) wins++;
   }
 
   return {

@@ -4,10 +4,17 @@
   "description": "Ink TUI for terminal control of ONYX",
   "type": "module",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "bin": { "onyx-control": "bin/onyx-control.js" },
   "scripts": {
     "dev": "tsx src/index.tsx",
-    "build": "tsup src/index.tsx --format esm",
+    "build": "tsup src/index.tsx --format esm --dts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

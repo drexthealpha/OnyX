@@ -7,7 +7,7 @@
 import axios from 'axios';
 
 function getApiKey(): string {
-  const key = process.env.HELIUS_API_KEY;
+  const key = process.env['HELIUS_API_KEY'];
   if (!key) throw new Error('HELIUS_API_KEY env var not set');
   return key;
 }

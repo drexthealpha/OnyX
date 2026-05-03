@@ -4,6 +4,12 @@
   "description": "Ika dWallet MPC integration for ONYX keyless signing",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "type": "module",
   "private": true,
   "scripts": {

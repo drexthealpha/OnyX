@@ -36,14 +36,24 @@ export async function indexDocuments(docs: LoadedDocument[]): Promise<void> {
   let semanticAvailable = false;
 
   try {
-    const semantic = await import('@onyx/semantic');
+    const { createSemanticClient } = await import('@onyx/semantic');
+    const sem = createSemanticClient();
     for (const doc of docs) {
       const chunks = chunkDocument(doc);
-      await semantic.upsertChunks(chunks.map((c) => ({ id: `${c.documentPath}:${c.chunkIndex}`, text: c.text })));
+      await sem.documents.upsert(chunks.map((c) => ({ 
+        id: `${c.documentPath}:${c.chunkIndex}`, 
+        text: c.text,
+        payload: {
+          timestamp: Date.now(),
+          title: c.documentPath,
+          chunkIndex: c.chunkIndex,
+          totalChunks: chunks.length
+        }
+      })));
     }
     semanticAvailable = true;
-  } catch {
-    console.warn('[onyx-tutor] @onyx/semantic not available, using in-memory index');
+  } catch (err) {
+    console.warn('[onyx-tutor] @onyx/semantic not available or error occurred, using in-memory index:', err);
   }
 
   if (!semanticAvailable) {
@@ -59,13 +69,14 @@ export async function searchKnowledge(
   topK = 3,
 ): Promise<SearchResult[]> {
   try {
-    const semantic = await import('@onyx/semantic');
-    const results = await semantic.search(query, topK);
-    return results.map((r: { text: string; score: number; id: string }) => ({
+    const { createSemanticClient } = await import('@onyx/semantic');
+    const sem = createSemanticClient();
+    const results = await sem.documents.search(query, topK);
+    return results.map((r) => ({
       chunk: {
-        documentPath: r.id.split(':')[0],
+        documentPath: r.id.split(':')[0]!,
         chunkIndex: parseInt(r.id.split(':')[1] ?? '0'),
-        text: r.text,
+        text: (r.payload as any).text || '',
       },
       score: r.score,
     }));

@@ -9,7 +9,7 @@ import type { MCPTool } from "../types.js";
 const BASE = "https://public-api.birdeye.so";
 
 function getApiKey(): string {
-  const key = process.env.BIRDEYE_API_KEY;
+  const key = process.env['BIRDEYE_API_KEY'];
   if (!key) throw new Error("BIRDEYE_API_KEY env var not set");
   return key;
 }

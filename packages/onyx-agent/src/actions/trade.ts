@@ -1,4 +1,4 @@
-import { Action, ActionResult, IAgentRuntime, Memory, State } from "@elizaos/core";
+import { Action, ActionResult, IAgentRuntime, Memory, State, HandlerCallback } from "@elizaos/core";
 
 export const tradeAction: Action = {
   name: "EXECUTE_TRADE",
@@ -10,7 +10,7 @@ export const tradeAction: Action = {
     const tradingEnabled = runtime.getSetting?.("TRADING_ENABLED") === "true";
     return hasKeywords && tradingEnabled;
   },
-  handler: async (runtime, message, state, options, callback): Promise<ActionResult | undefined> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     const amountMatch = text.match(/(\d+(?:\.\d+)?)\s*(sol|usdc|eth|btc)/i);
     const amountStr = amountMatch?.[1] || "1";
@@ -18,7 +18,8 @@ export const tradeAction: Action = {
     
     try {
       // 1. Dynamic import of trading module (library mode)
-      const { execute, resolveToken, getPortfolio, runAnalysis } = await import("@onyx/trading");
+      const trading = await import("@onyx/trading") as any;
+      const { execute, resolveToken, getPortfolio, runAnalysis } = trading;
       
       // 2. Resolve token info
       const tokenInfo = await resolveToken(tokenSymbol);
@@ -30,8 +31,7 @@ export const tradeAction: Action = {
       const portfolio = getPortfolio();
 
       // 5. Execute trade directly
-      const result = await execute(tokenInfo.mint, decision, portfolio, {
-        dryRun: false, // REAL TRADE
+      const result = await execute(tokenInfo.mint, decision.riskDecision, portfolio, {
         usePrivacy: true
       });
 

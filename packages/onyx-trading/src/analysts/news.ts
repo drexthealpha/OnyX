@@ -8,7 +8,7 @@ interface ContentBlock {
 }
 
 function getClient(): Anthropic {
-  const key = process.env.ANTHROPIC_API_KEY;
+  const key = process.env['ANTHROPIC_API_KEY'];
   if (!key) throw new Error('ANTHROPIC_API_KEY env var not set');
   return new Anthropic({ apiKey: key });
 }

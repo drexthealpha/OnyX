@@ -62,6 +62,7 @@ export async function execute(pipeline: Pipeline, input: unknown): Promise<Pipel
       const name = `approve:${def.prompt.slice(0, 40)}`;
       await phaseLog(name, 'start');
       try {
+        // @ts-ignore
         const gateway = await import('@onyx/gateway');
         await gateway.sendMessage('approval', def.prompt);
         const reply = await gateway.waitForReply('approval');

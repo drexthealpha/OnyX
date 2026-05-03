@@ -22,7 +22,7 @@ export const shieldAssetTool: MCPTool = {
     const { Keypair } = await import("@solana/web3.js");
     const { readFileSync } = await import("fs");
     
-    const walletPath = process.env.ONYX_WALLET_PATH;
+    const walletPath = process.env['ONYX_WALLET_PATH'];
     if (!walletPath) throw new Error("ONYX_WALLET_PATH not set");
     const secret = JSON.parse(readFileSync(walletPath, "utf8"));
     const signer = Keypair.fromSecretKey(Uint8Array.from(secret));
@@ -56,7 +56,7 @@ export const unshieldAssetTool: MCPTool = {
     const { Keypair } = await import("@solana/web3.js");
     const { readFileSync } = await import("fs");
     
-    const walletPath = process.env.ONYX_WALLET_PATH;
+    const walletPath = process.env['ONYX_WALLET_PATH'];
     if (!walletPath) throw new Error("ONYX_WALLET_PATH not set");
     const secret = JSON.parse(readFileSync(walletPath, "utf8"));
     const signer = Keypair.fromSecretKey(Uint8Array.from(secret));

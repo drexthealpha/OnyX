@@ -11,7 +11,7 @@ import { analyzeSocial } from './analysts/social.js';
 import * as bullResearcher from './researchers/bull.js';
 import * as bearResearcher from './researchers/bear.js';
 import { adjudicate } from './risk/manager.js';
-import { getPortfolio } from './portfolio.js';
+import { getPortfolio, sync } from './portfolio.js';
 import { TradeDecision, MarketAnalysis } from './types.js';
 
 export type RiskProfile = 'aggressive' | 'neutral' | 'conservative';
@@ -40,6 +40,9 @@ export async function runAnalysis(
   config: Partial<OrchestratorConfig> = {},
 ): Promise<TradeDecision> {
   const cfg = { ...DEFAULT_CONFIG, ...config };
+
+  // Ground the portfolio in reality before analysis
+  await sync();
 
   const marketAnalysis: MarketAnalysis = await analyze(token);
 

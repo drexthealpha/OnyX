@@ -80,10 +80,15 @@ export async function swapFHE(
   payer: any
 ): Promise<EUint64> {
   const inputs = [reserveIn.ciphertext, reserveOut.ciphertext, amountIn.ciphertext, minOut.ciphertext]
-  const outputs = [new PublicKey(amountIn.ciphertext).toBase58() + '_swap_out']
+  
+  const [outPubkey] = PublicKey.findProgramAddressSync(
+    [Buffer.from('output'), new PublicKey(amountIn.ciphertext).toBuffer()],
+    encryptContext.encryptProgram
+  )
+  const outputs = [outPubkey.toBase58()]
   const graphBytes = buildSwapGraph()
 
   await executeGraph(connection, graphBytes, inputs, outputs, encryptContext, payer)
 
-  return makeEUint64(outputs[0])
+  return makeEUint64(outputs[0]!)
 }

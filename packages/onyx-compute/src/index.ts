@@ -5,6 +5,7 @@ export type { ComputeBackend } from './router.js';
 // Nosana sub-exports
 export { getNosanaClient } from './nosana/client.js';
 export { JobBuilder } from './nosana/job-builder.js';
+export type { JobDefinition } from './nosana/job-builder.js';
 export { selectMarket } from './nosana/markets.js';
 export type { MarketStrategy } from './nosana/markets.js';
 

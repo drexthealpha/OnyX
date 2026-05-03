@@ -1,16 +1,16 @@
-import { Action, ActionResult, IAgentRuntime, Memory, State } from "@elizaos/core";
+import { Action, ActionResult, IAgentRuntime, Memory, State, HandlerCallback } from "@elizaos/core";
 
 export const bridgeAction: Action = {
-  name: "BRIDGE_ASSET",
-  similes: ["BRIDGE", "CROSS_CHAIN", "IKA_BRIDGE", "TRANSFER_CROSS_CHAIN"],
-  description: "Bridges an asset across chains using Ika dWallet bridge protocol",
+  name: "BRIDGE_ASSETS",
+  similes: ["CROSS_CHAIN", "TRANSFER_OUT", "IKA_BRIDGE"],
+  description: "Bridge assets across chains using Ika MPC.",
   validate: async (runtime: IAgentRuntime, message: Memory): Promise<boolean> => {
     const text = (message.content?.text || "").toLowerCase();
-    const hasBridgeKeyword = text.includes("bridge") || text.includes("cross-chain") || text.includes("ika");
+    const hasBridgeKeyword = text.includes("bridge") || text.includes("cross chain") || text.includes("send to eth") || text.includes("send to btc");
     const ikaEnabled = runtime.getSetting?.("IKA_ENABLED") === "true";
     return hasBridgeKeyword && ikaEnabled;
   },
-  handler: async (runtime, message, state, options, callback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     const amountMatch = text.match(/(\d+(?:\.\d+)?)\s*(sol|eth|btc)/i);
     const amount = amountMatch?.[1] || "1";
@@ -25,7 +25,7 @@ export const bridgeAction: Action = {
       destChain = "Solana";
     }
     try {
-      const response = await runtime.fetch?.("http://localhost:" + (process.env.IKA_PORT ?? "5030") + "/bridge", {
+      const response = await runtime.fetch?.("http://localhost:" + (process.env['IKA_PORT'] ?? "5030") + "/bridge", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

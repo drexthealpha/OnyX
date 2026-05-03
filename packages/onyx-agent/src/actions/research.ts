@@ -1,4 +1,4 @@
-import { Action, ActionResult, IAgentRuntime, Memory, State, ModelType } from "@elizaos/core";
+import { Action, ActionResult, IAgentRuntime, Memory, State, HandlerCallback, ModelType } from "@elizaos/core";
 
 export const researchAction: Action = {
   name: "DEEP_RESEARCH",
@@ -8,9 +8,11 @@ export const researchAction: Action = {
     const text = (message.content?.text || "").toLowerCase();
     return text.includes("research") || text.includes("investigate") || text.includes("analyze") || text.includes("find out about");
   },
-  handler: async (runtime, message, state, options, callback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
+    const text = message.content?.text || "";
+    
     try {
-      const response = await runtime.fetch?.("http://localhost:" + (process.env.RESEARCH_PORT ?? "5050") + "/research", {
+      const response = await runtime.fetch?.("http://localhost:" + (process.env['RESEARCH_PORT'] ?? "5050") + "/research", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

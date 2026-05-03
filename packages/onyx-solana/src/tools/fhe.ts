@@ -18,7 +18,7 @@ export const createFHEAccountTool: MCPTool = {
   async execute({ payer }: { payer: string }) {
     const fhe = await import("@onyx/fhe");
     // Use a placeholder caller program ID if not provided in env
-    const callerId = process.env.FHE_CALLER_PROGRAM_ID || "11111111111111111111111111111111";
+    const callerId = process.env['FHE_CALLER_PROGRAM_ID'] || "11111111111111111111111111111111";
     const ctx = await fhe.buildEncryptContext(callerId, payer);
     
     return {

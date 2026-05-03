@@ -111,8 +111,8 @@ export interface CompletedTrade {
   size: number;
   entryPrice: number;
   exitPrice?: number;
-  pnlUsd?: number;
-  pnlPct?: number;
+  pnlUsd?: number | undefined;
+  pnlPct?: number | undefined;
   txHash: string;
   timestamp: number;
 }

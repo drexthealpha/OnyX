@@ -14,6 +14,7 @@ export async function runIntelBrief(topic: string): Promise<void> {
     })
     .step('send-webhook', async (input) => {
       const { topic: t, formatted } = input as { topic: string; formatted: string; sources: unknown[] };
+      // @ts-ignore
       const gateway = await import('@onyx/gateway');
       await gateway.sendMessage('webhook', formatted);
       return { topic: t, sent: true };

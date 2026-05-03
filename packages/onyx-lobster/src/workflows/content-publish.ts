@@ -17,7 +17,7 @@ export async function runContentPublish(options: ContentPublishOptions): Promise
     })
     .step('crosspost', async (input) => {
       const { content: summary } = input as { topic: string; content: string };
-      globalThis.fetch = (async (url: string | URL) => {
+      (globalThis as any).fetch = (async (url: string | URL) => {
         const u = String(url);
         if (u.includes('alarm-and-abort')) {
           const abortCalls: boolean[] = [];

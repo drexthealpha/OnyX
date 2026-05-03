@@ -9,7 +9,7 @@ import type { MCPTool } from "../types.js";
 const PUMP_PROGRAM_ID = "6EF8rrecthR5DkZJv99zz8x9ca674m3kS9sDB9f97y7S";
 
 function getApiKey(): string {
-  const key = process.env.HELIUS_API_KEY;
+  const key = process.env['HELIUS_API_KEY'];
   if (!key) throw new Error("HELIUS_API_KEY not set");
   return key;
 }

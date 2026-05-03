@@ -25,7 +25,7 @@ export function computeMetrics(
 
   const returns: number[] = [];
   for (let i = 1; i < equityCurve.length; i++) {
-    returns.push((equityCurve[i] - equityCurve[i - 1]) / equityCurve[i - 1]);
+    returns.push((equityCurve[i]! - equityCurve[i - 1]!) / equityCurve[i - 1]!);
   }
 
   const mean = returns.reduce((s, r) => s + r, 0) / returns.length;
@@ -49,15 +49,15 @@ export function computeMetrics(
   const sortino = downsideStd > 0 ? ((mean * periodDays - riskFreeRate) / downsideStd) : 0;
 
   let maxDrawdown = 0;
-  let peak = equityCurve[0];
+  let peak = equityCurve[0]!;
   for (const eq of equityCurve) {
     if (eq > peak) peak = eq;
     const dd = (eq - peak) / peak;
     if (dd < maxDrawdown) maxDrawdown = dd;
   }
 
-  const startEq = equityCurve[0];
-  const endEq = equityCurve[equityCurve.length - 1];
+  const startEq = equityCurve[0]!;
+  const endEq = equityCurve[equityCurve.length - 1]!;
   const years = returns.length / periodDays;
   const cagr = years > 0 ? Math.pow(endEq / startEq, 1 / years) - 1 : 0;
 
@@ -66,7 +66,7 @@ export function computeMetrics(
   const buys = trades.filter(t => t.action === 'BUY');
   const sells = trades.filter(t => t.action === 'SELL');
   const pairs = Math.min(buys.length, sells.length);
-  const wins = Array.from({ length: pairs }, (_, i) => sells[i].price > buys[i].price ? 1 : 0)
+  const wins = Array.from({ length: pairs }, (_, i) => sells[i]!.price > buys[i]!.price ? 1 : 0)
     .reduce((s: number, v: number) => s + v, 0);
   const winRate = pairs > 0 ? wins / pairs : 0;
 

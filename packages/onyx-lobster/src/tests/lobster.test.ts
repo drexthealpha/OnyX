@@ -1,9 +1,9 @@
 import { test, expect, vi, beforeEach } from 'vitest';
 
-const originalFetch = globalThis.fetch;
+const originalFetch = (globalThis as any).fetch;
 
 beforeEach(() => {
-  globalThis.fetch = originalFetch;
+  (globalThis as any).fetch = originalFetch;
 });
 
 test('Pipeline passes step 1 output as input to step 2', async () => {
@@ -32,13 +32,13 @@ test('Executor retries exactly 3 times then calls abort', async () => {
   const { Pipeline } = await import('../pipeline.js');
 
   const abortCalls: unknown[] = [];
-  globalThis.fetch = (async (url: string | URL) => {
+  (globalThis as any).fetch = (async (url: string | URL) => {
     const u = String(url);
     if (u.includes('alarm-and-abort')) {
       abortCalls.push(true);
     }
     return new Response('{}', { status: 200 });
-  }) as unknown as typeof fetch;
+  }) as any;
 
   let attempts = 0;
   let threw = false;

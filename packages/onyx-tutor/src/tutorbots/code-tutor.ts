@@ -3,7 +3,7 @@ import { DomainLevel } from '../types.js';
 import type { TutorBot, Question, Score } from '../types.js';
 
 function getClient(): Anthropic {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env['ANTHROPIC_API_KEY'];
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
   return new Anthropic({ apiKey });
 }
@@ -40,8 +40,8 @@ Always show working code. Use markdown with proper syntax highlighting.`;
     });
 
     const content = response.content[0];
-    if (content.type !== 'text') throw new Error('Unexpected response type');
-    return content.text;
+    if (!content || content.type !== 'text') throw new Error('Unexpected response type');
+    return (content as any).text || '';
   }
 
   async quiz(topic: string): Promise<Question[]> {
@@ -68,14 +68,15 @@ Return ONLY valid JSON array (no markdown):
     });
 
     const content = response.content[0];
-    if (content.type !== 'text') throw new Error('Unexpected response type');
+    if (!content || content.type !== 'text') throw new Error('Unexpected response type');
 
+    const text = (content as any).text || '';
     try {
-      return JSON.parse(content.text.trim()) as Question[];
+      return JSON.parse(text.trim()) as Question[];
     } catch {
-      const match = content.text.match(/\[[\s\S]*\]/);
+      const match = text.match(/\[[\s\S]*\]/);
       if (!match) throw new Error('Could not parse quiz questions');
-      return JSON.parse(match[0]) as Question[];
+      return JSON.parse(match[0]!) as Question[];
     }
   }
 
@@ -99,14 +100,15 @@ Return ONLY valid JSON (no markdown):
     });
 
     const content = response.content[0];
-    if (content.type !== 'text') throw new Error('Unexpected response type');
+    if (!content || content.type !== 'text') throw new Error('Unexpected response type');
 
+    const text = (content as any).text || '';
     try {
-      return JSON.parse(content.text.trim()) as Score;
+      return JSON.parse(text.trim()) as Score;
     } catch {
-      const match = content.text.match(/\{[\s\S]*\}/);
+      const match = text.match(/\{[\s\S]*\}/);
       if (!match) throw new Error('Could not parse score');
-      return JSON.parse(match[0]) as Score;
+      return JSON.parse(match[0]!) as Score;
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Action, ActionResult, IAgentRuntime, Memory, State } from "@elizaos/core";
+import { Action, ActionResult, IAgentRuntime, Memory, State, HandlerCallback } from "@elizaos/core";
 
 export const learnAction: Action = {
   name: "START_TUTOR_SESSION",
@@ -8,11 +8,11 @@ export const learnAction: Action = {
     const text = (message.content?.text || "").toLowerCase();
     return text.includes("learn") || text.includes("teach") || text.includes("tutor") || text.includes("explain how") || text.includes("help me understand");
   },
-  handler: async (runtime, message, state, options, callback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     const topic = text.replace(/learn|tutor|teach me|explain how|help me understand/gi, "").trim() || "general topics";
     try {
-      await runtime.fetch?.("http://localhost:" + (process.env.TUTOR_PORT ?? "5060") + "/session", {
+      await runtime.fetch?.("http://localhost:" + (process.env['TUTOR_PORT'] ?? "5060") + "/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

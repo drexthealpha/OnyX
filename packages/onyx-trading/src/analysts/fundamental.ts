@@ -9,9 +9,9 @@ import { FundamentalAnalysis } from '../types.js';
 
 export async function analyzeFundamentals(token: string): Promise<FundamentalAnalysis> {
   const [meta, txStats, overview] = await Promise.all([
-    fetchTokenMetadata(token).catch(() => null),
-    fetchTransactionStats(token).catch(() => null),
-    fetchTokenOverview(token).catch(() => null),
+    fetchTokenMetadata(token),
+    fetchTransactionStats(token),
+    fetchTokenOverview(token),
   ]);
 
   const holders = meta?.holders ?? overview?.holders ?? 0;

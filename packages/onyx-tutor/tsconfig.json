@@ -10,19 +10,10 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "paths": {
-      "@onyx/mem": [
-        "../onyx-mem/src/index.ts"
-      ],
-      "@onyx/semantic": [
-        "../onyx-semantic/src/index.ts"
-      ],
-      "@onyx/markitdown": [
-        "../onyx-markitdown/src/index.ts"
-      ]
-    },
     "moduleResolution": "Bundler",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "types": ["node", "bun"],
+    "lib": ["ES2022", "DOM"]
   },
   "include": [
     "src/**/*"

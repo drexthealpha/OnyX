@@ -81,6 +81,7 @@ export type { BacktestMetrics } from './backtest/metrics.js';
 
 // Data sources
 export { fetchOHLCV, fetchPrice, fetchTokenOverview } from './data/birdeye.js';
+export { resolveToken, reverseResolveToken } from './data/tokens.js';
 export { fetchTokenMetadata, fetchTransactionStats } from './data/helius.js';
 export { fetchGlobalMarketData, fetchCoinPrice, fetchTrendingCoins } from './data/coingecko.js';
 
@@ -123,14 +124,14 @@ import { Connection, Keypair } from '@solana/web3.js';
 import fs from 'fs';
 
 export async function validateEnvironment() {
-  const walletPath = process.env.ONYX_WALLET_PATH;
+  const walletPath = process.env['ONYX_WALLET_PATH'];
   if (!walletPath) throw new Error('ONYX_WALLET_PATH is required for real-world trading.');
   if (!fs.existsSync(walletPath)) throw new Error(`Wallet not found at ${walletPath}`);
   
   const secret = Uint8Array.from(JSON.parse(fs.readFileSync(walletPath, 'utf8')));
   const keypair = Keypair.fromSecretKey(secret);
   
-  const rpcUrl = process.env.NOSANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
+  const rpcUrl = process.env['NOSANA_RPC_URL'] || 'https://api.mainnet-beta.solana.com';
   const conn = new Connection(rpcUrl, 'confirmed');
   
   const balance = await conn.getBalance(keypair.publicKey);
@@ -139,8 +140,8 @@ export async function validateEnvironment() {
     throw new Error(`Insufficient SOL for trading operations. Found ${balance/SOL} SOL, need at least 0.05 SOL.`);
   }
 
-  if (!process.env.BIRDEYE_API_KEY) throw new Error('BIRDEYE_API_KEY is missing. Real-world data requires this key.');
-  if (!process.env.HELIUS_API_KEY) throw new Error('HELIUS_API_KEY is missing. Real-world data requires this key.');
+  if (!process.env['BIRDEYE_API_KEY']) throw new Error('BIRDEYE_API_KEY is missing. Real-world data requires this key.');
+  if (!process.env['HELIUS_API_KEY']) throw new Error('HELIUS_API_KEY is missing. Real-world data requires this key.');
 
   console.log(`[onyx-trading] Environment verified successfully. Using pubkey: ${keypair.publicKey.toBase58()} with balance: ${balance/SOL} SOL.`);
 }

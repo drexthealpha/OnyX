@@ -1,36 +1,42 @@
 {
-  "name": "@onyx/voice",
-  "version": "0.1.0",
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "dependencies": {
-    "@picovoice/porcupine-node": "^3.0.3",
-    "edge-tts": "^1.0.0",
-    "node-fetch": "^3.3.2"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^5.4.0"
-  },
-  "peerDependencies": {
-    "@onyx/agent": "workspace:*",
-    "@onyx/multica": "workspace:*",
-    "@onyx/persona": "workspace:*"
-  },
-  "peerDependenciesMeta": {
-    "@onyx/agent": {
-      "optional": true
-    },
-    "@onyx/multica": {
-      "optional": true
-    },
-    "@onyx/persona": {
-      "optional": true
-    }
-  },
-  "scripts": {
-    "build": "tsc",
-    "test": "pnpm vitest run"
-  }
+    "name":  "@onyx/voice",
+    "version":  "0.1.0",
+    "type":  "module",
+    "main":  "./dist/index.js",
+    "types":  "./dist/index.d.ts",
+    "dependencies":  {
+                         "@picovoice/porcupine-node":  "^3.0.3",
+                         "edge-tts":  "^1.0.0",
+                         "node-fetch":  "^3.3.2"
+                     },
+    "devDependencies":  {
+                            "@types/node":  "^20.0.0",
+                            "typescript":  "^5.4.0"
+                        },
+    "peerDependencies":  {
+                             "@onyx/agent":  "workspace:*",
+                             "@onyx/multica":  "workspace:*",
+                             "@onyx/persona":  "workspace:*"
+                         },
+    "peerDependenciesMeta":  {
+                                 "@onyx/agent":  {
+                                                     "optional":  true
+                                                 },
+                                 "@onyx/multica":  {
+                                                       "optional":  true
+                                                   },
+                                 "@onyx/persona":  {
+                                                       "optional":  true
+                                                   }
+                             },
+    "scripts":  {
+                    "build":  "tsc",
+                    "test":  "pnpm vitest run"
+                },
+    "exports":  {
+                    ".":  {
+                              "types":  "./dist/index.d.ts",
+                              "import":  "./dist/index.js"
+                          }
+                }
 }

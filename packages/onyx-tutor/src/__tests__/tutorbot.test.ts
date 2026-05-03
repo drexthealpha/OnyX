@@ -1,9 +1,9 @@
-import { describe, test, expect, mock } from 'vitest';
+import { describe, test, expect, vi } from 'vitest';
 import { DomainLevel } from '../types.js';
 
 describe('TutorBot interface', () => {
   test('teach() contract: returns non-empty string', async () => {
-    const mockTeach = mock(async (topic: string, level: DomainLevel): Promise<string> => {
+    const mockTeach = vi.fn(async (topic: string, level: DomainLevel): Promise<string> => {
       return `## ${topic} (Level ${level})\n\nThis is a teaching response about ${topic}.`;
     });
 
@@ -14,7 +14,7 @@ describe('TutorBot interface', () => {
   });
 
   test('quiz() contract: returns array of 3 questions', async () => {
-    const mockQuiz = mock(async () => [
+    const mockQuiz = vi.fn(async (_topic: string) => [
       {
         text: 'What is a Solana program?',
         options: ['A) A wallet', 'B) Smart contract', 'C) Token', 'D) Validator'],
@@ -48,7 +48,7 @@ describe('TutorBot interface', () => {
   });
 
   test('evaluate() contract: returns Score with correct boolean', async () => {
-    const mockEvaluate = mock(async () => ({
+    const mockEvaluate = vi.fn(async (_answer: string, _question: any) => ({
       correct: true,
       confidence: 0.95,
       feedback: 'Correct! Solana programs are indeed the smart contract equivalent.',

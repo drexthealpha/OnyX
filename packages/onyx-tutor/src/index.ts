@@ -94,7 +94,7 @@ app.post('/quiz', async (c) => {
 app.post('/evaluate', async (c) => {
   const body = await c.req.json<EvaluateRequest>();
   const bot = TUTORBOTS['crypto'];
-  const score = await bot.evaluate(body.answer, body.question);
+  const score = await bot!.evaluate(body.answer, body.question);
   return c.json(score);
 });
 
@@ -104,13 +104,13 @@ app.post('/plan', async (c) => {
   return c.json(plan);
 });
 
-const PORT = parseInt(process.env.TUTOR_PORT ?? '3008', 10);
+const PORT = parseInt(process.env['TUTOR_PORT'] ?? '3008', 10);
 
 console.log(`[onyx-tutor] Listening on port ${PORT}`);
 
 export async function ask(question?: string, sessionId?: string) {
   const bot = TUTORBOTS["crypto"]; // Default to crypto
-  return bot.teach(question ?? "introduction", 1);
+  return bot!.teach(question ?? "introduction", 1);
 }
 
 export async function getUserProgress(userId: string) {

@@ -1,6 +1,7 @@
 import { onyxCharacter } from "./character.js";
 export { onyxCharacter };
-export { OnyxRuntime, createOnyxRuntime, MEMORY_TABLES, ConversationTelemetry } from "./runtime";
+export type { OnyxRuntime, ConversationTelemetry } from "./runtime";
+export { createOnyxRuntime, MEMORY_TABLES } from "./runtime";
 export * from "./actions";
 export { walletStateProvider } from "./providers/wallet";
 export { budgetRemainingProvider } from "./providers/budget";
@@ -8,7 +9,8 @@ export { screenContextProvider } from "./providers/context";
 export { memoryStateProvider } from "./providers/memory-state";
 export { budgetCheckEvaluator } from "./evaluators/budget";
 export { learningExtractorEvaluator } from "./evaluators/learning";
-export { nosanaPlugin, buildNosanaJobDef, nosanaStatusProvider, NosanaJobDefinition } from "./plugins/nosana";
+export { nosanaPlugin, buildNosanaJobDef, nosanaStatusProvider } from "./plugins/nosana";
+export type { NosanaJobDefinition } from "./plugins/nosana";
 export { solanaPlugin, solanaNetworkProvider } from "./plugins/solana";
 export { umbraPlugin } from "./plugins/umbra";
 export { ikaPlugin } from "./plugins/ika";
@@ -86,12 +88,15 @@ export async function runAgent(id: string, prompt?: string) {
     content: { text: prompt || "" },
     entityId: (await import("@elizaos/core")).stringToUuid("user"),
     roomId: (await import("@elizaos/core")).stringToUuid("default-room"),
-  });
+  }) as unknown as any[];
+
+  // handleMessage returns Memory[] or similar in recent Eliza versions
+  const lastResponse = result[result.length - 1];
 
   return {
     agentId: id,
     prompt,
-    response: result.responses[0]?.text || "No response",
+    response: lastResponse?.content?.text || "No response",
     timestamp: Date.now(),
   };
 }

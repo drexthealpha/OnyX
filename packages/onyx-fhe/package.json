@@ -2,8 +2,15 @@
   "name": "@onyx/fhe",
   "version": "0.1.0",
   "description": "Encrypt FHE integration for ONYX — encrypted computation on Solana",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "type": "module",
   "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -22,6 +29,5 @@
   "vitest": {
     "preset": "vitest/presets/default",
     "testEnvironment": "node"
-  },
-  "type": "module"
+  }
 }

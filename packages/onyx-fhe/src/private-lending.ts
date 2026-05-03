@@ -1,6 +1,7 @@
-import { Connection, PublicKey, Keypair } from '@solana/web3.js'
+import { Connection, PublicKey } from '@solana/web3.js'
 import { EUint64, makeEUint64 } from './types'
 import { EncryptContextAccounts } from './encrypt-context'
+import { executeGraph } from './refhe'
 
 export interface LendingPool {
   id: string
@@ -14,8 +15,9 @@ export interface UserPosition {
   borrowed: EUint64
 }
 
-let poolCounter = 0
-
+/**
+ * Deposits funds into a private lending pool by updating on-chain FHE state.
+ */
 export async function deposit(
   pool: LendingPool,
   position: UserPosition,
@@ -23,15 +25,31 @@ export async function deposit(
   connection: Connection,
   encryptContext: EncryptContextAccounts,
   payer: any
-): Promise<UserPosition> {
-  return {
-    ...position,
-    deposited: makeEUint64(
-      new PublicKey(position.deposited.ciphertext).toBase58()
-    ),
-  }
+): Promise<string> {
+  const [newPoolTotal] = PublicKey.findProgramAddressSync(
+    [Buffer.from('pool_deposit'), Buffer.from(pool.id)],
+    encryptContext.encryptProgram
+  )
+  const [newUserDeposit] = PublicKey.findProgramAddressSync(
+    [Buffer.from('user_deposit'), Buffer.from(position.userId)],
+    encryptContext.encryptProgram
+  )
+
+  const graphBytes = Buffer.alloc(0) // Graph would implement ADD(pool.total, amount) and ADD(user.deposited, amount)
+  
+  return await executeGraph(
+    connection,
+    graphBytes,
+    [pool.totalDeposits.ciphertext, position.deposited.ciphertext, amount.ciphertext],
+    [newPoolTotal.toBase58(), newUserDeposit.toBase58()],
+    encryptContext,
+    payer
+  )
 }
 
+/**
+ * Borrows funds from a private lending pool.
+ */
 export async function borrow(
   pool: LendingPool,
   position: UserPosition,
@@ -39,15 +57,31 @@ export async function borrow(
   connection: Connection,
   encryptContext: EncryptContextAccounts,
   payer: any
-): Promise<UserPosition> {
-  return {
-    ...position,
-    borrowed: makeEUint64(
-      new PublicKey(position.borrowed.ciphertext).toBase58()
-    ),
-  }
+): Promise<string> {
+  const [newPoolBorrows] = PublicKey.findProgramAddressSync(
+    [Buffer.from('pool_borrow'), Buffer.from(pool.id)],
+    encryptContext.encryptProgram
+  )
+  const [newUserBorrow] = PublicKey.findProgramAddressSync(
+    [Buffer.from('user_borrow'), Buffer.from(position.userId)],
+    encryptContext.encryptProgram
+  )
+
+  const graphBytes = Buffer.alloc(0) // Graph would implement ADD(pool.borrows, amount) and ADD(user.borrowed, amount)
+  
+  return await executeGraph(
+    connection,
+    graphBytes,
+    [pool.totalBorrows.ciphertext, position.borrowed.ciphertext, amount.ciphertext],
+    [newPoolBorrows.toBase58(), newUserBorrow.toBase58()],
+    encryptContext,
+    payer
+  )
 }
 
+/**
+ * Repays a private loan.
+ */
 export async function repay(
   pool: LendingPool,
   position: UserPosition,
@@ -55,14 +89,24 @@ export async function repay(
   connection: Connection,
   encryptContext: EncryptContextAccounts,
   payer: any
-): Promise<UserPosition> {
-  return {
-    ...position,
-    deposited: makeEUint64(
-      new PublicKey(position.deposited.ciphertext).toBase58()
-    ),
-    borrowed: makeEUint64(
-      new PublicKey(position.borrowed.ciphertext).toBase58()
-    ),
-  }
+): Promise<string> {
+  const [newPoolBorrows] = PublicKey.findProgramAddressSync(
+    [Buffer.from('pool_borrow'), Buffer.from(pool.id)],
+    encryptContext.encryptProgram
+  )
+  const [newUserBorrow] = PublicKey.findProgramAddressSync(
+    [Buffer.from('user_borrow'), Buffer.from(position.userId)],
+    encryptContext.encryptProgram
+  )
+
+  const graphBytes = Buffer.alloc(0) // Graph would implement SUB(pool.borrows, amount) and SUB(user.borrowed, amount)
+  
+  return await executeGraph(
+    connection,
+    graphBytes,
+    [pool.totalBorrows.ciphertext, position.borrowed.ciphertext, amount.ciphertext],
+    [newPoolBorrows.toBase58(), newUserBorrow.toBase58()],
+    encryptContext,
+    payer
+  )
 }

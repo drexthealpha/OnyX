@@ -18,7 +18,9 @@
     },
     "dependencies": {
         "hono": "^4.0.0",
-        "@onyx/mem": "workspace:*"
+        "@onyx/mem": "workspace:*",
+        "@onyx/semantic": "workspace:*",
+        "@onyx/markitdown": "workspace:*"
     },
     "devDependencies": {
         "@types/bun": "latest",

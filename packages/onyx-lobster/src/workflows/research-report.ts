@@ -10,13 +10,13 @@ export async function runResearch(topic: string): Promise<void> {
     .step('convert-to-podcast', async (input) => {
       const research = await import('@onyx/research');
       const state = input as Record<string, unknown>;
-      const podcastScript = await (research as any).toPodcastScript?.(state.report, state) ?? 'Podcast script unavailable';
+      const podcastScript = await (research as any).toPodcastScript?.(state['report'], state) ?? 'Podcast script unavailable';
       return { state: input, podcastScript };
     })
     .step('crosspost-summary', async (input) => {
       const { state } = input as { state: Record<string, unknown>; podcastScript: string };
       const content = await import('@onyx/content');
-      const summary = String(state.report ?? topic);
+      const summary = String(state['report'] ?? topic);
       await content.crosspost(summary, ['twitter', 'linkedin']);
       return { topic, done: true };
     });

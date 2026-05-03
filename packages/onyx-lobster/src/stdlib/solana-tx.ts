@@ -1,7 +1,7 @@
 import { Connection, sendAndConfirmTransaction, Transaction } from '@solana/web3.js';
 import type { TransactionInstruction } from '@solana/web3.js';
 
-const SOLANA_RPC = process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com';
+const SOLANA_RPC = process.env['SOLANA_RPC_URL'] ?? 'https://api.devnet.solana.com';
 
 export async function solanaTx(instruction: TransactionInstruction): Promise<string> {
   const vault = await import('@onyx/vault');

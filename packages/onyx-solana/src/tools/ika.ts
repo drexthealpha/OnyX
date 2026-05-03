@@ -51,10 +51,10 @@ export const ikaSignTool: MCPTool = {
     const { Connection, Keypair, PublicKey } = await import("@solana/web3.js");
     const { readFileSync } = await import("node:fs");
 
-    const rpc = process.env.NOSANA_RPC_URL || "https://api.mainnet-beta.solana.com";
+    const rpc = process.env['NOSANA_RPC_URL'] || "https://api.mainnet-beta.solana.com";
     const connection = new Connection(rpc, "confirmed");
 
-    const walletPath = process.env.ONYX_WALLET_PATH;
+    const walletPath = process.env['ONYX_WALLET_PATH'];
     if (!walletPath) throw new Error("ONYX_WALLET_PATH not set");
     const secret = JSON.parse(readFileSync(walletPath, "utf8"));
     const payer = Keypair.fromSecretKey(Uint8Array.from(secret));

@@ -1,34 +1,43 @@
 {
-  "name": "@onyx/lobster",
-  "version": "0.1.0",
-  "description": "Typed deterministic pipeline DSL for ONYX",
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsc",
-    "test": "pnpm vitest run"
-  },
-  "dependencies": {
-    "@onyx/kernel": "workspace:*",
-    "@solana/web3.js": "^1.95.0",
-    "@onyx/gateway": "workspace:*",
-    "@onyx/router": "workspace:*",
-    "@onyx/privacy": "workspace:*",
-    "@onyx/vault": "workspace:*",
-    "@onyx/mem": "workspace:*",
-    "@onyx/intel": "workspace:*",
-    "@onyx/research": "workspace:*",
-    "@onyx/content": "workspace:*",
-    "@onyx/browser": "workspace:*",
-    "@onyx/trading": "workspace:*"
-  },
-  "peerDependencies": {
-  },
-  "peerDependenciesMeta": {
-  },
-  "devDependencies": {
-    "typescript": "^5.4.0",
-    "vitest": "latest"
-  }
+    "name":  "@onyx/lobster",
+    "version":  "0.1.0",
+    "description":  "Typed deterministic pipeline DSL for ONYX",
+    "type":  "module",
+    "main":  "./dist/index.js",
+    "types":  "./dist/index.d.ts",
+    "scripts":  {
+                    "build":  "tsc",
+                    "test":  "pnpm vitest run"
+                },
+    "dependencies":  {
+                         "@onyx/kernel":  "workspace:*",
+                         "@solana/web3.js":  "^1.95.0",
+                         "@onyx/gateway":  "workspace:*",
+                         "@onyx/router":  "workspace:*",
+                         "@onyx/privacy":  "workspace:*",
+                         "@onyx/vault":  "workspace:*",
+                         "@onyx/mem":  "workspace:*",
+                         "@onyx/intel":  "workspace:*",
+                         "@onyx/research":  "workspace:*",
+                         "@onyx/content":  "workspace:*",
+                         "@onyx/browser":  "workspace:*",
+                         "@onyx/trading":  "workspace:*"
+                     },
+    "peerDependencies":  {
+
+                         },
+    "peerDependenciesMeta":  {
+
+                             },
+    "devDependencies":  {
+                            "typescript":  "^5.4.0",
+                            "@types/node":  "^20.0.0",
+                            "vitest":  "latest"
+                        },
+    "exports":  {
+                    ".":  {
+                              "types":  "./dist/index.d.ts",
+                              "import":  "./dist/index.js"
+                          }
+                }
 }

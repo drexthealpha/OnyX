@@ -1,41 +1,47 @@
 {
-  "name": "@onyx/nerve",
-  "version": "1.0.0",
-  "description": "ONYX cockpit backend (Hono) + React 19 dashboard UI",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "pnpm src/index.ts",
-    "dev:ui": "vite ui/",
-    "build:ui": "vite build ui/",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@hono/node-server": "^2.0.0",
-    "hono": "^4.12.15",
-    "pino": "^10.3.1",
-    "ws": "^8.20.0",
-    "@onyx/agent": "workspace:*",
-    "@onyx/multica": "workspace:*",
-    "@onyx/vault": "workspace:*",
-    "@onyx/trading": "workspace:*",
-    "@onyx/research": "workspace:*",
-    "@onyx/intel": "workspace:*",
-    "@onyx/router": "workspace:*",
-    "@onyx/rl": "workspace:*",
-    "@onyx/tutor": "workspace:*",
-    "@onyx/mem": "workspace:*"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "@types/ws": "^8.18.1",
-    "typescript": "~5.9.3",
-    "vite": "^7.2.4",
-    "@vitejs/plugin-react": "^5.1.1",
-    "tailwindcss": "^4.1.18",
-    "@tailwindcss/vite": "^4.1.18",
-    "vitest": "latest"
-  }
+    "name":  "@onyx/nerve",
+    "version":  "1.0.0",
+    "description":  "ONYX cockpit backend (Hono) + React 19 dashboard UI",
+    "type":  "module",
+    "main":  "./dist/index.js",
+    "types":  "./dist/index.d.ts",
+    "scripts":  {
+                    "build":  "tsc -p tsconfig.json",
+                    "dev":  "pnpm src/index.ts",
+                    "dev:ui":  "vite ui/",
+                    "build:ui":  "vite build ui/",
+                    "test":  "vitest run"
+                },
+    "dependencies":  {
+                         "@hono/node-server":  "^2.0.0",
+                         "hono":  "^4.12.15",
+                         "pino":  "^10.3.1",
+                         "ws":  "^8.20.0",
+                         "@onyx/agent":  "workspace:*",
+                         "@onyx/multica":  "workspace:*",
+                         "@onyx/vault":  "workspace:*",
+                         "@onyx/trading":  "workspace:*",
+                         "@onyx/research":  "workspace:*",
+                         "@onyx/intel":  "workspace:*",
+                         "@onyx/router":  "workspace:*",
+                         "@onyx/rl":  "workspace:*",
+                         "@onyx/tutor":  "workspace:*",
+                         "@onyx/mem":  "workspace:*"
+                     },
+    "devDependencies":  {
+                            "@types/bun":  "latest",
+                            "@types/ws":  "^8.18.1",
+                            "typescript":  "~5.9.3",
+                            "vite":  "^7.2.4",
+                            "@vitejs/plugin-react":  "^5.1.1",
+                            "tailwindcss":  "^4.1.18",
+                            "@tailwindcss/vite":  "^4.1.18",
+                            "vitest":  "latest"
+                        },
+    "exports":  {
+                    ".":  {
+                              "types":  "./dist/index.d.ts",
+                              "import":  "./dist/index.js"
+                          }
+                }
 }

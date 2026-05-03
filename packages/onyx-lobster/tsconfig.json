@@ -8,9 +8,11 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "moduleResolution": "Bundler",
+    "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"]
   },
   "include": [
     "src/**/*.ts"

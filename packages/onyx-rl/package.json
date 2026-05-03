@@ -1,24 +1,30 @@
 {
-  "name": "@onyx/rl",
-  "version": "0.1.0",
-  "description": "Reinforcement learning loop for ONYX — wired to every conversation",
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "pnpm --watch src/index.ts",
-    "start": "node dist/index.js",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "better-sqlite3": "^9.4.0",
-    "hono": "^4.4.0"
-  },
-  "devDependencies": {
-    "@types/better-sqlite3": "^7.6.12",
-    "@types/node": "^20.0.0",
-    "typescript": "^5.4.0",
-    "vitest": "latest"
-  }
+    "name":  "@onyx/rl",
+    "version":  "0.1.0",
+    "description":  "Reinforcement learning loop for ONYX — wired to every conversation",
+    "type":  "module",
+    "main":  "./dist/index.js",
+    "types":  "./dist/index.d.ts",
+    "scripts":  {
+                    "build":  "tsc -p tsconfig.json",
+                    "dev":  "pnpm --watch src/index.ts",
+                    "start":  "node dist/index.js",
+                    "test":  "vitest run"
+                },
+    "dependencies":  {
+                         "better-sqlite3":  "^9.4.0",
+                         "hono":  "^4.4.0"
+                     },
+    "devDependencies":  {
+                            "@types/better-sqlite3":  "^7.6.12",
+                            "@types/node":  "^20.0.0",
+                            "typescript":  "^5.4.0",
+                            "vitest":  "latest"
+                        },
+    "exports":  {
+                    ".":  {
+                              "types":  "./dist/index.d.ts",
+                              "import":  "./dist/index.js"
+                          }
+                }
 }

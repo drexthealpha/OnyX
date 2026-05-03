@@ -54,7 +54,7 @@ export function mergePreferences(
   existing: Record<string, string>,
   detected: Partial<Record<PreferenceKey, string>>,
 ): Record<string, string> {
-  const merged = { ...PREFERENCE_DEFAULTS, ...existing };
+  const merged: Record<string, string> = { ...PREFERENCE_DEFAULTS, ...existing };
   for (const [key, value] of Object.entries(detected)) {
     if (merged[key] === PREFERENCE_DEFAULTS[key as PreferenceKey]) {
       merged[key] = value!;
@@ -66,14 +66,14 @@ export function mergePreferences(
 export function preferencesToPromptHint(prefs: Record<string, string>): string {
   const hints: string[] = [];
 
-  if (prefs.response_length === 'concise') hints.push('Keep responses concise and to the point.');
-  if (prefs.response_length === 'detailed') hints.push('Provide thorough, detailed explanations.');
-  if (prefs.code_examples === 'always') hints.push('Always include code examples.');
-  if (prefs.code_examples === 'never') hints.push('Avoid code; use conceptual explanations only.');
-  if (prefs.formality === 'formal') hints.push('Use formal, professional language.');
-  if (prefs.formality === 'casual') hints.push('Use a friendly, casual tone.');
-  if (prefs.pace === 'slow') hints.push('Go slowly and check understanding at each step.');
-  if (prefs.pace === 'fast') hints.push('Move quickly; assume strong foundational knowledge.');
+  if (prefs['response_length'] === 'concise') hints.push('Keep responses concise and to the point.');
+  if (prefs['response_length'] === 'detailed') hints.push('Provide thorough, detailed explanations.');
+  if (prefs['code_examples'] === 'always') hints.push('Always include code examples.');
+  if (prefs['code_examples'] === 'never') hints.push('Avoid code; use conceptual explanations only.');
+  if (prefs['formality'] === 'formal') hints.push('Use formal, professional language.');
+  if (prefs['formality'] === 'casual') hints.push('Use a friendly, casual tone.');
+  if (prefs['pace'] === 'slow') hints.push('Go slowly and check understanding at each step.');
+  if (prefs['pace'] === 'fast') hints.push('Move quickly; assume strong foundational knowledge.');
 
   return hints.join(' ');
 }

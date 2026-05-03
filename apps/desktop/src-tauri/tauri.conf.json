@@ -5,7 +5,7 @@
   "identifier": "ai.onyx.desktop",
   "build": {
     "beforeDevCommand": "pnpm --filter onyx-web dev",
-    "beforeBuildCommand": "pnpm --filter onyx-web build",
+    "beforeBuildCommand": "",
     "devUrl": "http://localhost:3000",
     "frontendDist": "../apps/web/out"
   },

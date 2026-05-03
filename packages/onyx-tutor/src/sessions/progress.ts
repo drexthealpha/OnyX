@@ -1,4 +1,5 @@
-import Database from 'better-sqlite3';
+import DatabaseConstructor from 'better-sqlite3';
+import type { Database } from 'better-sqlite3';
 import { mkdirSync } from 'node:fs';
 import type { ProgressRecord } from '../types.js';
 import { DomainLevel } from '../types.js';
@@ -10,7 +11,7 @@ export class ProgressTracker {
   private db: Database;
 
   constructor(dbPath: string = DB_PATH) {
-    this.db = new Database(dbPath);
+    this.db = new DatabaseConstructor(dbPath);
     this.init();
   }
 
@@ -30,9 +31,10 @@ export class ProgressTracker {
   }
 
   recordSession(record: Omit<ProgressRecord, 'sessionDate'>): void {
-    this.db.run(
+    this.db.prepare(
       `INSERT INTO progress (user_id, domain, session_date, topics, quiz_score, level_at_time)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?)`
+    ).run(
       [
         record.userId,
         record.domain,
@@ -46,19 +48,19 @@ export class ProgressTracker {
 
   getHistory(userId: string, limit = 20): ProgressRecord[] {
     const rows = this.db
-      .query(
+      .prepare(
         `SELECT * FROM progress WHERE user_id = ?
          ORDER BY session_date DESC LIMIT ?`,
       )
       .all(userId, limit) as Array<Record<string, unknown>>;
 
     return rows.map((r) => ({
-      userId: r.user_id as string,
-      domain: r.domain as string,
-      sessionDate: r.session_date as number,
-      topicsCovered: JSON.parse(r.topics as string) as string[],
-      quizScore: r.quiz_score as number,
-      levelAtTime: r.level_at_time as DomainLevel,
+      userId: r['user_id'] as string,
+      domain: r['domain'] as string,
+      sessionDate: r['session_date'] as number,
+      topicsCovered: JSON.parse(r['topics'] as string) as string[],
+      quizScore: r['quiz_score'] as number,
+      levelAtTime: r['level_at_time'] as DomainLevel,
     }));
   }
 
@@ -68,7 +70,7 @@ export class ProgressTracker {
     domainsStudied: string[];
   } {
     const row = this.db
-      .query(
+      .prepare(
         `SELECT
            COUNT(*) as total,
            AVG(quiz_score) as avg_score
@@ -77,7 +79,7 @@ export class ProgressTracker {
       .get(userId) as { total: number; avg_score: number | null } | null;
 
     const domainRows = this.db
-      .query(`SELECT DISTINCT domain FROM progress WHERE user_id = ?`)
+      .prepare(`SELECT DISTINCT domain FROM progress WHERE user_id = ?`)
       .all(userId) as Array<{ domain: string }>;
 
     return {

@@ -45,4 +45,6 @@ Cargo.lock
 # Misc
 *.tsbuildinfo
 .cache/
-tmp/
+# Next.js
+.next/
+out/

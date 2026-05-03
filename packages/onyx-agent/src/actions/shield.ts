@@ -1,4 +1,4 @@
-import { Action, ActionResult, IAgentRuntime, Memory, State } from "@elizaos/core";
+import { Action, ActionResult, IAgentRuntime, Memory, State, HandlerCallback } from "@elizaos/core";
 
 export const shieldAction: Action = {
   name: "SHIELD_ASSET",
@@ -7,16 +7,17 @@ export const shieldAction: Action = {
   validate: async (runtime: IAgentRuntime, message: Memory): Promise<boolean> => {
     const text = (message.content?.text || "").toLowerCase();
     const hasPrivacyKeyword = text.includes("shield") || text.includes("private") || text.includes("umbra");
+    const gatewayUrl = runtime.getSetting?.("GATEWAY_URL") ?? process.env['GATEWAY_URL'] ?? "http://localhost:4000";
     const umbraEnabled = runtime.getSetting?.("UMBRA_ENABLED") === "true";
     return hasPrivacyKeyword && umbraEnabled;
   },
-  handler: async (runtime, message, state, options, callback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     const amountMatch = text.match(/(\d+(?:\.\d+)?)\s*(sol|usdc|eth|btc)/i);
     const amount = amountMatch?.[1] || "1";
     const token = amountMatch?.[2] || "SOL";
     try {
-      const response = await runtime.fetch?.("http://localhost:" + (process.env.UMBRA_PORT ?? "5020") + "/shield", {
+      const response = await runtime.fetch?.("http://localhost:" + (process.env['UMBRA_PORT'] ?? "5020") + "/shield", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -16,7 +16,7 @@ import { fetchPrice } from './data/birdeye.js';
 import { COMMON_TOKENS, reverseResolveToken } from './data/tokens.js';
 
 const DB_PATH =
-  process.env.ONYX_PORTFOLIO_DB ?? path.join('data', 'portfolio.db');
+  process.env['ONYX_PORTFOLIO_DB'] ?? path.join('data', 'portfolio.db');
 
 let _db: DatabaseType | null = null;
 
@@ -251,8 +251,8 @@ export function getTradeHistory(): CompletedTrade[] {
     action: r.action as 'BUY' | 'SELL',
     size: r.amount_usd,
     entryPrice: r.price ?? 0,
-    pnlUsd: r.pnl_usd ?? undefined,
-    pnlPct: r.pnl_pct ?? undefined,
+    pnlUsd: r.pnl_usd === null ? undefined : r.pnl_usd,
+    pnlPct: r.pnl_pct === null ? undefined : r.pnl_pct,
     txHash: '',
     timestamp: r.ts,
   }));
@@ -278,8 +278,8 @@ export function getLastNTrades(n: number): CompletedTrade[] {
       action: r.action as 'BUY' | 'SELL',
       size: r.amount_usd,
       entryPrice: r.price ?? 0,
-      pnlUsd: r.pnl_usd ?? undefined,
-      pnlPct: r.pnl_pct ?? undefined,
+      pnlUsd: r.pnl_usd === null ? undefined : r.pnl_usd,
+      pnlPct: r.pnl_pct === null ? undefined : r.pnl_pct,
       txHash: '',
       timestamp: r.ts,
     }))

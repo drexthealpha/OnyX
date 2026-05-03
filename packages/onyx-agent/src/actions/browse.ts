@@ -1,4 +1,4 @@
-import { Action, ActionResult, IAgentRuntime, Memory, State } from "@elizaos/core";
+import { Action, ActionResult, IAgentRuntime, Memory, State, HandlerCallback } from "@elizaos/core";
 
 export const browseAction: Action = {
   name: "BROWSE_WEB",
@@ -8,7 +8,7 @@ export const browseAction: Action = {
     const text = (message.content?.text || "").toLowerCase();
     return text.includes("http://") || text.includes("https://") || text.includes("browse") || text.includes("open") || text.includes("navigate to");
   },
-  handler: async (runtime, message, state, options, callback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const urlMatch = (message.content?.text || "").match(/https?:\/\/[^\s]+/);
     const url = urlMatch?.[0];
     if (!url) {
@@ -16,7 +16,7 @@ export const browseAction: Action = {
       return { text: "No valid URL found in message.", success: false };
     }
     try {
-      const response = await runtime.fetch?.("http://localhost:" + (process.env.BROWSER_PORT ?? "5070") + "/fetch", {
+      const response = await runtime.fetch?.("http://localhost:" + (process.env['BROWSER_PORT'] ?? "5070") + "/fetch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

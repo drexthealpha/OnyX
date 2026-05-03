@@ -5,9 +5,9 @@ export const solanaTransferAction: Action = {
   similes: ["SEND_SOL", "TRANSFER_SOL", "PAY_SOL"],
   description: "Transfer SOL or SPL tokens to another address.",
   validate: async (runtime: IAgentRuntime, message: Memory) => {
-    return !!(process.env.ONYX_WALLET_PATH);
+    return !!(process.env['ONYX_WALLET_PATH']);
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     // Basic extraction logic
     const addressMatch = text.match(/[1-9A-HJ-NP-Za-km-z]{32,44}/);
@@ -46,8 +46,8 @@ Amount: ${amount} ${mint || "SOL"}`;
   },
   examples: [
     [
-      { user: "{{user1}}", content: { text: "Send 0.1 SOL to 4vMzy9Tst8EwW3V6N7V7Z7N7V7Z7N7V7Z7N7V7Z7N7V7" } },
-      { user: "{{user2}}", content: { text: "Transferring SOL...", action: "SOLANA_TRANSFER" } }
+      { name: "{{user1}}", content: { text: "Send 0.1 SOL to 4vMzy9Tst8EwW3V6N7V7Z7N7V7Z7N7V7Z7N7V7Z7N7V7" } },
+      { name: "{{user2}}", content: { text: "Transferring SOL...", action: "SOLANA_TRANSFER" } }
     ]
   ]
 };
@@ -57,9 +57,9 @@ export const solanaBalanceAction: Action = {
   similes: ["CHECK_BALANCE", "GET_BALANCE", "WALLET_STATUS"],
   description: "Check the current wallet balance.",
   validate: async (runtime: IAgentRuntime, message: Memory) => {
-    return !!(process.env.ONYX_WALLET_PATH);
+    return !!(process.env['ONYX_WALLET_PATH']);
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     try {
       const solana = await import("@onyx/solana");
       const result = await solana.executeTool("getBalance", {}) as { sol: number; usdc: number };
@@ -78,8 +78,8 @@ USDC: ${result.usdc.toFixed(2)}`;
   },
   examples: [
     [
-      { user: "{{user1}}", content: { text: "How much money do I have?" } },
-      { user: "{{user2}}", content: { text: "Checking balance...", action: "SOLANA_BALANCE" } }
+      { name: "{{user1}}", content: { text: "How much money do I have?" } },
+      { name: "{{user2}}", content: { text: "Checking balance...", action: "SOLANA_BALANCE" } }
     ]
   ]
 };

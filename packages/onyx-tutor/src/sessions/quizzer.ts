@@ -38,7 +38,7 @@ export async function evaluateAnswers(
   const bot = new CryptoTutor();
 
   const scores: Score[] = await Promise.all(
-    answers.map((answer, i) => bot.evaluate(answer, questions[i])),
+    answers.map((answer, i) => bot.evaluate(answer, questions[i]!)),
   );
 
   const correctCount = scores.filter((s) => s.correct).length;

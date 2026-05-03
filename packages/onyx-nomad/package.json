@@ -1,28 +1,34 @@
 {
-  "name": "@onyx/nomad",
-  "version": "0.1.0",
-  "description": "ONYX offline sovereignty layer — local compute fallback, offline queue, knowledge preload, sync daemon",
-  "module": "./dist/index.js",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "private": true,
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "pnpm src/index.ts",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@onyx/intel": "workspace:*",
-    "@onyx/mem": "workspace:*",
-    "@onyx/semantic": "workspace:*",
-    "@types/better-sqlite3": "^7.6.13",
-    "better-sqlite3": "^12.9.0"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "typescript": "^5.4.0",
-    "vitest": "latest"
-  },
-  "type": "module"
+    "name":  "@onyx/nomad",
+    "version":  "0.1.0",
+    "description":  "ONYX offline sovereignty layer — local compute fallback, offline queue, knowledge preload, sync daemon",
+    "module":  "./dist/index.js",
+    "main":  "./dist/index.js",
+    "types":  "./dist/index.d.ts",
+    "private":  true,
+    "scripts":  {
+                    "build":  "tsc -p tsconfig.json",
+                    "dev":  "pnpm src/index.ts",
+                    "test":  "vitest run",
+                    "typecheck":  "tsc --noEmit"
+                },
+    "dependencies":  {
+                         "@onyx/intel":  "workspace:*",
+                         "@onyx/mem":  "workspace:*",
+                         "@onyx/semantic":  "workspace:*",
+                         "@types/better-sqlite3":  "^7.6.13",
+                         "better-sqlite3":  "^12.9.0"
+                     },
+    "devDependencies":  {
+                            "@types/bun":  "latest",
+                            "typescript":  "^5.4.0",
+                            "vitest":  "latest"
+                        },
+    "type":  "module",
+    "exports":  {
+                    ".":  {
+                              "types":  "./dist/index.d.ts",
+                              "import":  "./dist/index.js"
+                          }
+                }
 }

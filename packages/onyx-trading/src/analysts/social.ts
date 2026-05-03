@@ -19,12 +19,10 @@ async function tryFetchTweets(query: string): Promise<{ text: string; likes: num
     
     return socialSources.map(s => ({
       text: s.title + ' ' + (s.snippet || ''),
-      // Use engagement if available, otherwise fallback to score-based weight
       likes: s.engagement ?? Math.round((s.score || 0) * 100),
     }));
   } catch (err) {
-    console.error('[social-analyst] Failed to fetch intel:', err);
-    return [];
+    throw new Error(`[social-analyst] Failed to fetch intel: ${err instanceof Error ? err.message : String(err)}`);
   }
 }
 
@@ -37,7 +35,7 @@ async function scoreSentiment(tweets: { text: string; likes: number }[]): Promis
   const intelData = tweets.map((t, i) => `[Tweet ${i+1} (Engagement: ${t.likes})]: ${t.text}`).join('\n\n');
 
   try {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env['ANTHROPIC_API_KEY'];
     if (!apiKey) throw new Error("ANTHROPIC_API_KEY not set");
 
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -63,8 +61,7 @@ Return ONLY a single number.`,
     const score = parseFloat(result);
     return isNaN(score) ? 0 : Math.max(-1, Math.min(1, score));
   } catch (err) {
-    console.warn('[social-analyst] LLM scoring failed, falling back to neutral:', err);
-    return 0;
+    throw new Error(`[social-analyst] LLM scoring failed: ${err instanceof Error ? err.message : String(err)}`);
   }
 }
 

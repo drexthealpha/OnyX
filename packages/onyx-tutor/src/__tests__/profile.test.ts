@@ -28,18 +28,18 @@ describe('ProfileStore', () => {
   test('updateFromQuiz increases level when score > 0.8', () => {
     store.updateFromQuiz('user-a', 'crypto', 0.5);
     let profile = store.getProfile('user-a');
-    expect(profile.domains['crypto'].level).toBe(DomainLevel.BEGINNER);
+    expect(profile.domains['crypto']!.level).toBe(DomainLevel.BEGINNER);
 
     store.updateFromQuiz('user-a', 'crypto', 0.9);
     profile = store.getProfile('user-a');
-    expect(profile.domains['crypto'].level).toBe(DomainLevel.INTERMEDIATE);
+    expect(profile.domains['crypto']!.level).toBe(DomainLevel.INTERMEDIATE);
   });
 
   test('updateFromQuiz decreases level when score < 0.5', () => {
     store.updateFromQuiz('user-b', 'crypto', 0.9);
     store.updateFromQuiz('user-b', 'crypto', 0.3);
     const profile = store.getProfile('user-b');
-    expect(profile.domains['crypto'].level).toBe(DomainLevel.BEGINNER);
+    expect(profile.domains['crypto']!.level).toBe(DomainLevel.BEGINNER);
   });
 
   test('setGoal persists and deduplicates', () => {
@@ -58,6 +58,6 @@ describe('ProfileStore', () => {
     store.updateFromQuiz('user-d', 'code', 0.9);
     store.updateFromQuiz('user-d', 'code', 0.9);
     const profile = store.getProfile('user-d');
-    expect(profile.domains['code'].level).toBe(DomainLevel.EXPERT);
+    expect(profile.domains['code']!.level).toBe(DomainLevel.EXPERT);
   });
 });

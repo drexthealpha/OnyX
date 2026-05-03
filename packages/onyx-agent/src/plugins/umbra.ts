@@ -5,9 +5,9 @@ export const sendStealthAction: Action = {
   description: "Send tokens to a stealth address using the Umbra protocol for privacy.",
   simulated: false,
   validate: async (runtime: IAgentRuntime, message: Memory) => {
-    return !!(process.env.UMBRA_ENABLED === "true" && process.env.ONYX_WALLET_PATH);
+    return !!(process.env['UMBRA_ENABLED'] === "true" && process.env['ONYX_WALLET_PATH']);
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     const amountMatch = text.match(/(\d+(?:\.\d+)?)\s*(sol|usdc|eth|btc)/i);
     const destMatch = text.match(/to\s+([a-zA-Z0-9]{32,44})/i);
@@ -21,9 +21,9 @@ export const sendStealthAction: Action = {
     try {
       const { shieldAssetTool } = await import("@onyx/solana/tools/umbra");
       const result = await shieldAssetTool.execute({
-        token: amountMatch[2].toUpperCase() === "SOL" ? "So11111111111111111111111111111111111111112" : "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // Default SOL or USDC
-        amount: parseFloat(amountMatch[1]) * 1e9, // Simplistic conversion to lamports
-        destination: destMatch[1]
+        token: amountMatch[2]!.toUpperCase() === "SOL" ? "So11111111111111111111111111111111111111112" : "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // Default SOL or USDC
+        amount: parseFloat(amountMatch[1]!) * 1e9, // Simplistic conversion to lamports
+        destination: destMatch[1]!
       });
 
       const responseText = `Stealth transfer initiated via Umbra protocol.
@@ -40,8 +40,8 @@ Privacy Status: Shielded`;
   },
   examples: [
     [
-      { user: "{{user1}}", content: { text: "Send 1.5 SOL to stealth address 5H9...xyz for privacy" } },
-      { user: "{{user2}}", content: { text: "Initiating stealth transfer of 1.5 SOL via Umbra...", action: "SEND_STEALTH" } }
+      { name: "{{user1}}", content: { text: "Send 1.5 SOL to stealth address 5H9...xyz for privacy" } },
+      { name: "{{user2}}", content: { text: "Initiating stealth transfer of 1.5 SOL via Umbra...", action: "SEND_STEALTH" } }
     ]
   ]
 };
@@ -53,7 +53,7 @@ export const umbraPlugin: Plugin = {
   providers: [],
   evaluators: [],
   init: async (config: Record<string, string>, runtime: IAgentRuntime): Promise<void> => {
-    const enabled = config.UMBRA_ENABLED ?? process.env.UMBRA_ENABLED;
+    const enabled = config['UMBRA_ENABLED'] ?? process.env['UMBRA_ENABLED'];
     const logger = runtime.logger;
     if (enabled !== "true") {
       if (logger?.info) logger.info("onyx-umbra: disabled. Set UMBRA_ENABLED=true to activate.");

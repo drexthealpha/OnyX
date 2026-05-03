@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
+    "module": "ESNext",
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
@@ -10,7 +10,9 @@
     "declaration": true,
     "sourceMap": true,
     "moduleResolution": "Bundler",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "types": ["node"],
+    "lib": ["ES2022", "DOM"]
   },
   "include": [
     "src/**/*"

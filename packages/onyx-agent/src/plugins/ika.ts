@@ -5,9 +5,9 @@ export const getDWalletInfoAction: Action = {
   description: "Get decentralized wallet info from Ika bridge for cross-chain signing.",
   simulated: false,
   validate: async (runtime: IAgentRuntime, message: Memory) => {
-    return !!(process.env.IKA_ENABLED === "true" && process.env.ONYX_WALLET_PATH);
+    return !!(process.env['IKA_ENABLED'] === "true" && process.env['ONYX_WALLET_PATH']);
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     const pubkeyMatch = text.match(/wallet\s+([a-zA-Z0-9]{32,44})/i);
     
@@ -21,7 +21,7 @@ export const getDWalletInfoAction: Action = {
       const { getDWalletInfoTool } = await import("@onyx/solana/tools/ika");
       const result = await getDWalletInfoTool.execute({
         curve: 0, // Secp256k1
-        userPubkey: pubkeyMatch[1]
+        userPubkey: pubkeyMatch[1]!
       });
 
       const responseText = `Ika dWallet Info:
@@ -39,8 +39,8 @@ User: ${result.userPubkey}`;
   },
   examples: [
     [
-      { user: "{{user1}}", content: { text: "Get my Ika dWallet info for address 5H9...xyz" } },
-      { user: "{{user2}}", content: { text: "Retrieving Ika dWallet info for 5H9...xyz...", action: "GET_DWALLET_INFO" } }
+      { name: "{{user1}}", content: { text: "Get my Ika dWallet info for address 5H9...xyz" } },
+      { name: "{{user2}}", content: { text: "Retrieving Ika dWallet info for 5H9...xyz...", action: "GET_DWALLET_INFO" } }
     ]
   ]
 };
@@ -54,7 +54,7 @@ export const ikaPlugin: Plugin = {
   providers: [],
   evaluators: [],
   init: async (config: Record<string, string>, runtime: IAgentRuntime): Promise<void> => {
-    const enabled = config.IKA_ENABLED ?? process.env.IKA_ENABLED;
+    const enabled = config['IKA_ENABLED'] ?? process.env['IKA_ENABLED'];
     const logger = runtime.logger;
     if (enabled !== "true") {
       if (logger?.info) logger.info("onyx-ika: disabled. Set IKA_ENABLED=true to activate.");

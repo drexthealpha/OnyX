@@ -17,12 +17,12 @@ import { readFileSync } from "fs";
 import type { MCPTool } from "../types.js";
 
 function getConnection(): Connection {
-  const rpc = process.env.NOSANA_RPC_URL || "https://api.mainnet-beta.solana.com";
+  const rpc = process.env['NOSANA_RPC_URL'] || "https://api.mainnet-beta.solana.com";
   return new Connection(rpc, "confirmed");
 }
 
 function getKeypair(): Keypair {
-  const path = process.env.ONYX_WALLET_PATH;
+  const path = process.env['ONYX_WALLET_PATH'];
   if (!path) throw new Error("ONYX_WALLET_PATH not set");
   const secret = JSON.parse(readFileSync(path, "utf8"));
   return Keypair.fromSecretKey(Uint8Array.from(secret));

@@ -2,8 +2,15 @@
   "name": "@onyx/trading",
   "version": "0.1.0",
   "description": "Multi-agent trading system for Onyx — bull/bear researchers, Kelly sizing, backtest engine",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
@@ -27,6 +34,5 @@
     "typescript": "^5.4.5",
     "vitest": "^1.4.0"
   },
-  "jest": {},
-  "type": "module"
+  "jest": {}
 }

@@ -5,7 +5,7 @@ export const budgetRemainingProvider: Provider = {
   position: -5,
   description: "Provides the current API budget remaining for this session",
   get: async (runtime: IAgentRuntime, message: Memory, state: State): Promise<ProviderResult> => {
-    const budgetStr = runtime.getSetting?.("BUDGET_USD") ?? process.env.BUDGET_USD ?? "0";
+    const budgetStr = runtime.getSetting?.("BUDGET_USD") ?? process.env['BUDGET_USD'] ?? "0";
     const budgetUsd = parseFloat(budgetStr as string);
     const actions = await runtime.getMemories({
       roomId: message.roomId!,

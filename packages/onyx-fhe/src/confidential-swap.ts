@@ -66,17 +66,22 @@ export async function transferFHE(
 ): Promise<[EUint64, EUint64]> {
   const inputs = [from.ciphertext, to.ciphertext, amount.ciphertext]
 
-  const [fromOut, toOut] = [
-    new PublicKey(from.ciphertext).toBase58() + '_out',
-    new PublicKey(to.ciphertext).toBase58() + '_out'
-  ]
+  // Deriving deterministic output PDAs instead of invalid string concatenation
+  const [fromOut] = PublicKey.findProgramAddressSync(
+    [Buffer.from('output'), new PublicKey(from.ciphertext).toBuffer()],
+    encryptContext.encryptProgram
+  )
+  const [toOut] = PublicKey.findProgramAddressSync(
+    [Buffer.from('output'), new PublicKey(to.ciphertext).toBuffer()],
+    encryptContext.encryptProgram
+  )
 
-  const outputs: string[] = [fromOut, toOut]
+  const outputs: string[] = [fromOut.toBase58(), toOut.toBase58()]
   const graphBytes = buildTransferGraph()
 
   await executeGraph(connection, graphBytes, inputs, outputs, encryptContext, payer)
 
-  return [makeEUint64(fromOut), makeEUint64(toOut)]
+  return [makeEUint64(outputs[0]!), makeEUint64(outputs[1]!)]
 }
 
 export async function transferAndWait(
@@ -88,10 +93,18 @@ export async function transferAndWait(
   payer: any
 ): Promise<[EUint64, EUint64]> {
   const inputs = [from.ciphertext, to.ciphertext, amount.ciphertext]
-  const outputs = [
-    new PublicKey(from.ciphertext).toBase58(),
-    new PublicKey(to.ciphertext).toBase58()
-  ]
+  
+  // Use same deterministic PDA derivation
+  const [fromOut] = PublicKey.findProgramAddressSync(
+    [Buffer.from('output'), new PublicKey(from.ciphertext).toBuffer()],
+    encryptContext.encryptProgram
+  )
+  const [toOut] = PublicKey.findProgramAddressSync(
+    [Buffer.from('output'), new PublicKey(to.ciphertext).toBuffer()],
+    encryptContext.encryptProgram
+  )
+
+  const outputs = [fromOut.toBase58(), toOut.toBase58()]
   const graphBytes = buildTransferGraph()
 
   await executeGraph(connection, graphBytes, inputs, outputs, encryptContext, payer)
@@ -100,5 +113,5 @@ export async function transferAndWait(
     await waitForVerified(connection, new PublicKey(out))
   }
 
-  return [makeEUint64(outputs[0]), makeEUint64(outputs[1])]
+  return [makeEUint64(outputs[0]!), makeEUint64(outputs[1]!)]
 }

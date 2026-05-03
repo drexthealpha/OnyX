@@ -27,7 +27,7 @@ function ema(values: number[], period: number): number[] {
       result.push(prev);
       continue;
     }
-    prev = values[i] * k + prev * (1 - k);
+    prev = values[i]! * k + prev * (1 - k);
     result.push(prev);
   }
   return result;
@@ -38,7 +38,7 @@ function rsi(closes: number[], period = 14): number[] {
   let avgGain = 0;
   let avgLoss = 0;
   for (let i = 1; i <= period; i++) {
-    const diff = closes[i] - closes[i - 1];
+    const diff = closes[i]! - closes[i - 1]!;
     if (diff > 0) avgGain += diff;
     else avgLoss += Math.abs(diff);
   }
@@ -48,7 +48,7 @@ function rsi(closes: number[], period = 14): number[] {
   result.push(100 - 100 / (1 + rs));
 
   for (let i = period + 1; i < closes.length; i++) {
-    const diff = closes[i] - closes[i - 1];
+    const diff = closes[i]! - closes[i - 1]!;
     const gain = diff > 0 ? diff : 0;
     const loss = diff < 0 ? Math.abs(diff) : 0;
     avgGain = (avgGain * (period - 1) + gain) / period;
@@ -68,7 +68,7 @@ interface MACDResult {
 function macd(closes: number[], fast = 12, slow = 26, signal_ = 9): MACDResult {
   const emaFast = ema(closes, fast);
   const emaSlow = ema(closes, slow);
-  const macdLine = emaFast.map((v, i) => (isNaN(v) || isNaN(emaSlow[i])) ? NaN : v - emaSlow[i]);
+  const macdLine = emaFast.map((v, i) => (isNaN(v) || isNaN(emaSlow[i]!)) ? NaN : v - emaSlow[i]!);
   const validMacd = macdLine.filter(v => !isNaN(v));
   const signalLine = ema(validMacd, signal_);
 
@@ -92,9 +92,9 @@ function bollingerBands(closes: number[], period = 20, stdDev = 2): BBResult {
   const upper: number[] = [];
   const lower: number[] = [];
   for (let i = 0; i < closes.length; i++) {
-    if (isNaN(middle[i])) { upper.push(NaN); lower.push(NaN); continue; }
+    if (isNaN(middle[i]!)) { upper.push(NaN); lower.push(NaN); continue; }
     const slice = closes.slice(i - period + 1, i + 1);
-    const mean = middle[i];
+    const mean = middle[i]!;
     const variance = slice.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / period;
     const sd = Math.sqrt(variance);
     upper.push(mean + stdDev * sd);

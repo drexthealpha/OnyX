@@ -4,12 +4,12 @@ import type { Memory } from "@elizaos/core";
 export interface ConversationTelemetry {
   event: string;
   agentId: string;
-  roomId?: string;
-  entityId?: string;
-  messageId?: string;
+  roomId?: string | undefined;
+  entityId?: string | undefined;
+  messageId?: string | undefined;
   timestamp: number;
-  source?: string;
-  metadata?: Record<string, unknown>;
+  source?: string | undefined;
+  metadata?: Record<string, unknown> | undefined;
 }
 
 export const MEMORY_TABLES = {
@@ -23,28 +23,29 @@ export const MEMORY_TABLES = {
 } as const;
 
 interface OnyxRuntimeOptions {
-  conversationLength?: number;
-  agentId?: UUID;
-  character?: Character;
-  plugins?: Plugin[];
-  fetch?: typeof fetch;
-  adapter?: IDatabaseAdapter;
-  settings?: RuntimeSettings;
-  allAvailablePlugins?: Plugin[];
+  conversationLength?: number | undefined;
+  agentId?: UUID | undefined;
+  character?: Character | undefined;
+  plugins?: Plugin[] | undefined;
+  fetch?: typeof fetch | undefined;
+  adapter?: IDatabaseAdapter | undefined;
+  settings?: RuntimeSettings | undefined;
+  allAvailablePlugins?: Plugin[] | undefined;
 }
 
 export class OnyxRuntime extends AgentRuntime {
   constructor(opts: OnyxRuntimeOptions) {
-    super({
-      conversationLength: opts.conversationLength,
-      agentId: opts.agentId,
-      character: opts.character,
-      plugins: opts.plugins,
-      fetch: opts.fetch,
-      adapter: opts.adapter,
-      settings: opts.settings,
-      allAvailablePlugins: opts.allAvailablePlugins,
-    });
+    const superOpts: any = {};
+    if (opts.conversationLength !== undefined) superOpts.conversationLength = opts.conversationLength;
+    if (opts.agentId !== undefined) superOpts.agentId = opts.agentId;
+    if (opts.character !== undefined) superOpts.character = opts.character;
+    if (opts.plugins !== undefined) superOpts.plugins = opts.plugins;
+    if (opts.fetch !== undefined) superOpts.fetch = opts.fetch;
+    if (opts.adapter !== undefined) superOpts.adapter = opts.adapter;
+    if (opts.settings !== undefined) superOpts.settings = opts.settings;
+    if (opts.allAvailablePlugins !== undefined) superOpts.allAvailablePlugins = opts.allAvailablePlugins;
+
+    super(superOpts);
     this._setupTelemetry();
   }
 
@@ -55,12 +56,12 @@ export class OnyxRuntime extends AgentRuntime {
         const telemetry: ConversationTelemetry = {
           event: EventType.MESSAGE_RECEIVED,
           agentId: this.agentId || "unknown",
-          roomId: eventPayload.roomId as string | undefined,
-          entityId: eventPayload.entityId as string | undefined,
-          messageId: eventPayload.messageId as string | undefined,
+          roomId: eventPayload['roomId'] as string | undefined,
+          entityId: eventPayload['entityId'] as string | undefined,
+          messageId: eventPayload['messageId'] as string | undefined,
           timestamp: Date.now(),
           source: "onyx-agent",
-          metadata: eventPayload.metadata as Record<string, unknown> | undefined,
+          metadata: eventPayload['metadata'] as Record<string, unknown> | undefined,
         };
 
         const { globalHerald } = await import("@onyx/multica");
@@ -78,7 +79,7 @@ export class OnyxRuntime extends AgentRuntime {
 export function createOnyxRuntime(
   character: Character,
   plugins: Plugin[],
-  adapter?: IDatabaseAdapter
+  adapter?: IDatabaseAdapter | undefined
 ): OnyxRuntime {
   return new OnyxRuntime({
     character,
