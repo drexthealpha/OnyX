@@ -1,10 +1,20 @@
-# Umbra — Privacy Track Submission
+# Umbra Track Submission — Shielded On-Chain Transactions
 
-**Project:** ONYX OS — Private Payroll & Funding
-**Integration:** `packages/onyx-privacy/`
+**Track:** Privacy & Stealth Addresses
+**Package:** `@onyx/privacy`
 
-Autonomous agents shouldn't leak their entire operational history on a public ledger. We integrated Umbra stealth addresses into the ONYX core routing layer, allowing agents to receive funding and pay out human contributors entirely privately.
+## 🕵️ The Privacy Gap
+Autonomous agents operating on public ledgers like Solana often leak their entire financial history, strategy, and operational costs. This lack of privacy makes them vulnerable to front-running and competitor analysis.
 
-## Evidence
-- Shield tx signature: [PENDING]
-- UTXO scan showing encrypted balance: [PENDING]
+## 🛡️ The ONYX Shield
+ONYX integrates **Umbra stealth addresses** directly into its core routing layer (`@onyx/privacy`). This allows agents to:
+- **Receive Funding Privately:** Shielded inbound transfers via stealth addresses.
+- **Stealth Payments:** Paying out human contributors or other agents without public linkage.
+- **Encrypted Balances:** UTXO scanning ensures the agent's net worth remains private.
+
+## 📊 Evidence of Integration
+- **Shielded Transaction Signature:** [PENDING TX]
+- **Encrypted Balance UTXO Scan:** [PENDING PROOF]
+
+---
+*Enabling private operational autonomy on public ledgers.*
