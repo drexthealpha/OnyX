@@ -1,38 +1,41 @@
 {
-  "name": "@onyx/agent",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@elizaos/core": "npm:@elizaos/core@beta",
-    "@elizaos/plugin-bootstrap": "npm:@elizaos/plugin-bootstrap@beta",
-    "@elizaos/plugin-openai": "npm:@elizaos/plugin-openai@beta",
-    "@onyx/multica": "workspace:*",
-    "@onyx/solana": "workspace:*",
-    "@onyx/compute": "workspace:*",
-    "@onyx/intel": "workspace:*",
-    "@onyx/research": "workspace:*",
-    "@onyx/trading": "workspace:*",
-    "@onyx/privacy": "workspace:*",
-    "@onyx/tutor": "workspace:*",
-    "zod": "^3.23.8"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
-    "vitest": "^2.0.0"
-  }
+    "name":  "@onyx/agent",
+    "version":  "1.0.0",
+    "private":  true,
+    "type":  "module",
+    "main":  "./dist/index.js",
+    "types":  "./dist/index.d.ts",
+    "exports":  {
+                    ".":  {
+                              "import":  "./dist/index.js",
+                              "types":  "./dist/index.d.ts"
+                          }
+                },
+    "scripts":  {
+                    "build":  "tsc",
+                    "dev":  "tsc --watch",
+                    "test":  "vitest run"
+                },
+    "dependencies":  {
+                         "@elizaos/core":  "npm:@elizaos/core@beta",
+                         "@elizaos/plugin-bootstrap":  "npm:@elizaos/plugin-bootstrap@beta",
+                         "@elizaos/plugin-openai":  "npm:@elizaos/plugin-openai@beta",
+                         "@onyx/multica":  "workspace:*",
+                         "@onyx/solana":  "workspace:*",
+                         "@onyx/compute":  "workspace:*",
+                         "@onyx/intel":  "workspace:*",
+                         "@onyx/research":  "workspace:*",
+                         "@onyx/trading":  "workspace:*",
+                         "@onyx/privacy":  "workspace:*",
+                         "@onyx/tutor":  "workspace:*",
+                         "zod":  "^3.23.8"
+                     },
+    "devDependencies":  {
+                            "@types/node":  "^20.0.0",
+                            "typescript":  "^5.0.0",
+                            "vitest":  "^2.0.0"
+                        },
+    "publishConfig":  {
+                          "access":  "public"
+                      }
 }

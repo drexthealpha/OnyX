@@ -1,6 +1,11 @@
 // packages/onyx-bridge/tests/bridge.test.ts
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
+
+beforeEach((context) => {
+  context.onTestFailed(() => {});
+}, 60000);
+
 
 describe('Curve Enum', () => {
   it('has correct values', async () => {

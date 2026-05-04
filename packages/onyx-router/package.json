@@ -1,6 +1,6 @@
 {
     "name":  "@onyx/router",
-    "version":  "0.1.0",
+    "version":  "1.0.0",
     "description":  "x402 LLM routing and budget metering layer for ONYX",
     "type":  "module",
     "main":  "./dist/index.js",
@@ -25,5 +25,8 @@
                               "types":  "./dist/index.d.ts",
                               "import":  "./dist/index.js"
                           }
-                }
+                },
+    "publishConfig":  {
+                          "access":  "public"
+                      }
 }

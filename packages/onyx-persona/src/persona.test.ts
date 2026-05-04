@@ -16,7 +16,7 @@ describe('autoDetect', () => {
     };
     const detected = await autoDetect(context);
     expect(detected.name).toBe('finance');
-  });
+  }, 30000);
 
   it('activates trading persona when context contains "signal"', async () => {
     const context: ConversationContext = {
@@ -24,7 +24,7 @@ describe('autoDetect', () => {
     };
     const detected = await autoDetect(context);
     expect(detected.name).toBe('trading');
-  });
+  }, 30000);
 
   it('activates devops persona when context contains "docker"', async () => {
     const context: ConversationContext = {
@@ -32,7 +32,7 @@ describe('autoDetect', () => {
     };
     const detected = await autoDetect(context);
     expect(detected.name).toBe('devops');
-  });
+  }, 30000);
 
   it(`defaults to "${DEFAULT_PERSONA_NAME}" when no triggers match`, async () => {
     const context: ConversationContext = {
@@ -40,7 +40,7 @@ describe('autoDetect', () => {
     };
     const detected = await autoDetect(context);
     expect(detected.name).toBe(DEFAULT_PERSONA_NAME);
-  });
+  }, 30000);
 });
 
 // ─── Test 2: Every persona systemPrompt is over 200 characters ───

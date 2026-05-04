@@ -1,0 +1,17 @@
+schema: "0.1"
+type: container
+version: "1"
+ops:
+  - type: container/run
+    id: onyx-gateway
+    args:
+      image: ghcr.io/drexthealpha/onyx-gateway:latest
+      env:
+        - NOSANA_RPC_URL=$NOSANA_RPC_URL
+      gpu: false
+      expose:
+        - port: 18789
+          type: http
+          path: /health
+          method: GET
+          expected_status: 200

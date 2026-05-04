@@ -27,13 +27,15 @@ interface GepaVariant {
   generation: number;
 }
 
+let _router: any = null;
+
 async function callRouterComplete(prompt: string): Promise<string> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const router = require('@onyx/router') as {
-      complete: (messages: Array<{ role: string; content: string }>) => Promise<string>;
-    };
-    return await router.complete([{ role: 'user', content: prompt }]);
+    if (!_router) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      _router = require('@onyx/router');
+    }
+    return await _router.complete([{ role: 'user', content: prompt }]);
   } catch {
     // Fallback: return prompt unchanged if router unavailable
     return prompt;
@@ -72,8 +74,7 @@ export class GepaEvolution {
    */
   async initPopulation(skillName: string, canonicalPrompt: string): Promise<void> {
     const existing = this.getVariants(skillName);
-    const needed = POPULATION_SIZE - existing.length;
-    if (needed <= 0) return;
+    let currentCount = existing.length;
 
     // Always insert canonical prompt as variant_id='v0' if not present
     if (!existing.find((v) => v.variant_id === 'v0')) {
@@ -84,14 +85,27 @@ export class GepaEvolution {
         score: 0,
         generation: 0,
       });
+      currentCount++;
     }
 
+    const needed = POPULATION_SIZE - currentCount;
+    if (needed <= 0) return;
+
     // Generate mutations to fill up the population
-    for (let i = existing.length; i < POPULATION_SIZE; i++) {
+    for (let i = 0; i < POPULATION_SIZE; i++) {
+      const variantId = `v${i}`;
+      if (existing.find((v) => v.variant_id === variantId)) {
+        continue;
+      }
+      if (variantId === 'v0') {
+        // Already handled above
+        continue;
+      }
+
       const mutated = await this.mutate(canonicalPrompt);
       this.upsertVariant({
         skill_name: skillName,
-        variant_id: `v${i}`,
+        variant_id: variantId,
         prompt: mutated,
         score: 0,
         generation: 0,
@@ -173,7 +187,11 @@ ${prompt}`;
     try {
       const result = await callRouterComplete(mutateInstruction);
       const trimmed = result.trim();
-      return trimmed.length > 10 ? trimmed : prompt;
+      // If result is the same as the instruction (fallback) or too short, return original
+      if (trimmed === mutateInstruction || trimmed.includes('--- PROMPT ---') || trimmed.length < 10) {
+        return prompt;
+      }
+      return trimmed;
     } catch {
       return prompt;
     }

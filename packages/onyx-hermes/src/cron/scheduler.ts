@@ -1,9 +1,5 @@
-/**
- * Cron scheduler — wraps node-cron with typed job registration.
- * All jobs are registered at startup and run unattended.
- */
-
-import cron, { ScheduledTask } from 'node-cron';
+import { createRequire } from 'node:module';
+const requireLocal = createRequire(import.meta.url);
 
 export interface CronJob {
   name: string;
@@ -13,10 +9,11 @@ export interface CronJob {
 }
 
 export class CronScheduler {
-  private readonly tasks = new Map<string, ScheduledTask>();
+  private readonly tasks = new Map<string, any>();
 
   /** Register and start a cron job. */
   register(job: CronJob): void {
+    const cron = requireLocal('node-cron');
     if (this.tasks.has(job.name)) {
       console.warn(`[cron] Job "${job.name}" already registered — skipping duplicate`);
       return;

@@ -1,4 +1,4 @@
-const NOSANA_API = process.env.NOSANA_API ?? 'https://dashboard.k8s.prd.nos.ci/api';
+const NOSANA_API = process.env['NOSANA_API'] ?? 'https://dashboard.k8s.prd.nos.ci/api';
 
 export interface NosanaJob { jobId: string; image: string; status: string; cost: number; duration: number; }
 

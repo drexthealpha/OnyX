@@ -20,6 +20,7 @@ import { PrivacyView } from './components/PrivacyView.js';
 import { IntelView } from './components/IntelView.js';
 import { TutorView } from './components/TutorView.js';
 import { BrowserView } from './components/BrowserView.js';
+import { QVACView } from './components/QVACView.js';
 import { getAllDeployments } from './services/config.js';
 import { t } from './theme.js';
 
@@ -81,6 +82,7 @@ export function App() {
       case 'intel':     return <IntelView context={context} />;
       case 'tutor':     return <TutorView context={context} />;
       case 'browser':   return <BrowserView context={context} />;
+      case 'qvac':      return <QVACView context={context} />;
       default:          return <Home context={context} />;
     }
   };

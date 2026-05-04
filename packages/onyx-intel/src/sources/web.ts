@@ -22,7 +22,8 @@ export async function search(query: string): Promise<Source[]> {
   try {
     // Dynamic import — @onyx/browser is S22, may not be installed yet
     // @ts-ignore - dynamic import of local package that might not be built yet
-    const browser = await import("@onyx/browser");
+    const pkg = "@onyx/browser";
+    const browser = await import(/* @vite-ignore */ pkg);
     googleSearch = browser.macros?.googleSearch ?? (browser as any).googleSearch ?? null;
   } catch {
     // @onyx/browser not available — skip silently

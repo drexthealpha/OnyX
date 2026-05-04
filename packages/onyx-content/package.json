@@ -1,12 +1,12 @@
 {
     "name":  "@onyx/content",
-    "version":  "0.1.0",
+    "version":  "1.0.0",
     "description":  "Automated content generation and revenue routing for ONYX",
     "main":  "./dist/index.js",
     "types":  "./dist/index.d.ts",
     "scripts":  {
                     "build":  "tsc",
-                    "test":  "pnpm vitest run",
+                    "test":  "vitest run",
                     "dev":  "pnpm src/index.ts"
                 },
     "dependencies":  {
@@ -31,5 +31,8 @@
                               "types":  "./dist/index.d.ts",
                               "import":  "./dist/index.js"
                           }
-                }
+                },
+    "publishConfig":  {
+                          "access":  "public"
+                      }
 }

@@ -1,4 +1,4 @@
-const NERVE_PORT = process.env.NERVE_PORT ?? '3001';
+const NERVE_PORT = process.env['NERVE_PORT'] ?? '3001';
 const NERVE_BASE = `http://localhost:${NERVE_PORT}`;
 
 async function nerveGet<T>(path: string): Promise<T> {

@@ -2,6 +2,7 @@
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 import type { ComputeBackend } from '../types';
+import * as qvac from '@onyx/qvac';
 
 const MODELS_DIR = path.resolve('./models');
 const OLLAMA_URL = 'http://localhost:11434/api/tags';
@@ -18,7 +19,10 @@ const LMSTUDIO_URL = 'http://localhost:1234/v1/models';
  * Throws NoComputeAvailable if nothing is found.
  */
 export async function getAvailableBackend(): Promise<ComputeBackend> {
-  // 1. Check for .tflite edge model files
+  // 1. Check QVAC (from @onyx/qvac)
+  if (await qvac.isAvailable()) return 'qvac';
+
+  // 2. Check for .tflite edge model files
   try {
     const files = await readdir(MODELS_DIR);
     const hasTflite = files.some((f) => f.endsWith('.tflite'));

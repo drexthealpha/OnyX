@@ -20,7 +20,7 @@ export function isTerminalSupported(): boolean {
 
 export function openTerminalWithCommand(command: string): void {
   const os = getOSType();
-  const shell = process.env.SHELL || '/bin/bash';
+  const shell = process.env['SHELL'] || '/bin/bash';
   
   if (os === 'windows') {
     const psCommand = `Start-Process powershell -ArgumentList '-NoExit', '-Command', '${command.replace(/'/g, "''")}'`;
@@ -36,7 +36,7 @@ export function openTerminalWithCommand(command: string): void {
     execSync(`chmod +x "${scriptPath}" && "${scriptPath}"`, { stdio: 'ignore' });
     try { unlinkSync(scriptPath); } catch {}
   } else {
-    const xterm = process.env.TERMINAL || 'xterm';
+    const xterm = process.env['TERMINAL'] || 'xterm';
     execSync(`${xterm} -e "${command}" &`, { stdio: 'ignore' });
   }
 }
@@ -44,8 +44,8 @@ export function openTerminalWithCommand(command: string): void {
 export function getDefaultShell(): string {
   const os = getOSType();
   if (os === 'windows') return 'powershell';
-  if (os === 'macos') return process.env.SHELL || '/bin/zsh';
-  return process.env.SHELL || '/bin/bash';
+  if (os === 'macos') return process.env['SHELL'] || '/bin/zsh';
+  return process.env['SHELL'] || '/bin/bash';
 }
 
 export function detectTerminalEmulator(): string {

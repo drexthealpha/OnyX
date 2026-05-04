@@ -1,6 +1,6 @@
 {
     "name":  "@onyx/editor",
-    "version":  "0.1.0",
+    "version":  "1.0.0",
     "description":  "ONYX 3D spatial computing layer for agents — scene builder, renderer, collaboration, agent integration",
     "main":  "./dist/index.js",
     "types":  "./dist/index.d.ts",
@@ -33,5 +33,8 @@
                               "types":  "./dist/index.d.ts",
                               "import":  "./dist/index.js"
                           }
-                }
+                },
+    "publishConfig":  {
+                          "access":  "public"
+                      }
 }

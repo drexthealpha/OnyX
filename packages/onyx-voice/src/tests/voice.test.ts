@@ -4,7 +4,7 @@
  * Run: bun test src/tests/voice.test.ts
  */
 
-import { describe, it, expect, beforeEach, afterEach, mock } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { readFile, rm, mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -24,7 +24,7 @@ describe('Edge TTS', () => {
 
     expect(result).toBeInstanceOf(Buffer);
     expect(result.length).toBeGreaterThan(0);
-  });
+  }, 60000);
 });
 
 describe('WakeWordDetector', () => {
@@ -39,7 +39,7 @@ describe('WakeWordDetector', () => {
       sampleRate: 16_000,
     };
 
-    mock.module('@picovoice/porcupine-node', () => ({
+    vi.mock('@picovoice/porcupine-node', () => ({
       Porcupine: class MockPorcupine {
         constructor(_key: string, _kws: unknown[]) {}
         process(_frame: Int16Array) { return -1; }

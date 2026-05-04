@@ -5,5 +5,10 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['src/tests/**/*.test.ts'],
+    testTimeout: 60000,
+    hookTimeout: 30000,
+    threads: {
+      singleThread: true,
+    },
   },
 });

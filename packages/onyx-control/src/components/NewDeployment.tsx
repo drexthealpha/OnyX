@@ -63,7 +63,7 @@ export function NewDeployment({ context }: Props) {
     try {
       const config: DeploymentConfig = {
         name: name.trim(),
-        provider,
+        provider: provider as Provider,
         createdAt: new Date().toISOString(),
         hetzner: provider === 'hetzner' ? {
           apiKey: hetznerApiKey,
@@ -82,6 +82,7 @@ export function NewDeployment({ context }: Props) {
           aiApiKey,
           model,
           channel: 'telegram',
+          telegramBotToken: '',
         },
       };
 
@@ -118,7 +119,7 @@ export function NewDeployment({ context }: Props) {
             <Text color={t.fg.primary}>  [1] hetzner</Text>
             <Text color={t.fg.primary}>  [2] digitalocean</Text>
             <Text color={t.fg.primary}>  [3] nosana (GPU compute)</Text>
-            <Text color={t.fg.muted} marginTop={1}>Press 1, 2, or 3 to select</Text>
+            <Box marginTop={1}><Text color={t.fg.muted}>Press 1, 2, or 3 to select</Text></Box>
           </Box>
         );
       case 'hetzner':
@@ -126,7 +127,7 @@ export function NewDeployment({ context }: Props) {
           <Box flexDirection="column">
             <Text color={t.fg.secondary}>Hetzner API Key:</Text>
             <TextInput value={hetznerApiKey} onChange={setHetznerApiKey} onSubmit={handleNext} placeholder="api_key..." focus />
-            <Text color={t.fg.muted} marginTop={1}>Location: {hetznerLocation}</Text>
+            <Box marginTop={1}><Text color={t.fg.muted}>Location: {hetznerLocation}</Text></Box>
             <Text color={t.fg.muted}>Server Type: {hetznerServerType}</Text>
           </Box>
         );
@@ -135,7 +136,7 @@ export function NewDeployment({ context }: Props) {
           <Box flexDirection="column">
             <Text color={t.fg.secondary}>DigitalOcean API Key:</Text>
             <TextInput value={doApiKey} onChange={setDoApiKey} onSubmit={handleNext} placeholder="api_token..." focus />
-            <Text color={t.fg.muted} marginTop={1}>Region: {doRegion}</Text>
+            <Box marginTop={1}><Text color={t.fg.muted}>Region: {doRegion}</Text></Box>
             <Text color={t.fg.muted}>Size: {doSize}</Text>
           </Box>
         );
@@ -143,7 +144,7 @@ export function NewDeployment({ context }: Props) {
         return (
           <Box flexDirection="column">
             <Text color={t.fg.secondary}>Nosana GPU Compute</Text>
-            <Text color={t.fg.muted} marginTop={1}>Uses Nosana's distributed GPU network.</Text>
+            <Box marginTop={1}><Text color={t.fg.muted}>Uses Nosana's distributed GPU network.</Text></Box>
             <Text color={t.fg.muted}>No API key required for public markets.</Text>
           </Box>
         );
@@ -155,7 +156,7 @@ export function NewDeployment({ context }: Props) {
             <Text color={t.fg.secondary}>Provider: {provider}</Text>
             {provider === 'hetzner' && <Text color={t.fg.muted}>Location: {hetznerLocation}</Text>}
             {provider === 'digitalocean' && <Text color={t.fg.muted}>Region: {doRegion}</Text>}
-            <Text color={t.status.info} marginTop={1}>Press Enter to create deployment</Text>
+            <Box marginTop={1}><Text color={t.status.info}>Press Enter to create deployment</Text></Box>
           </Box>
         );
     }

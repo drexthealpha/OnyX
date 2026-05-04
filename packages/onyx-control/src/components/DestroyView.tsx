@@ -37,7 +37,7 @@ export function DestroyView({ context }: Props) {
     if (key.upArrow && selectedIndex > 0) setSelectedIndex(selectedIndex - 1);
     if (key.downArrow && selectedIndex < context.deployments.length - 1) setSelectedIndex(selectedIndex + 1);
     if (key.return === true && context.deployments.length > 0) {
-      setDeleting(context.deployments[selectedIndex].config.name);
+      setDeleting(context.deployments[selectedIndex]!.config.name);
       setConfirmName('');
       setError(null);
     }
@@ -68,10 +68,10 @@ export function DestroyView({ context }: Props) {
       ) : deleting ? (
         <Box flexDirection="column" borderStyle="double" borderColor={t.status.error} padding={1}>
           <Text color={t.status.warning} bold>WARNING: This will permanently delete the deployment!</Text>
-          <Text color={t.fg.secondary} marginTop={1}>Type the deployment name to confirm:</Text>
-          <Text color={t.accent} bold marginTop={1}>{confirmName}</Text>
-          <Text color={t.fg.muted} marginTop={1}>Press Enter to confirm or Esc to cancel</Text>
-          {error && <Text color={t.status.error} marginTop={1}>{error}</Text>}
+          <Box marginTop={1}><Text color={t.fg.secondary}>Type the deployment name to confirm:</Text></Box>
+          <Box marginTop={1}><Text color={t.accent} bold>{confirmName}</Text></Box>
+          <Box marginTop={1}><Text color={t.fg.muted}>Press Enter to confirm or Esc to cancel</Text></Box>
+          {error && <Box marginTop={1}><Text color={t.status.error}>{error}</Text></Box>}
         </Box>
       ) : (
         <>
@@ -85,7 +85,7 @@ export function DestroyView({ context }: Props) {
             {context.deployments.map((deployment, i) => {
               const isSelected = i === selectedIndex;
               return (
-                <Box key={deployment.config.name} flexDirection="row" backgroundColor={isSelected ? t.selection.bg : undefined}>
+                <Box key={deployment.config.name} flexDirection="row">
                   <Text color={isSelected ? t.selection.indicator : t.fg.muted}>
                     {isSelected ? '> ' : '  '}
                   </Text>

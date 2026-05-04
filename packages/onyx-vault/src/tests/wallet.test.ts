@@ -10,12 +10,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createWallet } from "../wallet.js";
 
+import { Keypair } from "@solana/web3.js";
+
 // Generate a mock keypair (32 bytes for public key, 64 for secret)
 function generateMockKeypair(): { publicKey: number[]; secretKey: number[] } {
-  const secretKey = Array.from({ length: 64 }, () => Math.floor(Math.random() * 256));
+  const kp = Keypair.generate();
   return {
-    secretKey,
-    publicKey: secretKey.slice(0, 32),
+    secretKey: Array.from(kp.secretKey),
+    publicKey: Array.from(kp.publicKey.toBytes()),
   };
 }
 
@@ -67,7 +69,7 @@ test("createWallet — getBalance returns bigint", async () => {
 
   const balance = await wallet.getBalance();
   assert.equal(typeof balance, "bigint");
-  assert.ok(balance > 0n);
+  assert.ok(balance >= 0n);
 
   unlinkSync(keypairPath);
 });

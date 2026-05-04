@@ -76,7 +76,7 @@ export function ChannelsView({ context }: Props) {
               {channels.map((channel, i) => {
                 const isSelected = i === selectedIndex;
                 return (
-                  <Box key={channel.id} flexDirection="row" backgroundColor={isSelected ? t.selection.bg : undefined}>
+                  <Box key={channel.id} flexDirection="row">
                     <Text color={isSelected ? t.selection.indicator : t.fg.muted}>
                       {isSelected ? '> ' : '  '}
                     </Text>

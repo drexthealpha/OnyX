@@ -70,7 +70,7 @@ export function NosanaView({ context }: Props) {
               {jobs.map((job, i) => {
                 const isSelected = i === selectedIndex;
                 return (
-                  <Box key={job.jobId} flexDirection="row" backgroundColor={isSelected ? t.selection.bg : undefined}>
+                  <Box key={job.jobId} flexDirection="row">
                     <Text color={isSelected ? t.selection.indicator : t.fg.muted}>
                       {isSelected ? '> ' : '  '}
                     </Text>

@@ -7,7 +7,7 @@
 //   4. NOSANA_PRIVATE_KEY set    → 'nosana'         (decentralised GPU, user pays)
 //   5. throw                     → no compute available
 
-export type ComputeBackend = 'edge' | 'local-ollama' | 'local-lmstudio' | 'nosana';
+export type ComputeBackend = 'qvac' | 'edge' | 'local-ollama' | 'local-lmstudio' | 'nosana';
 
 const OLLAMA_URL = 'http://localhost:11434/api/tags';
 const LM_STUDIO_URL = 'http://localhost:1234/v1/models';
@@ -44,6 +44,9 @@ async function probe(url: string): Promise<boolean> {
  * 5. throw Error                              (no compute available)
  */
 export async function getCompute(): Promise<ComputeBackend> {
+  const { isAvailable } = await import('@onyx/qvac');
+  if (await isAvailable()) return 'qvac';
+
   // 1. Nomad / edge mode (on-device LiteRT-LM inference)
   if (process.env.NOMAD_MODE === 'true') {
     return 'edge';

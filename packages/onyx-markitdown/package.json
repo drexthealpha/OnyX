@@ -1,13 +1,13 @@
 {
     "name":  "@onyx/markitdown",
-    "version":  "0.1.0",
+    "version":  "1.0.0",
     "description":  "Universal document-to-markdown converter for ONYX AI OS",
     "type":  "module",
     "main":  "./dist/index.js",
     "types":  "./dist/index.d.ts",
     "scripts":  {
                     "build":  "tsc",
-                    "test":  "pnpm vitest run",
+                    "test":  "vitest run",
                     "dev":  "tsc --watch"
                 },
     "dependencies":  {
@@ -41,5 +41,8 @@
                               "types":  "./dist/index.d.ts",
                               "import":  "./dist/index.js"
                           }
-                }
+                },
+    "publishConfig":  {
+                          "access":  "public"
+                      }
 }

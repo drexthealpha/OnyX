@@ -45,7 +45,7 @@ export function TemplatesView({ context }: Props) {
         {BUILT_IN_TEMPLATES.map((template, i) => {
           const isSelected = i === selectedIndex;
           return (
-            <Box key={template.id} flexDirection="row" backgroundColor={isSelected ? t.selection.bg : undefined}>
+            <Box key={template.id} flexDirection="row">
               <Text color={isSelected ? t.selection.indicator : t.fg.muted}>
                 {isSelected ? '> ' : '  '}
               </Text>

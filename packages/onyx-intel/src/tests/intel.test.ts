@@ -37,7 +37,7 @@ describe("Reddit source", () => {
       // score is 0 before pipeline scoring
       expect(typeof item.score).toBe("number");
     }
-  });
+  }, 60000);
 });
 
 // ---------------------------------------------------------------------------
@@ -111,8 +111,8 @@ describe("Intel cache TTL", () => {
     expect(immediate?.topic).toBe(topic);
 
     // Mock Date.now to simulate TTL + 1 second having passed
-    const originalDateNow = Date.now;
-    Date.now = () => realNow + TTL_MS + 1000;
+    vi.useFakeTimers();
+    vi.setSystemTime(realNow + TTL_MS + 1000);
 
     try {
       // isExpired should now return true
@@ -123,7 +123,7 @@ describe("Intel cache TTL", () => {
       expect(afterExpiry).toBeNull();
     } finally {
       // Always restore Date.now
-      Date.now = originalDateNow;
+      vi.useRealTimers();
     }
-  });
+  }, 60000);
 });

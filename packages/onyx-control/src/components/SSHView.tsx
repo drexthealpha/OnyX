@@ -31,11 +31,11 @@ export function SSHView({ context }: Props) {
         <Box flexDirection="column" borderStyle="double" borderColor={t.border.focus} padding={1} marginBottom={1}>
           <Text color={t.fg.secondary}>Deployment: </Text>
           <Text color={t.accent}>{deployment.config.name}</Text>
-          <Text color={t.fg.secondary} marginTop={1}>IP: </Text>
+          <Box marginTop={1}><Text color={t.fg.secondary}>IP: </Text></Box>
           <Text color={t.fg.primary}>{deployment.state.serverIp ?? 'Not available'}</Text>
-          <Text color={t.fg.secondary} marginTop={1}>SSH Key: </Text>
+          <Box marginTop={1}><Text color={t.fg.secondary}>SSH Key: </Text></Box>
           <Text color={t.fg.muted}>{deployment.sshKeyPath}</Text>
-          <Text color={t.status.info} marginTop={2}>Press Enter to open SSH terminal</Text>
+          <Box marginTop={2}><Text color={t.status.info}>Press Enter to open SSH terminal</Text></Box>
         </Box>
       ) : (
         <Box borderStyle="single" borderColor={t.border.default} padding={1}>

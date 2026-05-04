@@ -1,32 +1,35 @@
 {
-  "name": "@onyx/semantic",
-  "version": "0.1.0",
-  "description": "Qdrant vector store layer for all ONYX memory — local inference, zero API cost",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
-  },
-  "scripts": {
-    "build": "tsc",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@qdrant/js-client-rest": "^1.17.0",
-    "@xenova/transformers": "^2.17.2"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^5.4.0",
-    "vitest": "^1.6.0"
-  },
-  "engines": {
-    "node": ">=18.17.0"
-  }
+    "name":  "@onyx/semantic",
+    "version":  "1.0.0",
+    "description":  "Qdrant vector store layer for all ONYX memory — local inference, zero API cost",
+    "type":  "module",
+    "main":  "./dist/index.js",
+    "types":  "./dist/index.d.ts",
+    "exports":  {
+                    ".":  {
+                              "types":  "./dist/index.d.ts",
+                              "default":  "./dist/index.js"
+                          }
+                },
+    "scripts":  {
+                    "build":  "tsc",
+                    "test":  "vitest run",
+                    "test:watch":  "vitest",
+                    "typecheck":  "tsc --noEmit"
+                },
+    "dependencies":  {
+                         "@qdrant/js-client-rest":  "^1.17.0",
+                         "@xenova/transformers":  "^2.17.2"
+                     },
+    "devDependencies":  {
+                            "@types/node":  "^20.0.0",
+                            "typescript":  "^5.4.0",
+                            "vitest":  "^1.6.0"
+                        },
+    "engines":  {
+                    "node":  "\u003e=18.17.0"
+                },
+    "publishConfig":  {
+                          "access":  "public"
+                      }
 }

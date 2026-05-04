@@ -16,7 +16,11 @@ export interface SSHConnection {
 export async function createSSHKey(keyPath: string): Promise<string> {
   const dir = dirname(keyPath);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-  const { privateKey } = generateKeyPairSync('ed25519');
+  const { privateKey } = generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+  });
   const keyContent = privateKey.toString();
   writeFileSync(keyPath, keyContent, { mode: 0o600 });
   return keyContent;
@@ -31,7 +35,7 @@ export async function connectSSH(config: SSHConnection): Promise<Client> {
       host: config.host,
       port: config.port || 22,
       username: config.username,
-      password: config.password,
+      ...(config.password ? { password: config.password } : {}),
       privateKey: config.privateKeyPath ? require('fs').readFileSync(config.privateKeyPath) : undefined,
     });
   });
@@ -77,9 +81,13 @@ export async function closeSSH(client: Client): Promise<void> {
 }
 
 export function generateSSHKeyPair(): { publicKey: string; privateKey: string } {
-  const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+  const { publicKey, privateKey } = generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+  });
   return {
-    publicKey: publicKey.toString('openssh'),
+    publicKey: publicKey.toString(),
     privateKey: privateKey.toString(),
   };
 }

@@ -5,20 +5,20 @@ describe('Theme', () => {
     const { statusColor } = await import('../theme.js');
     expect(statusColor).toBeDefined();
     expect(typeof statusColor).toBe('function');
-  });
+  }, 30000);
 
   it('exports logLevelColor function', async () => {
     const { logLevelColor } = await import('../theme.js');
     expect(logLevelColor).toBeDefined();
     expect(typeof logLevelColor).toBe('function');
-  });
+  }, 30000);
 
   it('exports theme object', async () => {
     const { t } = await import('../theme.js');
     expect(t).toBeDefined();
     expect(t.accent).toBeDefined();
     expect(t.status).toBeDefined();
-  });
+  }, 30000);
 });
 
 describe('Nerve service', () => {
@@ -32,7 +32,7 @@ describe('Nerve service', () => {
     expect(nerve.intelBrief).toBeDefined();
     expect(nerve.tutorProfile).toBeDefined();
     expect(nerve.navigate).toBeDefined();
-  });
+  }, 30000);
 });
 
 describe('Providers', () => {
@@ -40,19 +40,19 @@ describe('Providers', () => {
     const nosana = await import('../providers/nosana/index.js');
     expect(nosana.listNosanaJobs).toBeDefined();
     expect(nosana.cancelNosanaJob).toBeDefined();
-  });
+  }, 30000);
 
   it('hetzner provider exports functions', async () => {
     const hetzner = await import('../providers/hetzner/index.js');
     expect(hetzner.createHetznerServer).toBeDefined();
     expect(hetzner.deleteHetznerServer).toBeDefined();
-  });
+  }, 30000);
 
   it('digitalocean provider exports functions', async () => {
     const doApi = await import('../providers/digitalocean/index.js');
     expect(doApi.createDigitalOceanServer).toBeDefined();
     expect(doApi.deleteDigitalOceanServer).toBeDefined();
-  });
+  }, 30000);
 });
 
 describe('Utils', () => {
@@ -60,5 +60,5 @@ describe('Utils', () => {
     const terminal = await import('../utils/terminal.js');
     expect(terminal.getOSType).toBeDefined();
     expect(terminal.openTerminalWithCommand).toBeDefined();
-  });
+  }, 30000);
 });

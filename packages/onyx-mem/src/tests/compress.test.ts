@@ -2,7 +2,7 @@
 // Test 2: compress.ts — crystal token budget
 // ─────────────────────────────────────────────
 
-import { describe, it, expect, mock, beforeAll } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 import type { ConversationTelemetry } from '../types.js';
 import { MEMORY_CRYSTAL_MAX_TOKENS } from '../constants.js';
 
@@ -15,7 +15,7 @@ const MOCK_COMPRESSION_RESPONSE = {
   errors: ['Missing ANTHROPIC_API_KEY caused auth failure on first run'],
 };
 
-globalThis.fetch = mock(async (_url: string, _init?: RequestInit) => {
+globalThis.fetch = vi.fn(async (_url: string, _init?: RequestInit) => {
   return new Response(
     JSON.stringify({
       content: [
@@ -67,7 +67,7 @@ describe('compress — crystal token budget', () => {
   });
 
   it('returns empty crystal for empty buffer without calling API', async () => {
-    const callsBefore = (globalThis.fetch as ReturnType<typeof mock>).mock.calls.length;
+    const callsBefore = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls.length;
     const crystal = await compress('empty-session', [], 'finance');
 
     expect(crystal.decisions).toEqual([]);
@@ -75,7 +75,7 @@ describe('compress — crystal token budget', () => {
     expect(crystal.rawTokenCount).toBe(0);
     expect(crystal.compressedTokenCount).toBe(0);
 
-    const callsAfter = (globalThis.fetch as ReturnType<typeof mock>).mock.calls.length;
+    const callsAfter = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls.length;
     expect(callsAfter).toBe(callsBefore); // No API call made.
   });
 

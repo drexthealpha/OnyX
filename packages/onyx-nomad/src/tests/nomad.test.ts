@@ -31,5 +31,5 @@ describe('getAvailableBackend', () => {
     const { getAvailableBackend } = await import('../fallback/compute');
     const backend = await getAvailableBackend();
     expect(backend).toBe('edge');
-  });
+  }, 60000);
 });

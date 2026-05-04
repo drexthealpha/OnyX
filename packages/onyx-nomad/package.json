@@ -1,6 +1,6 @@
 {
     "name":  "@onyx/nomad",
-    "version":  "0.1.0",
+    "version":  "1.0.0",
     "description":  "ONYX offline sovereignty layer — local compute fallback, offline queue, knowledge preload, sync daemon",
     "module":  "./dist/index.js",
     "main":  "./dist/index.js",
@@ -15,6 +15,7 @@
     "dependencies":  {
                          "@onyx/intel":  "workspace:*",
                          "@onyx/mem":  "workspace:*",
+                         "@onyx/qvac":  "workspace:*",
                          "@onyx/semantic":  "workspace:*",
                          "@types/better-sqlite3":  "^7.6.13",
                          "better-sqlite3":  "^12.9.0"
@@ -30,5 +31,8 @@
                               "types":  "./dist/index.d.ts",
                               "import":  "./dist/index.js"
                           }
-                }
+                },
+    "publishConfig":  {
+                          "access":  "public"
+                      }
 }

@@ -74,7 +74,7 @@ export interface Deployment { config: DeploymentConfig; state: DeploymentState; 
 export type ViewName =
   | 'home' | 'new' | 'list' | 'deploy' | 'deploying' | 'status'
   | 'ssh' | 'logs' | 'dashboard' | 'destroy' | 'help' | 'templates' | 'channels'
-  | 'nosana' | 'trading' | 'privacy' | 'intel' | 'tutor' | 'browser';
+  | 'nosana' | 'trading' | 'privacy' | 'intel' | 'tutor' | 'browser' | 'qvac';
 
 export interface NosanaJob { jobId: string; image: string; status: string; cost: number; duration: number; }
 

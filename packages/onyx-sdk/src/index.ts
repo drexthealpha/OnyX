@@ -9,7 +9,7 @@ export { default } from './client.js';
 export type { OnyxClientConfig } from './client.js';
 
 // All public types from all @onyx/* packages
-export * from './types.js';
+export * from './types/index.js';
 
 // Utilities
 export * from './utils/solana.js';

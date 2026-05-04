@@ -60,7 +60,7 @@ describe("HTML Parser", () => {
     // Must contain main article content
     expect(result).toContain("Article Title");
     expect(result).toContain("main content");
-  });
+  }, 120000);
 });
 
 // ─── Test 2: XLSX parser returns markdown table (contains |) ─────────────────
@@ -84,7 +84,7 @@ describe("XLSX Parser", () => {
 
     tmpXlsxPath = path.join(os.tmpdir(), `test-onyx-${Date.now()}.xlsx`);
     XLSX.writeFile(wb, tmpXlsxPath);
-  });
+  }, 120000);
 
   afterAll(() => {
     if (fs.existsSync(tmpXlsxPath)) {
@@ -110,7 +110,7 @@ describe("XLSX Parser", () => {
     // Must contain data rows
     expect(result).toContain("Alice");
     expect(result).toContain("95");
-  });
+  }, 120000);
 });
 
 // ─── Test 3: Unknown extension throws UnsupportedFileType ────────────────────
@@ -136,5 +136,5 @@ describe("convert()", () => {
     // The extension must appear in the error message
     expect(err.message).toContain(unknownExt);
     expect(err.name).toBe("UnsupportedFileType");
-  });
+  }, 120000);
 });

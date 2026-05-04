@@ -1,6 +1,6 @@
 {
     "name":  "@onyx/hud",
-    "version":  "0.1.0",
+    "version":  "1.0.0",
     "description":  "Screen-aware AI HUD overlay — transparent Electron window with context metering, tool display, agent tracking, and screen capture injection",
     "main":  "./dist/index.js",
     "type":  "module",
@@ -8,7 +8,7 @@
                     "build":  "tsc",
                     "start":  "electron dist/index.js",
                     "dev":  "tsc --watch",
-                    "test":  "pnpm vitest run"
+                    "test":  "vitest run"
                 },
     "dependencies":  {
                          "electron":  "^33.0.0",
@@ -42,5 +42,8 @@
                               "import":  "./dist/index.js"
                           }
                 },
-    "types":  "./dist/index.d.ts"
+    "types":  "./dist/index.d.ts",
+    "publishConfig":  {
+                          "access":  "public"
+                      }
 }

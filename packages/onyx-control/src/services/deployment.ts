@@ -55,7 +55,7 @@ export function getCheckpointDescription(checkpoint: CheckpointName): string {
 
 function getNextCheckpoint(current: CheckpointName): CheckpointName | null {
   const idx = CHECKPOINTS.indexOf(current);
-  return idx >= 0 && idx < CHECKPOINTS.length - 1 ? CHECKPOINTS[idx + 1] : null;
+  return idx >= 0 && idx < CHECKPOINTS.length - 1 ? (CHECKPOINTS[idx + 1] ?? null) : null;
 }
 
 export async function startDeployment(config: DeploymentConfig, onProgress?: (p: DeploymentProgress) => void): Promise<Deployment> {

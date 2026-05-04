@@ -1,36 +1,46 @@
 {
-  "name": "@onyx/swe",
-  "version": "0.1.0",
-  "description": "Autonomous software engineering agent for ONYX — plans, codes, tests, reviews, and opens PRs from GitHub issues",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "test": "vitest run",
-    "type-check": "tsc --noEmit",
-    "lint": "eslint src --ext .ts"
-  },
-  "dependencies": {
-    "@octokit/rest": "^21.0.2",
-    "dockerode": "^4.0.2"
-  },
-  "devDependencies": {
-    "@types/dockerode": "^3.3.29",
-    "@types/node": "^22.0.0",
-    "typescript": "^5.5.4",
-    "vitest": "^3.0.0"
-  },
-  "peerDependencies": {
-    "@onyx/mem": "workspace:*"
-  },
-  "keywords": ["onyx", "swe", "agent", "github", "docker", "autonomous"],
-  "license": "MIT"
+    "name":  "@onyx/swe",
+    "version":  "1.0.0",
+    "description":  "Autonomous software engineering agent for ONYX — plans, codes, tests, reviews, and opens PRs from GitHub issues",
+    "type":  "module",
+    "main":  "./dist/index.js",
+    "types":  "./dist/index.d.ts",
+    "exports":  {
+                    ".":  {
+                              "import":  "./dist/index.js",
+                              "types":  "./dist/index.d.ts"
+                          }
+                },
+    "scripts":  {
+                    "build":  "tsc",
+                    "dev":  "tsc --watch",
+                    "test":  "vitest run",
+                    "type-check":  "tsc --noEmit",
+                    "lint":  "eslint src --ext .ts"
+                },
+    "dependencies":  {
+                         "@octokit/rest":  "^21.0.2",
+                         "dockerode":  "^4.0.2"
+                     },
+    "devDependencies":  {
+                            "@types/dockerode":  "^3.3.29",
+                            "@types/node":  "^22.0.0",
+                            "typescript":  "^5.5.4",
+                            "vitest":  "^3.0.0"
+                        },
+    "peerDependencies":  {
+                             "@onyx/mem":  "workspace:*"
+                         },
+    "keywords":  [
+                     "onyx",
+                     "swe",
+                     "agent",
+                     "github",
+                     "docker",
+                     "autonomous"
+                 ],
+    "license":  "MIT",
+    "publishConfig":  {
+                          "access":  "public"
+                      }
 }

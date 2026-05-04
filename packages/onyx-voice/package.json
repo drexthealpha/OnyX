@@ -1,6 +1,6 @@
 {
     "name":  "@onyx/voice",
-    "version":  "0.1.0",
+    "version":  "1.0.0",
     "type":  "module",
     "main":  "./dist/index.js",
     "types":  "./dist/index.d.ts",
@@ -31,12 +31,15 @@
                              },
     "scripts":  {
                     "build":  "tsc",
-                    "test":  "pnpm vitest run"
+                    "test":  "vitest run"
                 },
     "exports":  {
                     ".":  {
                               "types":  "./dist/index.d.ts",
                               "import":  "./dist/index.js"
                           }
-                }
+                },
+    "publishConfig":  {
+                          "access":  "public"
+                      }
 }

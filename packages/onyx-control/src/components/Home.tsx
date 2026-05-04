@@ -29,6 +29,7 @@ const COMMANDS: Array<{ name: string; description: string; view: ViewName }> = [
   { name: '/intel', description: 'Real-time intelligence briefs', view: 'intel' },
   { name: '/tutor', description: 'Knowledge map & learning sessions', view: 'tutor' },
   { name: '/browser', description: 'Autonomous browser control', view: 'browser' },
+  { name: '/qvac', description: 'Local P2P Inference (QVAC)', view: 'qvac' },
   { name: '/logs', description: 'View deployment logs', view: 'logs' },
   { name: '/ssh', description: 'SSH into deployment', view: 'ssh' },
   { name: '/destroy', description: 'Destroy deployment', view: 'destroy' },
@@ -73,6 +74,7 @@ export function Home({ context }: Props) {
         <Text color={t.fg.primary} bold>Quick Start</Text>
         <Text color={t.fg.secondary}>  /status   — View system status and health</Text>
         <Text color={t.fg.secondary}>  /nosana   — Manage GPU compute jobs</Text>
+        <Text color={t.fg.secondary}>  /qvac     — Run local P2P models</Text>
         <Text color={t.fg.secondary}>  /new      — Create a new deployment</Text>
       </Box>
 

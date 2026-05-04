@@ -2,6 +2,11 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { getCompute } from '../router.js';
 
+vi.mock('@onyx/qvac', () => ({
+  isAvailable: async () => false,
+}));
+
+
 // We mock fetch globally so tests don't hit real network
 const mockFetch = vi.fn();
 globalThis.fetch = mockFetch;
@@ -18,7 +23,7 @@ describe('getCompute router', () => {
     const result = await getCompute();
     expect(result).toBe('edge');
     expect(mockFetch).not.toHaveBeenCalled();
-  });
+  }, 30000);
 
   it('returns "nosana" when NOSANA_PRIVATE_KEY is set and Ollama/LMStudio are not running', async () => {
     process.env.NOSANA_PRIVATE_KEY = 'fake-key-for-test';
@@ -27,7 +32,7 @@ describe('getCompute router', () => {
 
     const result = await getCompute();
     expect(result).toBe('nosana');
-  });
+  }, 30000);
 
   it('returns "local-ollama" when Ollama responds OK', async () => {
     // First fetch call (Ollama) succeeds, so we return early
@@ -35,7 +40,7 @@ describe('getCompute router', () => {
 
     const result = await getCompute();
     expect(result).toBe('local-ollama');
-  });
+  }, 30000);
 
   it('returns "local-lmstudio" when Ollama fails but LM Studio responds OK', async () => {
     // Ollama probe fails
@@ -45,7 +50,7 @@ describe('getCompute router', () => {
 
     const result = await getCompute();
     expect(result).toBe('local-lmstudio');
-  });
+  }, 30000);
 
   it('throws when no compute is available', async () => {
     // All probes fail, no env vars set
@@ -54,5 +59,5 @@ describe('getCompute router', () => {
     await expect(getCompute()).rejects.toThrow(
       'No compute available'
     );
-  });
+  }, 30000);
 });

@@ -44,7 +44,7 @@ export function DeployView({ context }: Props) {
           {deployableDeployments.map((deployment, i) => {
             const isSelected = i === selectedIndex;
             return (
-              <Box key={deployment.config.name} flexDirection="row" backgroundColor={isSelected ? t.selection.bg : undefined}>
+              <Box key={deployment.config.name} flexDirection="row">
                 <Text color={isSelected ? t.selection.indicator : t.fg.muted}>
                   {isSelected ? '> ' : '  '}
                 </Text>

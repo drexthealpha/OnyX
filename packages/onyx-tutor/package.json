@@ -1,33 +1,36 @@
 {
-    "name": "@onyx/tutor",
-    "version": "0.1.0",
-    "description": "Persistent learner model and TutorBot system for ONYX",
-    "type": "module",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-        ".": {
-            "import": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
-    },
-    "scripts": {
-        "build": "tsc --emitDeclarationOnly && tsup src/index.ts --format esm",
-        "dev": "tsup src/index.ts --watch",
-        "test": "vitest run"
-    },
-    "dependencies": {
-        "hono": "^4.0.0",
-        "@onyx/mem": "workspace:*",
-        "@onyx/semantic": "workspace:*",
-        "@onyx/markitdown": "workspace:*"
-    },
-    "devDependencies": {
-        "@types/bun": "latest",
-        "tsup": "^8.0.0",
-        "typescript": "^5.4.0"
-    },
-    "peerDependencies": {
-        "@onyx/mem": "workspace:*"
-    }
+    "name":  "@onyx/tutor",
+    "version":  "1.0.0",
+    "description":  "Persistent learner model and TutorBot system for ONYX",
+    "type":  "module",
+    "main":  "./dist/index.js",
+    "types":  "./dist/index.d.ts",
+    "exports":  {
+                    ".":  {
+                              "import":  "./dist/index.js",
+                              "types":  "./dist/index.d.ts"
+                          }
+                },
+    "scripts":  {
+                    "build":  "tsc --emitDeclarationOnly \u0026\u0026 tsup src/index.ts --format esm",
+                    "dev":  "tsup src/index.ts --watch",
+                    "test":  "vitest run"
+                },
+    "dependencies":  {
+                         "hono":  "^4.0.0",
+                         "@onyx/mem":  "workspace:*",
+                         "@onyx/semantic":  "workspace:*",
+                         "@onyx/markitdown":  "workspace:*"
+                     },
+    "devDependencies":  {
+                            "@types/bun":  "latest",
+                            "tsup":  "^8.0.0",
+                            "typescript":  "^5.4.0"
+                        },
+    "peerDependencies":  {
+                             "@onyx/mem":  "workspace:*"
+                         },
+    "publishConfig":  {
+                          "access":  "public"
+                      }
 }

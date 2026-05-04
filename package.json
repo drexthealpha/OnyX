@@ -14,7 +14,14 @@
     "dev:web": "pnpm --filter onyx-web dev",
     "dev:mobile": "pnpm --filter onyx-mobile start",
     "dev:desktop": "pnpm --filter onyx-desktop dev",
-    "format": "prettier --write \"packages/**/*.{ts,tsx,json,md}\""
+    "format": "prettier --write \"packages/**/*.{ts,tsx,json,md}\"",
+    "publish:all": "pnpm publish -r --access public --no-git-checks",
+    "docker:build": "docker build -t ghcr.io/drexthealpha/onyx-gateway:latest -f packages/onyx-gateway/Dockerfile .",
+    "docker:push": "docker push ghcr.io/drexthealpha/onyx-gateway:latest",
+    "deploy:web": "pnpm --filter onyx-web build && vercel --cwd apps/web --prod --yes",
+    "demo:fhe": "tsx scripts/demo-fhe-vault.ts",
+    "demo:umbra": "tsx scripts/demo-umbra.ts",
+    "demo:ika": "tsx scripts/demo-ika.ts"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
@@ -41,7 +48,7 @@
       "react-dom": "19.0.0",
       "@types/react": "19.2.14",
       "@types/react-dom": "19.2.3",
-      "zod": "^3.25.76",
+      "zod": "^4.4.3",
       "whatwg-url": "7.1.0",
       "utf-8-validate": "^5.0.2",
       "@umbra-privacy/sdk": "2.0.3",

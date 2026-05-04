@@ -3,6 +3,7 @@
 // Checks cache first. If miss, runs full pipeline, synthesizes, caches, returns.
 
 import type { IntelBrief } from "./types.js";
+export const NAME = "onyx-intel";
 import { get as cacheGet, set as cacheSet, listCachedTopics, evictCache } from "./cache.js";
 import { runAllSources } from "./pipeline/search.js";
 import { synthesize } from "./pipeline/synthesize.js";

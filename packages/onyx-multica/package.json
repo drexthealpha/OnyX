@@ -1,25 +1,28 @@
 {
-  "name": "@onyx/multica",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./herald": "./src/herald.ts",
-    "./council": "./src/council.ts",
-    "./consensus": "./src/consensus.ts",
-    "./quorum": "./src/quorum.ts",
-    "./broadcast": "./src/broadcast.ts",
-    "./messaging": "./src/messaging.ts",
-    "./shared-memory": "./src/shared-memory.ts"
-  },
-  "scripts": {
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "build": "tsc"
-  },
-  "devDependencies": {
-    "typescript": "^5.4.0",
-    "vitest": "^1.6.0"
-  }
+    "name":  "@onyx/multica",
+    "version":  "1.0.0",
+    "private":  true,
+    "type":  "module",
+    "exports":  {
+                    ".":  "./src/index.ts",
+                    "./herald":  "./src/herald.ts",
+                    "./council":  "./src/council.ts",
+                    "./consensus":  "./src/consensus.ts",
+                    "./quorum":  "./src/quorum.ts",
+                    "./broadcast":  "./src/broadcast.ts",
+                    "./messaging":  "./src/messaging.ts",
+                    "./shared-memory":  "./src/shared-memory.ts"
+                },
+    "scripts":  {
+                    "typecheck":  "tsc --noEmit",
+                    "test":  "vitest run",
+                    "build":  "tsc"
+                },
+    "devDependencies":  {
+                            "typescript":  "^5.4.0",
+                            "vitest":  "^1.6.0"
+                        },
+    "publishConfig":  {
+                          "access":  "public"
+                      }
 }

@@ -6,7 +6,7 @@
  * - 'local-ollama'  → Ollama running at http://localhost:11434
  * - 'local-lmstudio'→ LM Studio running at http://localhost:1234
  */
-export type ComputeBackend = 'edge' | 'local-ollama' | 'local-lmstudio';
+export type ComputeBackend = 'qvac' | 'edge' | 'local-ollama' | 'local-lmstudio';
 
 /**
  * A serialisable operation queued while the device is offline.

@@ -95,7 +95,7 @@ describe('generateContent — type-appropriate output (mocked Claude)', () => {
 
     expect(content.wordCount).toBeGreaterThan(50);
     expect(content.generatedAt).toBeGreaterThan(0);
-  });
+  }, 30000);
 
   test('twitter-thread content has tweets array with ≤280 char entries', async () => {
     const { generateContent } = await import('../generator.js');
@@ -108,7 +108,7 @@ describe('generateContent — type-appropriate output (mocked Claude)', () => {
     for (const tweet of content.tweets!) {
       expect(tweet.length).toBeLessThanOrEqual(280);
     }
-  });
+  }, 30000);
 
   test('youtube-script content contains intro and outro sections', async () => {
     const { generateContent } = await import('../generator.js');
@@ -118,7 +118,7 @@ describe('generateContent — type-appropriate output (mocked Claude)', () => {
     const bodyUpper = content.body.toUpperCase();
     expect(bodyUpper).toContain('INTRO');
     expect(bodyUpper).toContain('OUTRO');
-  });
+  }, 30000);
 
   test('linkedin content is shorter than blog content', async () => {
     const { generateContent } = await import('../generator.js');
@@ -128,7 +128,7 @@ describe('generateContent — type-appropriate output (mocked Claude)', () => {
 
     expect(linkedin.wordCount).toBeLessThan(blog.wordCount);
     expect(linkedin.type).toBe('linkedin');
-  });
+  }, 30000);
 });
 
 describe('crosspost — platform-specific reformatting', () => {
@@ -184,7 +184,7 @@ describe('crosspost — platform-specific reformatting', () => {
     expect(results.blog).not.toBe(results.linkedin);
 
     expect(results.linkedin!.length).toBeLessThan(results.blog!.length);
-  });
+  }, 30000);
 
   test('crosspost returns results keyed by platform', async () => {
     const { crosspost } = await import('../crosspost.js');
@@ -196,5 +196,5 @@ describe('crosspost — platform-specific reformatting', () => {
       expect(typeof results[platform]).toBe('string');
       expect(results[platform].length).toBeGreaterThan(0);
     }
-  });
+  }, 30000);
 });

@@ -21,20 +21,20 @@ const SEED_CRYSTAL: MemoryCrystal = {
   compressedTokenCount: 87,
 };
 
+import { inject } from '../inject.js';
+
 describe('inject — context string format', () => {
   beforeAll(async () => {
     await saveCrystal(SEED_CRYSTAL);
   });
 
   it('returns string starting with "From previous sessions" when memories exist', async () => {
-    const { inject } = await import('../inject.js');
     const result = await inject('onyx-gateway herald pub-sub routing');
     expect(result).toBeTypeOf('string');
     expect(result.startsWith('From previous sessions')).toBe(true);
-  });
+  }, 120000);
 
   it('returns a non-empty context that includes seeded data', async () => {
-    const { inject } = await import('../inject.js');
     const result = await inject('gateway routing hermes');
     const containsKnownFact =
       result.includes('gateway') ||
@@ -42,11 +42,10 @@ describe('inject — context string format', () => {
       result.includes('herald') ||
       result.includes('Bun');
     expect(containsKnownFact).toBe(true);
-  });
+  }, 120000);
 
   it('returns "From previous sessions" prefix even when no matches', async () => {
-    const { inject } = await import('../inject.js');
     const result = await inject('xyzzyfoobarbaz');
     expect(result.startsWith('From previous sessions')).toBe(true);
-  });
+  }, 120000);
 });

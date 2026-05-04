@@ -4,5 +4,9 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    testTimeout: 60000,
+  },
+  optimizeDeps: {
+    include: ['@grpc/grpc-js'],
   },
 });

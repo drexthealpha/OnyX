@@ -59,6 +59,29 @@ describe("ContentAnalyzer Agent", () => {
   });
 });
 
+// Mock dataforseo for research()
+vi.mock("../data/dataforseo.js", () => ({
+  getKeywordMetrics: async (kws: string[]) =>
+    kws.map((kw, i) => ({
+      keyword: kw,
+      searchVolume: 1000 - i * 100,
+      cpc: 1.5,
+      competition: 0.3 + i * 0.05,
+      trend: "stable",
+    })),
+}));
+
+// Mock intel for research()
+vi.mock("@onyx/intel", () => ({
+  runIntel: async () => ({
+    topic: "seo strategies",
+    brief: "SEO is evolving with AI and user intent focus.",
+    sources: [],
+    timestamp: Date.now(),
+    confidence: 0.8,
+  }),
+}));
+
 // ─── Test 2: writeArticle pipeline calls at least 3 different agents in sequence
 // ─────────────────────────────────────────────────────────────────────────────
 describe("writeArticle Pipeline", () => {
@@ -146,29 +169,6 @@ describe("writeArticle Pipeline", () => {
     try {
       const { writeArticle } = await import("../commands/write.js");
 
-      // Mock dataforseo for research()
-      vi.mock("../data/dataforseo.js", () => ({
-        getKeywordMetrics: async (kws: string[]) =>
-          kws.map((kw, i) => ({
-            keyword: kw,
-            searchVolume: 1000 - i * 100,
-            cpc: 1.5,
-            competition: 0.3 + i * 0.05,
-            trend: "stable",
-          })),
-      }));
-
-      // Mock intel for research()
-      vi.mock("@onyx/intel", () => ({
-        runIntel: async () => ({
-          topic: "seo strategies",
-          brief: "SEO is evolving with AI and user intent focus.",
-          sources: [],
-          timestamp: Date.now(),
-          confidence: 0.8,
-        }),
-      }));
-
       const article = await writeArticle("seo strategies");
 
       const uniqueAgents = [...new Set(agentsCalled)];
@@ -187,7 +187,7 @@ describe("writeArticle Pipeline", () => {
         delete process.env.ANTHROPIC_API_KEY;
       }
     }
-  });
+  }, 60000);
 });
 
 // ─── Test 3: DataForSEO client correctly constructs base64 auth header

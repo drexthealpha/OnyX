@@ -5,7 +5,7 @@
 //  2. getTokenUsage returns percent between 0 and 100
 // ─────────────────────────────────────────────
 
-import { describe, it, expect, mock, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 function isPNG(buf: Buffer): boolean {
   const PNG_HEADER = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
@@ -65,7 +65,7 @@ describe("status/context-meter", () => {
 
   it("getTokenUsage() returns { used, total, percent } with percent in [0, 100]", async () => {
     // Mock a gateway /metrics response
-    global.fetch = mock(async () =>
+    global.fetch = vi.fn(async () =>
       new Response(
         JSON.stringify({
           context: { used: 45_000, total: 200_000 },
@@ -88,7 +88,7 @@ describe("status/context-meter", () => {
   });
 
   it("getTokenUsage() returns safe zero state when gateway is down", async () => {
-    global.fetch = mock(async () => {
+    global.fetch = vi.fn(async () => {
       throw new Error("ECONNREFUSED");
     }) as typeof fetch;
 

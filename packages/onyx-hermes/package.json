@@ -1,6 +1,6 @@
 {
     "name":  "@onyx/hermes",
-    "version":  "0.1.0",
+    "version":  "1.0.0",
     "description":  "Self-evolving memory and skill improvement engine for ONYX",
     "main":  "./dist/index.js",
     "types":  "./dist/index.d.ts",
@@ -32,5 +32,8 @@
                               "types":  "./dist/index.d.ts",
                               "import":  "./dist/index.js"
                           }
-                }
+                },
+    "publishConfig":  {
+                          "access":  "public"
+                      }
 }

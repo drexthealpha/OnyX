@@ -1,42 +1,41 @@
 {
-  "name": "@onyx/bridge",
-  "version": "0.1.0",
-  "description": "Ika dWallet MPC integration for ONYX keyless signing",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+    "name": "@onyx/bridge",
+    "version": "1.0.0",
+    "description": "Ika dWallet MPC integration for ONYX keyless signing",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "test": "vitest run",
+        "lint": "tsc --noEmit",
+        "typecheck": "tsc --noEmit",
+        "clean": "rimraf dist"
+    },
+    "dependencies": {
+        "@grpc/grpc-js": "1.12.6",
+        "@mysten/bcs": "^1.0.0",
+        "@onyx/kernel": "workspace:*",
+        "@solana/spl-token": "^0.4.0",
+        "@solana/web3.js": "^1.91.0",
+        "better-sqlite3": "^9.4.0",
+        "tweetnacl": "^1.0.3"
+    },
+    "devDependencies": {
+        "@types/better-sqlite3": "^7.6.8",
+        "@types/node": "^20.0.0",
+        "rimraf": "*",
+        "typescript": "*",
+        "vitest": "*"
+    },
+    "publishConfig": {
+        "access": "public"
     }
-  },
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist"
-  },
-  "dependencies": {
-    "@grpc/grpc-js": "^1.10.0",
-    "@mysten/bcs": "^1.0.0",
-    "@onyx/kernel": "workspace:*",
-    "@solana/spl-token": "^0.4.0",
-    "@solana/web3.js": "^1.91.0",
-    "better-sqlite3": "^9.4.0",
-    "tweetnacl": "^1.0.3"
-  },
-  "devDependencies": {
-    "@types/better-sqlite3": "^7.6.8",
-    "@types/node": "^20.0.0",
-    "rimraf": "*",
-    "typescript": "*",
-    "vitest": "*"
-  },
-  "vitest": {
-    "preset": "vitest/presets/default",
-    "testEnvironment": "node"
-  }
 }
