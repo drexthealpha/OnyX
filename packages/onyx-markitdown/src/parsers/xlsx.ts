@@ -2,7 +2,7 @@ import path from "path";
 
 interface WorkBook {
   SheetNames: string[];
-  Sheets: Record<string, any>;
+  Sheets: Record<string, unknown>;
 }
 
 async function getXlsx() {

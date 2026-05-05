@@ -77,9 +77,9 @@ export function searchOffline(
         LIMIT 10
       `
       )
-      .all(query, collection) as any[];
+      .all(query, collection) as unknown[];
 
-    return rows.map((row: any) => ({
+    return rows.map((row: unknown) => ({
       id: row.id,
       collection: row.collection,
       content: row.content,

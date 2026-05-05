@@ -1,11 +1,11 @@
 declare module '@grpc/grpc-js' {
   export namespace credentials {
-    function createInsecure(): any;
-    function createSsl(): any;
+    function createInsecure(): unknown;
+    function createSsl(): unknown;
   }
   export class Client {
-    constructor(target: string, creds: any);
-    makeUnaryRequest(method: string, serialize: any, deserialize: any, request: any, callback: any): void;
+    constructor(target: string, creds: unknown);
+    makeUnaryRequest(method: string, serialize: unknown, deserialize: unknown, request: unknown, callback: unknown): void;
     close(): void;
   }
   export interface ChannelCredentials {}

@@ -10,16 +10,16 @@ type UTXO = { [key: string]: unknown };
 
 export async function claimSelfClaimableToEncryptedBalance(
   client: UmbraClient,
-  zkProver: unknown,
-  relayer: unknown,
+  zkProver: any,
+  relayer: any,
   utxos: UTXO[],
 ): Promise<ClaimResult> {
   const claimer = getSelfClaimableUtxoToEncryptedBalanceClaimerFunction(
     { client },
     { 
-      zkProver: zkProver as any, 
-      relayer: relayer as any,
-      fetchBatchMerkleProof: (client as any).fetchBatchMerkleProof.bind(client)
+      zkProver, 
+      relayer,
+      fetchBatchMerkleProof: client.fetchBatchMerkleProof.bind(client)
     },
   );
   const result = await claimer(utxos as any);
@@ -28,16 +28,16 @@ export async function claimSelfClaimableToEncryptedBalance(
 
 export async function claimReceiverClaimableToEncryptedBalance(
   client: UmbraClient,
-  zkProver: unknown,
-  relayer: unknown,
+  zkProver: any,
+  relayer: any,
   utxos: UTXO[],
 ): Promise<ClaimResult> {
   const claimer = getReceiverClaimableUtxoToEncryptedBalanceClaimerFunction(
     { client },
     { 
-      zkProver: zkProver as any, 
-      relayer: relayer as any,
-      fetchBatchMerkleProof: (client as any).fetchBatchMerkleProof.bind(client)
+      zkProver, 
+      relayer,
+      fetchBatchMerkleProof: client.fetchBatchMerkleProof.bind(client)
     },
   );
   const result = await claimer(utxos as any);
@@ -46,16 +46,16 @@ export async function claimReceiverClaimableToEncryptedBalance(
 
 export async function claimSelfClaimableToPublicBalance(
   client: UmbraClient,
-  zkProver: unknown,
-  relayer: unknown,
+  zkProver: any,
+  relayer: any,
   utxos: UTXO[],
 ): Promise<ClaimResult> {
   const claimer = getSelfClaimableUtxoToPublicBalanceClaimerFunction(
     { client },
     { 
-      zkProver: zkProver as any, 
-      relayer: relayer as any,
-      fetchBatchMerkleProof: (client as any).fetchBatchMerkleProof.bind(client)
+      zkProver, 
+      relayer,
+      fetchBatchMerkleProof: client.fetchBatchMerkleProof.bind(client)
     },
   );
   const result = await claimer(utxos as any);

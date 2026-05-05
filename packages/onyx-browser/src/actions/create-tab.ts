@@ -1,8 +1,8 @@
-import { chromium } from "playwright";
+import { chromium, type Browser } from "playwright";
 import type { Tab } from "../types";
 import { setTab, getRefMap, getTabsMap, getAllTabs } from "../state";
 
-let browserInstance: any = null;
+let browserInstance: Browser | null = null;
 
 export async function ensureBrowser() {
   if (!browserInstance) {

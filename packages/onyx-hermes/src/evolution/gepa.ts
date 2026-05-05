@@ -27,7 +27,7 @@ interface GepaVariant {
   generation: number;
 }
 
-let _router: any = null;
+let _router: { complete: (messages: { role: string; content: string }[]) => Promise<string> } | null = null;
 
 async function callRouterComplete(prompt: string): Promise<string> {
   try {
@@ -35,7 +35,7 @@ async function callRouterComplete(prompt: string): Promise<string> {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       _router = require('@onyx/router');
     }
-    return await _router.complete([{ role: 'user', content: prompt }]);
+    return await _router!.complete([{ role: 'user', content: prompt }]);
   } catch {
     // Fallback: return prompt unchanged if router unavailable
     return prompt;

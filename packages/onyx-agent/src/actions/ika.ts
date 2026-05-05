@@ -7,7 +7,7 @@ export const ikaSignAction: Action = {
   validate: async (runtime: IAgentRuntime, message: Memory) => {
     return !!(process.env['ONYX_WALLET_PATH']);
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: unknown = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     // Extract message (crude extraction)
     const msgMatch = text.match(/sign\s+(?:message|text)?\s+["'](.+?)["']/i) || text.match(/message:\s*(.+)/i);
@@ -43,7 +43,7 @@ Wallet: ${dwalletPubkey}`;
 
       if (callback) await callback({ text: responseText });
       return { text: responseText, success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const err = `Ika signing failed: ${error.message}`;
       if (callback) await callback({ text: err });
       return { text: err, success: false };

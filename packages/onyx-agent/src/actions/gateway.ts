@@ -7,7 +7,7 @@ export const gatewayAction: Action = {
   validate: async (runtime: IAgentRuntime, message: Memory): Promise<boolean> => {
     return !!message.content?.text && message.content.text!.length > 0;
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: unknown = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     const gatewayUrl = runtime.getSetting?.("GATEWAY_URL") ?? process.env['GATEWAY_URL'] ?? "http://localhost:4000";
     

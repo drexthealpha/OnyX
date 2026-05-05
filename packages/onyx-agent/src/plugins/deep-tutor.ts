@@ -10,7 +10,7 @@ export const learnerProfileProvider: Provider = {
       tableName: "goals",
       count: 10,
     });
-    const topics = goals.filter((g: any) => g.content?.text?.startsWith("learning:")).map((g: any) => g.content.text.replace("learning:", "").trim());
+    const topics = goals.filter((g: unknown) => g.content?.text?.startsWith("learning:")).map((g: unknown) => g.content.text.replace("learning:", "").trim());
     return { text: "Learner profile:\n" + topics.join(", "), values: { topics: topics as string[] } };
   }
 };
@@ -29,13 +29,13 @@ export const checkProgressAction: Action = {
       tableName: "goals",
       count: 20,
     });
-    const learningGoals = goals.filter((g: any) => g.content?.text?.startsWith("learning:"));
+    const learningGoals = goals.filter((g: unknown) => g.content?.text?.startsWith("learning:"));
     if (learningGoals.length === 0) {
       if (callback) await callback({ text: "No learning progress recorded yet." });
       return { text: "No learning progress recorded yet.", success: true };
     }
     const summary = await runtime.useModel(ModelType.TEXT_LARGE, {
-      prompt: "Summarize the following learning topics in 2-3 sentences: " + learningGoals.map((g: any) => g.content.text).join(", ")
+      prompt: "Summarize the following learning topics in 2-3 sentences: " + learningGoals.map((g: unknown) => g.content.text).join(", ")
     });
     if (callback) await callback({ text: summary });
     return { text: summary, success: true };

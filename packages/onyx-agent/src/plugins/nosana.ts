@@ -43,7 +43,7 @@ export const submitJobAction: Action = {
   validate: async (runtime: IAgentRuntime, message: Memory) => {
     return !!(process.env['NOSANA_PRIVATE_KEY'] && process.env['NOSANA_RPC_URL']);
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: unknown = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     const imageMatch = text.match(/image\s+([a-zA-Z0-9.\-_/:]+)/i);
     const image = imageMatch?.[1] || "nosana/ai-training:latest";
@@ -72,7 +72,7 @@ Image: ${image}`;
 
       if (callback) await callback({ text: responseText });
       return { text: responseText, success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const err = `Nosana job submission failed: ${error.message}`;
       if (callback) await callback({ text: err });
       return { text: err, success: false };

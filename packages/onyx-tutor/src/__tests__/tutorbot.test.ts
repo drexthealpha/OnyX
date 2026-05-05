@@ -48,7 +48,7 @@ describe('TutorBot interface', () => {
   });
 
   test('evaluate() contract: returns Score with correct boolean', async () => {
-    const mockEvaluate = vi.fn(async (_answer: string, _question: any) => ({
+    const mockEvaluate = vi.fn(async (_answer: string, _question: unknown) => ({
       correct: true,
       confidence: 0.95,
       feedback: 'Correct! Solana programs are indeed the smart contract equivalent.',

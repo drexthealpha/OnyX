@@ -6,7 +6,7 @@ export class FeishuChannel implements Channel {
   private appSecret: string | null = null;
   private token: string | null = null;
   private handler: ((msg: IncomingMessage, from: string) => Promise<void>) | null = null;
-  private refreshInterval: any = null;
+  private refreshInterval: unknown = null;
 
   async init(config: Record<string, string>): Promise<void> {
     this.appId = config.FEISHU_APP_ID;

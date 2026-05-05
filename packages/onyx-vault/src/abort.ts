@@ -4,7 +4,7 @@
  * Registers an abort handler BEFORE running any irreversible operation.
  * Clears on success. Fires refund on failure.
  *
- * Apollo-11 law: any irreversible action must be abortable.
+ * Apollo-11 law: unknown irreversible action must be abortable.
  */
 
 const _handlers = new Map<string, () => void>();

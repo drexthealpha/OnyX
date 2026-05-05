@@ -1,8 +1,9 @@
 import { getUmbraClient } from '@umbra-privacy/sdk';
+import type { IUmbraClient } from '@umbra-privacy/sdk/interfaces';
 import type { UmbraNetwork } from './types.js';
 
 export interface OnyxUmbraConfig {
-  signer: unknown;
+  signer: any;
   network?: UmbraNetwork;
   rpcUrl?: string;
   rpcSubscriptionsUrl?: string;
@@ -10,7 +11,7 @@ export interface OnyxUmbraConfig {
   deferMasterSeedSignature?: boolean;
 }
 
-export async function createUmbraClient(config: OnyxUmbraConfig): Promise<any> {
+export async function createUmbraClient(config: OnyxUmbraConfig): Promise<IUmbraClient> {
   const network = (config.network
     ?? (process.env['UMBRA_NETWORK'] as UmbraNetwork | undefined)
     ?? 'devnet') as UmbraNetwork;
@@ -34,7 +35,7 @@ export async function createUmbraClient(config: OnyxUmbraConfig): Promise<any> {
   }
 
   return getUmbraClient({
-    signer: config.signer as Parameters<typeof getUmbraClient>[0]['signer'],
+    signer: config.signer,
     network,
     rpcUrl,
     rpcSubscriptionsUrl,
@@ -43,4 +44,4 @@ export async function createUmbraClient(config: OnyxUmbraConfig): Promise<any> {
   });
 }
 
-export type UmbraClient = Awaited<ReturnType<typeof createUmbraClient>>;
+export type UmbraClient = IUmbraClient;

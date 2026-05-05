@@ -10,7 +10,7 @@ export const tradeAction: Action = {
     const tradingEnabled = runtime.getSetting?.("TRADING_ENABLED") === "true";
     return hasKeywords && tradingEnabled;
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: unknown = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     const amountMatch = text.match(/(\d+(?:\.\d+)?)\s*(sol|usdc|eth|btc)/i);
     const amountStr = amountMatch?.[1] || "1";

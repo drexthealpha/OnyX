@@ -7,7 +7,7 @@ export const getDWalletInfoAction: Action = {
   validate: async (runtime: IAgentRuntime, message: Memory) => {
     return !!(process.env['IKA_ENABLED'] === "true" && process.env['ONYX_WALLET_PATH']);
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: unknown = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     const pubkeyMatch = text.match(/wallet\s+([a-zA-Z0-9]{32,44})/i);
     
@@ -31,7 +31,7 @@ User: ${result.userPubkey}`;
 
       if (callback) await callback({ text: responseText });
       return { text: responseText, success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const err = `Ika info retrieval failed: ${error.message}`;
       if (callback) await callback({ text: err });
       return { text: err, success: false };

@@ -9,7 +9,7 @@ interface Props { context: AppContext; }
 export function StatusView({ context }: Props) {
   const deploymentName = context.selectedDeployment;
   const deployment = context.deployments.find(d => d.config.name === deploymentName);
-  const [nerveStatus, setNerveStatus] = useState<any>(null);
+  const [nerveStatus, setNerveStatus] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

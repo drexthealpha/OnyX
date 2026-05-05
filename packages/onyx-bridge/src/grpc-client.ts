@@ -88,9 +88,9 @@ function decodeProtoField(buf: Buffer, targetField: number): Buffer | null {
 
 function buildCredentials(endpoint: string): grpc.ChannelCredentials {
   if (endpoint.includes('localhost') || endpoint.match(/127\.0\.0\.1/)) {
-    return grpc.credentials.createInsecure();
+    return grpc.credentials.createInsecure() as grpc.ChannelCredentials;
   }
-  return grpc.credentials.createSsl();
+  return grpc.credentials.createSsl() as grpc.ChannelCredentials;
 }
 
 function serializeUserSignedRequest(userSignature: Buffer, signedRequestData: Buffer): Buffer {

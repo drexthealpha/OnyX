@@ -110,7 +110,7 @@ export function getSpendBreakdown(userId: string): {
   };
 }
 
-export function getSummary(): any {
+export function getSummary(): unknown {
   const db = getDb();
   return {
     totalUSD: (db.prepare(`SELECT SUM(amount_usd) FROM spend_events`).get() as any)[

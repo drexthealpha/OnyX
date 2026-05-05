@@ -95,14 +95,14 @@ const _unprocessedTrajectories = db.prepare(`SELECT * FROM trajectories WHERE pr
 
 export function loadUnprocessedTrajectories(): Trajectory[] {
   return (_unprocessedTrajectories.all() as any[]).map(row => ({
-    id: row.id,
-    conversationId: row.conversationId,
-    message: row.message,
-    response: row.response,
-    toolsUsed: JSON.parse(row.toolsUsed),
-    latencyMs: row.latencyMs,
-    tokensUsed: row.tokensUsed,
-    timestamp: row.timestamp,
+    id: row.id as string,
+    conversationId: row.conversationId as string,
+    message: row.message as string,
+    response: row.response as string,
+    toolsUsed: JSON.parse(row.toolsUsed as string),
+    latencyMs: row.latencyMs as number,
+    tokensUsed: row.tokensUsed as number,
+    timestamp: row.timestamp as number,
   }));
 }
 

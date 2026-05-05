@@ -35,7 +35,7 @@ interface OnyxRuntimeOptions {
 
 export class OnyxRuntime extends AgentRuntime {
   constructor(opts: OnyxRuntimeOptions) {
-    const superOpts: any = {};
+    const superOpts: unknown = {};
     if (opts.conversationLength !== undefined) superOpts.conversationLength = opts.conversationLength;
     if (opts.agentId !== undefined) superOpts.agentId = opts.agentId;
     if (opts.character !== undefined) superOpts.character = opts.character;

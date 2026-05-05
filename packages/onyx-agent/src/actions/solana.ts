@@ -7,7 +7,7 @@ export const solanaTransferAction: Action = {
   validate: async (runtime: IAgentRuntime, message: Memory) => {
     return !!(process.env['ONYX_WALLET_PATH']);
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: unknown = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     // Basic extraction logic
     const addressMatch = text.match(/[1-9A-HJ-NP-Za-km-z]{32,44}/);
@@ -38,7 +38,7 @@ Amount: ${amount} ${mint || "SOL"}`;
 
       if (callback) await callback({ text: responseText });
       return { text: responseText, success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const err = `Transfer failed: ${error.message}`;
       if (callback) await callback({ text: err });
       return { text: err, success: false };
@@ -59,7 +59,7 @@ export const solanaBalanceAction: Action = {
   validate: async (runtime: IAgentRuntime, message: Memory) => {
     return !!(process.env['ONYX_WALLET_PATH']);
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: unknown = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     try {
       const solana = await import("@onyx/solana");
       const result = await solana.executeTool("getBalance", {}) as { sol: number; usdc: number };
@@ -70,7 +70,7 @@ USDC: ${result.usdc.toFixed(2)}`;
 
       if (callback) await callback({ text: responseText });
       return { text: responseText, success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const err = `Failed to get balance: ${error.message}`;
       if (callback) await callback({ text: err });
       return { text: err, success: false };

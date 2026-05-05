@@ -8,7 +8,7 @@ export const learnAction: Action = {
     const text = (message.content?.text || "").toLowerCase();
     return text.includes("learn") || text.includes("teach") || text.includes("tutor") || text.includes("explain how") || text.includes("help me understand");
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: unknown = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     const topic = text.replace(/learn|tutor|teach me|explain how|help me understand/gi, "").trim() || "general topics";
     try {

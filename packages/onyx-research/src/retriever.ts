@@ -8,7 +8,7 @@ async function intelSearch(query: string): Promise<RetrievedItem[]> {
   try {
     const mod = await import("@onyx/intel" as any);
     const results = await (mod.search ?? mod.default?.search)?.(query) ?? [];
-    return results.map((r: any) => normaliseItem(r, "intel"));
+    return results.map((r: unknown) => normaliseItem(r, "intel"));
   } catch {
     return [];
   }
@@ -20,7 +20,7 @@ async function semanticSearch(query: string): Promise<RetrievedItem[]> {
     const fn = mod.search ?? mod.semanticSearch ?? mod.default?.search;
     if (!fn) return [];
     const results = await fn({ collection: "research", query, limit: 5 }) ?? [];
-    return results.map((r: any) => normaliseItem(r, "semantic"));
+    return results.map((r: unknown) => normaliseItem(r, "semantic"));
   } catch {
     return [];
   }

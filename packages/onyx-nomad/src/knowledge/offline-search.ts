@@ -34,9 +34,9 @@ export function searchKnowledge(query: string): IntelBrief[] {
         LIMIT 10
       `
       )
-      .all(query) as any[];
+      .all(query) as unknown[];
 
-    return rows.flatMap((row: any) => {
+    return rows.flatMap((row: unknown) => {
       try {
         return [JSON.parse(row.brief_json) as IntelBrief];
       } catch {

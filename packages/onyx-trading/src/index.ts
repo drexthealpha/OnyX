@@ -111,7 +111,7 @@ export async function getStats() {
   };
 }
 
-export async function executeTrade(params: any) {
+export async function executeTrade(params: unknown) {
   const { execute } = await import("./trader.js");
   return execute(params.token, params.decision, params.portfolio, params.config);
 }

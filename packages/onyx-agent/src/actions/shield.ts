@@ -11,7 +11,7 @@ export const shieldAction: Action = {
     const umbraEnabled = runtime.getSetting?.("UMBRA_ENABLED") === "true";
     return hasPrivacyKeyword && umbraEnabled;
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: unknown = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     const amountMatch = text.match(/(\d+(?:\.\d+)?)\s*(sol|usdc|eth|btc)/i);
     const amount = amountMatch?.[1] || "1";

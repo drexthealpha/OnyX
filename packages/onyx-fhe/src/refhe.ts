@@ -9,7 +9,7 @@ export async function executeGraph(
   inputs: string[],
   outputs: string[],
   encryptContext: EncryptContextAccounts,
-  payer: any
+  payer: unknown
 ): Promise<string> {
   const enc = encryptContext
 
@@ -44,7 +44,7 @@ export async function executeGraph(
   if (payer instanceof Keypair) {
     transaction.sign(payer)
   } else {
-    transaction.sign(payer)
+    transaction.sign(payer as any)
   }
 
   const signature = await connection.sendRawTransaction(transaction.serialize())

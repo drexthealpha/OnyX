@@ -35,6 +35,11 @@ const startTime = Date.now();
 
 function envConfig(): Record<string, string> {
   return {
+    // ── Nosana / IPFS ──────────────────────────────────────────────
+    PINATA_JWT: process.env.PINATA_JWT ?? "",
+    NOSANA_PRIVATE_KEY: process.env.NOSANA_PRIVATE_KEY ?? "",
+    SOLANA_RPC_URL: process.env.SOLANA_RPC_URL ?? "https://api.mainnet-beta.solana.com",
+    // ── Channels ────────────────────────────────────────────────────
     TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN ?? "",
     DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN ?? "",
     SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN ?? "",
@@ -70,6 +75,7 @@ function envConfig(): Record<string, string> {
     EMAIL_PORT: process.env.EMAIL_PORT ?? "",
   };
 }
+
 
 async function initChannels(): Promise<void> {
   const configs = [

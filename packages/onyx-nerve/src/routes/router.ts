@@ -8,7 +8,7 @@ router.post("/route", async (c) => {
   try {
     // @ts-ignore - dynamic import of workspace package
     const mod = await import("@onyx/router");
-    const budget: any = { userId: "default", maxCostPerRequestUSD: 0.1 };
+    const budget: unknown = { userId: "default", maxCostPerRequestUSD: 0.1 };
     const result = await mod.routeRequest(prompt ?? "", budget);
     return c.json(result);
   } catch (err) {

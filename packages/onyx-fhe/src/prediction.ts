@@ -50,7 +50,7 @@ export async function castVote(
   vote: boolean,
   connection: Connection,
   encryptContext: EncryptContextAccounts,
-  payer: any
+  payer: unknown
 ): Promise<string> {
   if (!market.isOpen) throw new Error('Market is closed')
 
@@ -87,7 +87,7 @@ export async function resolveMarket(
   market: Market,
   requestAccounts: { yes: string; no: string },
   connection: Connection,
-  payer: any
+  payer: unknown
 ): Promise<{ yes: bigint; no: bigint }> {
   let yesResult: bigint = 0n
   let noResult: bigint = 0n

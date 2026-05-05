@@ -5,13 +5,13 @@
 export interface MCPTool {
   name: string;
   description: string;
-  inputSchema: any;
-  execute(params: any): Promise<any>;
+  inputSchema: unknown;
+  execute(params: unknown): Promise<unknown>;
 }
 
 export interface ToolRegistryEntry {
   name: string;
   description: string;
-  inputSchema: any;
-  execute(params: any): Promise<unknown>;
+  inputSchema: unknown;
+  execute(params: unknown): Promise<unknown>;
 }

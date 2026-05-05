@@ -24,7 +24,7 @@ export async function deposit(
   amount: EUint64,
   connection: Connection,
   encryptContext: EncryptContextAccounts,
-  payer: any
+  payer: unknown
 ): Promise<string> {
   const [newPoolTotal] = PublicKey.findProgramAddressSync(
     [Buffer.from('pool_deposit'), Buffer.from(pool.id)],
@@ -56,7 +56,7 @@ export async function borrow(
   amount: EUint64,
   connection: Connection,
   encryptContext: EncryptContextAccounts,
-  payer: any
+  payer: unknown
 ): Promise<string> {
   const [newPoolBorrows] = PublicKey.findProgramAddressSync(
     [Buffer.from('pool_borrow'), Buffer.from(pool.id)],
@@ -88,7 +88,7 @@ export async function repay(
   amount: EUint64,
   connection: Connection,
   encryptContext: EncryptContextAccounts,
-  payer: any
+  payer: unknown
 ): Promise<string> {
   const [newPoolBorrows] = PublicKey.findProgramAddressSync(
     [Buffer.from('pool_borrow'), Buffer.from(pool.id)],

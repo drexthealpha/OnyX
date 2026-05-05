@@ -1,17 +1,15 @@
 // packages/onyx-bridge/src/sign.ts
 
 import { Connection, PublicKey } from '@solana/web3.js';
+import nacl from 'tweetnacl';
 import { DWalletInfo, SignatureScheme, IKA_PROGRAM_ID, MSG_APPROVAL_STATUS_OFFSET, MSG_APPROVAL_SIG_LEN_OFFSET, MSG_APPROVAL_SIG_OFFSET, MESSAGE_APPROVAL_LEN, DISC_MESSAGE_APPROVAL, SignMessageOptions } from './types';
 import { defineBcsTypes } from './bcs-types';
 import { createGrpcClient, buildUserSignature, buildSignedRequestData, buildSignRequest, buildPresignRequest } from './grpc-client';
 import { getDWalletPda } from './dwallet';
-import { createHash } from 'crypto';
-import nacl from 'tweetnacl';
+import { keccak_256 } from 'js-sha3';
 
 export function computeMessageDigest(message: Uint8Array): Uint8Array {
-  const hash = createHash('sha256');
-  hash.update(Buffer.from(message));
-  return new Uint8Array(hash.digest());
+  return new Uint8Array(keccak_256.arrayBuffer(message));
 }
 
 export function computeMessageApprovalPda(

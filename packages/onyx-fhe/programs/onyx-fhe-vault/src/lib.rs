@@ -6,6 +6,16 @@ use anchor_lang::solana_program::{
 
 declare_id!("8tsJQaXZQGRdwUo28dicc9XwSMuCkbeiRvr9KYGcWpFs");
 
+#[cfg(not(feature = "no-entrypoint"))]
+solana_security_txt::security_txt! {
+    name: "OnyX FHE Vault",
+    project_url: "https://onyx.os",
+    contacts: "email:security@onyx.os",
+    policy: "https://github.com/drexthealpha/onyx/blob/main/SECURITY.md",
+    preferred_languages: "en",
+    source_code: "https://github.com/drexthealpha/onyx"
+}
+
 pub const CPI_AUTHORITY_SEED: &[u8] = b"__encrypt_cpi_authority";
 pub const DISC_CREATE_PLAINTEXT: u8 = 2;
 pub const DISC_EXECUTE_GRAPH: u8 = 4;

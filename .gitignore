@@ -48,3 +48,6 @@ Cargo.lock
 # Next.js
 .next/
 out/
+
+# Local reference repos
+champion_repos/

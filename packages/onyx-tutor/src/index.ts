@@ -117,7 +117,7 @@ export async function getUserProgress(userId: string) {
   return progress.getHistory(userId);
 }
 
-export async function recordFeedback(payload: any) {
+export async function recordFeedback(payload: unknown) {
   return { ok: true };
 }
 

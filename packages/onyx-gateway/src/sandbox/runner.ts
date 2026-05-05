@@ -14,7 +14,7 @@ export async function runInSandbox(command: string, opts: { timeoutMs?: number }
       new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`Sandbox timeout after ${timeoutMs}ms`)), timeoutMs)),
     ]);
     return { stdout: result.stdout, stderr: result.stderr, exitCode: 0 };
-  } catch (err: any) {
+  } catch (err: unknown) {
     return { stdout: "", stderr: String(err), exitCode: 1 };
   }
 }

@@ -40,7 +40,7 @@ export async function submitBid(
   amount: EUint64,
   connection: Connection,
   encryptContext: EncryptContextAccounts,
-  payer: any
+  payer: unknown
 ): Promise<BidDigest> {
   const enc = encryptContext
 
@@ -62,7 +62,7 @@ export async function submitBid(
 
   const tx = new Transaction().add(instruction)
   tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
-  tx.sign(payer)
+  tx.sign(payer as any)
 
   const signature = await connection.sendRawTransaction(tx.serialize())
   await connection.confirmTransaction(signature)
@@ -82,7 +82,7 @@ export async function submitBid(
 export async function revealWinner(
   bids: BidDigest[],
   connection: Connection,
-  payer: any
+  payer: unknown
 ): Promise<string> {
   const results: { pubkey: string; value: bigint }[] = []
 

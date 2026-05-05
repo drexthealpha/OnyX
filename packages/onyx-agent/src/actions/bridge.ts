@@ -10,7 +10,7 @@ export const bridgeAction: Action = {
     const ikaEnabled = runtime.getSetting?.("IKA_ENABLED") === "true";
     return hasBridgeKeyword && ikaEnabled;
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: unknown = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     const amountMatch = text.match(/(\d+(?:\.\d+)?)\s*(sol|eth|btc)/i);
     const amount = amountMatch?.[1] || "1";

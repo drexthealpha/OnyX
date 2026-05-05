@@ -238,15 +238,16 @@ export function verifySignature(signature: Uint8Array, publicKey: Uint8Array, me
   }
 }
 
-export function parseWebAuthnResponse(response: any): {
+export function parseWebAuthnResponse(response: unknown): {
   signature: Uint8Array;
   clientDataJSON: string;
   authenticatorData: Uint8Array;
 } {
+  const r = response as { signature: ArrayBuffer; clientDataJSON: ArrayBuffer; authenticatorData: ArrayBuffer };
   return {
-    signature: new Uint8Array(response.signature),
-    clientDataJSON: new TextDecoder().decode(response.clientDataJSON),
-    authenticatorData: new Uint8Array(response.authenticatorData),
+    signature: new Uint8Array(r.signature),
+    clientDataJSON: new TextDecoder().decode(r.clientDataJSON),
+    authenticatorData: new Uint8Array(r.authenticatorData),
   };
 }
 

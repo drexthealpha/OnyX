@@ -70,7 +70,7 @@ export async function deleteChannel(id: string) {
   return { ok: true };
 }
 
-export async function subscribe(topic: string, callback: (msg: any) => void) {
+export async function subscribe(topic: string, callback: (msg: unknown) => void) {
   const { globalHerald } = await import("./herald.js");
   return globalHerald.subscribe(topic, callback);
 }

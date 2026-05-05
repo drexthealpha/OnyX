@@ -58,6 +58,9 @@ export async function getNosanaClient(): Promise<NosanaClient> {
     solana: {
       rpcEndpoint: rpcUrl,
     },
+    ipfs: {
+      jwt: process.env.PINATA_JWT,
+    }
   });
 
   // Wallet is set after construction (NosanaClient API)

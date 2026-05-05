@@ -77,7 +77,7 @@ export async function swapFHE(
   minOut: EUint64,
   connection: Connection,
   encryptContext: EncryptContextAccounts,
-  payer: any
+  payer: unknown
 ): Promise<EUint64> {
   const inputs = [reserveIn.ciphertext, reserveOut.ciphertext, amountIn.ciphertext, minOut.ciphertext]
   

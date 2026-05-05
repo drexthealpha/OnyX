@@ -8,7 +8,7 @@ export const browseAction: Action = {
     const text = (message.content?.text || "").toLowerCase();
     return text.includes("http://") || text.includes("https://") || text.includes("browse") || text.includes("open") || text.includes("navigate to");
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: unknown = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const urlMatch = (message.content?.text || "").match(/https?:\/\/[^\s]+/);
     const url = urlMatch?.[0];
     if (!url) {

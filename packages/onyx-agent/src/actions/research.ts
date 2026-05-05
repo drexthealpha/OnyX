@@ -8,7 +8,7 @@ export const researchAction: Action = {
     const text = (message.content?.text || "").toLowerCase();
     return text.includes("research") || text.includes("investigate") || text.includes("analyze") || text.includes("find out about");
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: any = {}, callback?: HandlerCallback): Promise<ActionResult> => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state?: State, options: unknown = {}, callback?: HandlerCallback): Promise<ActionResult> => {
     const text = message.content?.text || "";
     
     try {

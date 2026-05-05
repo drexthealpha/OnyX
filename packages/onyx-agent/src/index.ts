@@ -57,7 +57,7 @@ export async function getAgent(id: string) {
   throw new Error(`Agent not found: ${id}`);
 }
 
-export async function createAgent(name?: string, config?: any) {
+export async function createAgent(name?: string, config?: unknown) {
   return {
     id: `custom-${Date.now()}`,
     name: name ?? "Custom Agent",
@@ -73,31 +73,52 @@ export async function runAgent(id: string, prompt?: string) {
   
   let runtime = eliza.getAgent(agent.id as any);
   if (!runtime) {
+    // ── Mutual exclusion: ELIZAOS_CLOUD_API_KEY and ANTHROPIC_API_KEY must not both be set ──
+    const hasCloud = !!process.env['ELIZAOS_CLOUD_API_KEY'];
+    const hasAnthropic = !!process.env['ANTHROPIC_API_KEY'];
+    if (hasCloud && hasAnthropic) {
+      throw new Error(
+        '[onyx-agent] Configuration error: ELIZAOS_CLOUD_API_KEY and ANTHROPIC_API_KEY are mutually exclusive. ' +
+        'Unset one before starting the agent runtime.'
+      );
+    }
+
     const { solanaPlugin } = await import("./plugins/solana.js");
     const { nosanaPlugin } = await import("./plugins/nosana.js");
     const { ikaPlugin } = await import("./plugins/ika.js");
     const { umbraPlugin } = await import("./plugins/umbra.js");
     const { encryptPlugin } = await import("./plugins/encrypt.js");
 
+    // ── Plugin ordering: sql must init before local-embedding ──────────
+    // @elizaos/plugin-sql sets up the DB schema; local-embedding depends on it.
+    // We dynamically load sql first if available, then the rest.
+    const sqlPlugin = await import("@elizaos/plugin-sql").catch(() => null);
+    const embeddingPlugin = await import("@elizaos/plugin-local-embedding").catch(() => null);
+
+    const orderedPlugins = [
+      ...(sqlPlugin ? [sqlPlugin.default ?? sqlPlugin] : []),
+      ...(embeddingPlugin ? [embeddingPlugin.default ?? embeddingPlugin] : []),
+      solanaPlugin,
+      nosanaPlugin,
+      ikaPlugin,
+      umbraPlugin,
+      encryptPlugin,
+    ];
+
     await eliza.addAgents([{
       character: agent.config,
-      plugins: [
-        solanaPlugin,
-        nosanaPlugin,
-        ikaPlugin,
-        umbraPlugin,
-        encryptPlugin,
-      ],
+      plugins: orderedPlugins,
     }], { autoStart: true });
-    
+
     runtime = eliza.getAgent(agent.id as any)!;
   }
+
 
   const result = await eliza.handleMessage(runtime, {
     content: { text: prompt || "" },
     entityId: (await import("@elizaos/core")).stringToUuid("user"),
     roomId: (await import("@elizaos/core")).stringToUuid("default-room"),
-  }) as unknown as any[];
+  }) as unknown as unknown[];
 
   // handleMessage returns Memory[] or similar in recent Eliza versions
   const lastResponse = result[result.length - 1];

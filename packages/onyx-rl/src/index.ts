@@ -14,9 +14,9 @@ export default {
  * RL Management API (Library Mode)
  */
 
-export async function recordOutcome(payload: any) {
+export async function recordOutcome(payload: unknown) {
   const { recordOutcome: innerRecord } = await import("./capture/outcome.js");
-  return innerRecord(payload);
+  return innerRecord(payload as any);
 }
 
 export async function getMetrics() {

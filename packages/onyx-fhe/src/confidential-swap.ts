@@ -62,7 +62,7 @@ export async function transferFHE(
   amount: EUint64,
   connection: Connection,
   encryptContext: EncryptContextAccounts,
-  payer: any
+  payer: unknown
 ): Promise<[EUint64, EUint64]> {
   const inputs = [from.ciphertext, to.ciphertext, amount.ciphertext]
 
@@ -90,7 +90,7 @@ export async function transferAndWait(
   amount: EUint64,
   connection: Connection,
   encryptContext: EncryptContextAccounts,
-  payer: any
+  payer: unknown
 ): Promise<[EUint64, EUint64]> {
   const inputs = [from.ciphertext, to.ciphertext, amount.ciphertext]
   

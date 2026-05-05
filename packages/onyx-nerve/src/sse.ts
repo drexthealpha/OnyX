@@ -22,7 +22,7 @@ export function initSSE(c: Context): Response {
   (async () => {
     try {
       const mod = await import("@onyx/multica");
-      const unsubscribe = mod.subscribe("*", (msg: any) => {
+      const unsubscribe = mod.subscribe("*", (msg: unknown) => {
         broadcastEvent(msg.type, msg.data);
       });
     } catch {

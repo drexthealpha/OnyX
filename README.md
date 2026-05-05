@@ -1,55 +1,41 @@
-# ONYX
+# OnyX
 
-**Sovereign AI OS on Solana** — 37 packages · 9 layers · zero operator cost.
+[![npm](https://img.shields.io/npm/v/@onyx/kernel.svg?style=flat)](https://www.npmjs.com/package/@onyx/kernel)
+[![nosana](https://img.shields.io/badge/Nosana-Mainnet-brightgreen.svg?style=flat)](https://nosana.io)
 
 > [!IMPORTANT]
-> All API keys are supplied by end users. ONYX itself has no infrastructure bill. It is designed to run locally, on-device, or across decentralized GPU networks.
+> OnyX is the first decentralized operating system for AI agents, built natively on Solana. It enables local-first inference, private stealth transactions, and FHE-encrypted memory vaults. All operator costs are $0 as users bring their own compute/keys via BYOK architecture.
 
-## 🌌 Mission
-ONYX is the first decentralized operating system for AI agents, built natively on Solana. We are moving AI from a "rented" model (SaaS) to a "sovereign" model (Local + P2P + Blockchain). ONYX agents own their own wallets, manage their own memory, and execute transactions without intermediaries.
+## Architecture
 
-## 🏗️ Architecture
+- [`kernel`](packages/kernel) – Core L0 runtime and workspace management.
+- [`privacy`](packages/onyx-privacy) – Umbra ZK-proof generation via WebWorkers.
+- [`fhe`](packages/onyx-fhe) – Encrypt FHE computations and Ika dWallet 2PC-MPC signing.
+- [`qvac`](packages/onyx-qvac) – Local-first inference backend utilizing the Singleton worker pattern.
+- [`gateway`](packages/onyx-gateway) – Nosana decentralized GPU orchestration.
+- [`agent`](packages/onyx-agent) – ElizaOS connector and workflow adapter.
 
-| Layer | Packages | Description |
-|-------|----------|-------------|
-| **L0 Kernel** | `kernel` | Core runtime and workspace management. |
-| **L1 Intelligence** | `gateway` · `agent` · `multica` · `persona` · `hermes` | Multi-model routing and agentic core logic. |
-| **L2 Memory** | `mem` · `tutor` · `semantic` | Long-term RAG, compressed context, and vector memory. |
-| **L3 Compute** | `compute` · `rl` · `qvac` · `swe` | **Local-first inference (QVAC)**, GPU orchestration, and Reinforcement Learning. |
-| **L4 Financial** | `vault` · `solana` · `privacy` · `bridge` · `fhe` · `router` · `trading` | FHE-encrypted vaults, Solana RPC, and cross-chain bridging. |
-| **L5 Surface** | `research` · `intel` · `seo` · `browser` · `markitdown` · `content` | Autonomous research, web browsing, and content generation. |
-| **L6 Voice/Screen** | `voice` · `studio` · `hud` | Real-time TTS/STT and interactive HUD overlays. |
-| **L7 Workflow** | `lobster` · `eliza-adapter` · `hermes-adapter` | Integration layers for ElizaOS and external workflows. |
-| **L8 Interface** | `nerve` · `control` · `editor` · `sdk` | Cross-platform control (Web/Mobile/Desktop) and Developer SDK. |
-| **L9 Sovereignty** | `nomad` | Offline survival mode and p2p sovereignty protocols. |
+For a full breakdown of the on-chain program PDAs, data structures, and token flows, see [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
-## 🏆 Hackathon Tracks
+## Programs
 
-- **Colosseum Frontier** — The Grand Champion entry for a fully autonomous AI OS.
-- **Encrypt / Ika** — FHE + dWallet cross-chain signing for non-custodial agents.
-- **Umbra** — Private on-chain transactions and shielded stealth addresses.
-- **QVAC** — Local-first inference backend for offline sovereign AI.
-- **Nosana / ElizaOS** — Decentralized GPU compute and agentic orchestration.
-- **100xDevs** — High-performance developer tooling for the agentic era.
+- `OnyX Kernel` - Routes agent actions and validates multi-sig contexts.
+- `OnyX Privacy` - Implements the Umbra Stealth Address mixer for private agent transfers.
+- `OnyX FHE` - Extends Encrypt's `#[encrypt_fn]` for confidential AI state operations.
 
-## 🚀 Getting Started
+For our vulnerability and incident reporting policies, please see [`SECURITY.md`](SECURITY.md).
+
+## Usage & Development
+
+To run the full suite, use the Solana toolchain alongside `pnpm`. For rigorous testing, we mandate cloning mainnet programs locally.
 
 ```bash
-# Prerequisites: Node >= 20, pnpm >= 9
-cp .env.example .env   # fill in your own API keys (Operator cost: $0)
+# Clone mainnet programs
+make local-test-validator
+
+# Install & Build
+cp .env.example .env
 pnpm install
 pnpm build
 pnpm test
 ```
-
-## 🛡️ Zero-Operator-Cost Model
-
-ONYX ships as open-source tooling. Users bring their own keys for LLMs (OpenAI, Anthropic) or run locally via **QVAC**. Every environment variable in `.env.example` is labeled:
-
-```bash
-# User provides this — operator cost: $0
-```
-
----
-
-Built with ⚡ by Onyx Core.
