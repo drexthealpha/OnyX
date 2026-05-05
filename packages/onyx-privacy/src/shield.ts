@@ -1,5 +1,8 @@
-import { getPublicBalanceToEncryptedBalanceDirectDepositorFunction } from '@umbra-privacy/sdk';
-import type { Address, DepositResult, U64 } from './types.js';
+import { 
+  getPublicBalanceToEncryptedBalanceDirectDepositorFunction,
+} from '@umbra-privacy/sdk';
+import type { Address } from '@solana/kit';
+import type { U64 } from '@umbra-privacy/sdk/types';
 import type { UmbraClient } from './client.js';
 
 export async function shieldAsset(
@@ -7,11 +10,7 @@ export async function shieldAsset(
   mint: Address,
   amount: U64,
   destination: Address,
-): Promise<DepositResult> {
+) {
   const deposit = getPublicBalanceToEncryptedBalanceDirectDepositorFunction({ client });
-  const result = await deposit(destination, mint, amount);
-  return {
-    queueSignature: result.queueSignature,
-    callbackSignature: result.callbackSignature,
-  };
+  return deposit(destination, mint, amount);
 }

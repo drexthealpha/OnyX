@@ -1,6 +1,9 @@
-import type { Address, U64, PaymentLink } from './types.js';
+import type { PaymentLink } from './types.js';
+import type { Address } from '@solana/kit';
+import type { U64 } from '@umbra-privacy/sdk/types';
 import type { UmbraClient } from './client.js';
 import { createReceiverClaimableUtxoFromPublicBalance } from './utxo-create.js';
+import { getZkProvers } from './zk-prover.js';
 
 function generateUUID(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -62,9 +65,9 @@ export function parsePaymentLink(url: string): Omit<PaymentLink, 'url'> {
 
   return {
     id,
-    mint: mint as Address,
-    amount: BigInt(amount) as U64,
-    recipientAddress: to as Address,
+    mint: mint as unknown as Address,
+    amount: BigInt(amount) as unknown as U64,
+    recipientAddress: to as unknown as Address,
     expiresAt: exp ? parseInt(exp, 10) : undefined,
     memo: memo ?? undefined,
   };
@@ -78,13 +81,15 @@ export async function payFromLink(
     throw new Error('[onyx-privacy] Payment link has expired');
   }
 
+  const provers = await getZkProvers();
+
   return createReceiverClaimableUtxoFromPublicBalance(
     client,
-    null as unknown as unknown,
+    provers.createReceiverClaimableUtxoFromPublicBalance,
     {
-      destinationAddress: link.recipientAddress,
-      mint: link.mint,
-      amount: link.amount,
+      destinationAddress: link.recipientAddress as unknown as Address,
+      mint: link.mint as unknown as Address,
+      amount: link.amount as unknown as U64,
     },
   );
 }

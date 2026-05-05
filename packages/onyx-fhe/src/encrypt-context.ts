@@ -1,57 +1,69 @@
-import { PublicKey } from '@solana/web3.js'
+import { address, Address, Rpc, SolanaRpcApi, fetchEncodedAccount } from '@solana/kit'
 import {
   ENCRYPT_PROGRAM_ID, ENCRYPT_CPI_SEED, ENCRYPT_CONFIG_SEED,
   ENCRYPT_DEPOSIT_SEED, ENCRYPT_EVENT_AUTHORITY_SEED,
-  ENCRYPT_NETWORK_KEY_SEED, DEVNET_NETWORK_KEY
+  ENCRYPT_NETWORK_KEY_SEED
 } from './program-id'
 
 export interface EncryptContextAccounts {
-  encryptProgram:       PublicKey
-  config:               PublicKey
-  deposit:              PublicKey
-  cpiAuthority:         PublicKey
-  callerProgram:        PublicKey
-  networkEncryptionKey: PublicKey
-  payer:                PublicKey
-  eventAuthority:       PublicKey
-  systemProgram:        PublicKey
+  encryptProgram:       Address
+  config:               Address
+  deposit:              Address
+  cpiAuthority:         Address
+  callerProgram:        Address
+  networkEncryptionKey: Address
+  payer:                Address
+  eventAuthority:       Address
+  systemProgram:        Address
   cpiAuthorityBump:     number
 }
 
 export async function buildEncryptContext(
-  callerProgramId: string,
-  payer: string
+  rpc: Rpc<SolanaRpcApi>,
+  callerProgramId: Address,
+  payer: Address
 ): Promise<EncryptContextAccounts> {
-  const encryptProgram = new PublicKey(ENCRYPT_PROGRAM_ID)
-  const callerProgram = new PublicKey(callerProgramId)
-  const payerPk = new PublicKey(payer)
+  const encryptProgram = address(ENCRYPT_PROGRAM_ID)
+  const callerProgram = address(callerProgramId)
+  const payerPk = address(payer)
+  
+  const { getProgramDerivedAddress, getAddressEncoder } = await import('@solana/addresses');
 
-  const [config] = PublicKey.findProgramAddressSync(
-    [ENCRYPT_CONFIG_SEED],
-    encryptProgram
-  )
+  const [config] = await getProgramDerivedAddress({
+    programAddress: encryptProgram,
+    seeds: [new TextEncoder().encode('encrypt_config')],
+  });
 
-  const [deposit, depositBump] = PublicKey.findProgramAddressSync(
-    [ENCRYPT_DEPOSIT_SEED, payerPk.toBuffer()],
-    encryptProgram
-  )
+  // The network key bytes are used as a seed for the network_encryption_key PDA.
+  // In pre-alpha, the devnet network key is a known constant (32 bytes of 0x55).
+  // We verify the config account exists first, then use the known key.
+  const configAccount = await fetchEncodedAccount(rpc, config)
+  if (!configAccount.exists) throw new Error('EncryptConfig not found')
+  // Use the documented devnet network encryption key constant
+  const { DEVNET_NETWORK_KEY } = await import('./program-id.js')
+  const networkKey = new Uint8Array(DEVNET_NETWORK_KEY)
 
-  const [cpiAuthority, cpiAuthorityBump] = PublicKey.findProgramAddressSync(
-    [ENCRYPT_CPI_SEED],
-    callerProgram
-  )
+  const [deposit] = await getProgramDerivedAddress({
+    programAddress: encryptProgram,
+    seeds: [new TextEncoder().encode('encrypt_deposit'), getAddressEncoder().encode(payerPk)],
+  });
 
-  const [networkEncryptionKey] = PublicKey.findProgramAddressSync(
-    [ENCRYPT_NETWORK_KEY_SEED, DEVNET_NETWORK_KEY],
-    encryptProgram
-  )
+  const [cpiAuthority, cpiAuthorityBump] = await getProgramDerivedAddress({
+    programAddress: callerProgram,
+    seeds: [new TextEncoder().encode('__encrypt_cpi_authority')],
+  });
 
-  const [eventAuthority] = PublicKey.findProgramAddressSync(
-    [ENCRYPT_EVENT_AUTHORITY_SEED],
-    encryptProgram
-  )
+  const [networkEncryptionKey] = await getProgramDerivedAddress({
+    programAddress: encryptProgram,
+    seeds: [new TextEncoder().encode('network_encryption_key'), networkKey],
+  });
 
-  const systemProgram = new PublicKey('11111111111111111111111111111111')
+  const [eventAuthority] = await getProgramDerivedAddress({
+    programAddress: encryptProgram,
+    seeds: [new TextEncoder().encode('__event_authority')],
+  });
+
+  const systemProgram = address('11111111111111111111111111111111')
 
   return {
     encryptProgram,

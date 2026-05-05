@@ -5,7 +5,7 @@
 
 import { ExecutionResult } from './types.js';
 import fs from 'fs';
-import { Keypair } from '@solana/web3.js';
+import { createKeyPairSignerFromPrivateKeyBytes } from '@solana/signers';
 import * as privacy from '@onyx/privacy';
 import { resolveToken } from './data/tokens.js';
 import { fetchPrice } from './data/birdeye.js';
@@ -31,7 +31,7 @@ export async function executePrivate(params: PrivateTradeParams): Promise<Execut
     const secret = Uint8Array.from(
       JSON.parse(fs.readFileSync(walletPath, 'utf8')) as number[],
     );
-    const signer = Keypair.fromSecretKey(secret);
+    const signer = await createKeyPairSignerFromPrivateKeyBytes(secret);
 
     const client = await privacy.createUmbraClient({ signer });
 

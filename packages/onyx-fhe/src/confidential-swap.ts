@@ -1,4 +1,10 @@
-import { Connection, PublicKey, Keypair } from '@solana/web3.js'
+import { 
+  address, 
+  Address, 
+  Rpc, 
+  SolanaRpcApi, 
+  TransactionSigner 
+} from '@solana/kit'
 import { EUint64, makeEUint64 } from './types'
 import { EncryptContextAccounts } from './encrypt-context'
 import { executeGraph, waitForVerified } from './refhe'
@@ -16,19 +22,20 @@ const OP_SELECT = 60
 
 const FHE_UINT64 = 4
 
-function encodeNode(kind: number, opType: number, fheType: number, a: number, b: number, c: number): Buffer {
-  const buf = Buffer.alloc(9)
-  buf.writeUInt8(kind, 0)
-  buf.writeUInt8(opType, 1)
-  buf.writeUInt8(fheType, 2)
-  buf.writeUInt16LE(a, 3)
-  buf.writeUInt16LE(b, 5)
-  buf.writeUInt16LE(c, 7)
+function encodeNode(kind: number, opType: number, fheType: number, a: number, b: number, c: number): Uint8Array {
+  const buf = new Uint8Array(9)
+  const view = new DataView(buf.buffer)
+  view.setUint8(0, kind)
+  view.setUint8(1, opType)
+  view.setUint8(2, fheType)
+  view.setUint16(3, a, true)
+  view.setUint16(5, b, true)
+  view.setUint16(7, c, true)
   return buf
 }
 
 function buildTransferGraph(): Uint8Array {
-  const nodes: Buffer[] = [
+  const nodes: Uint8Array[] = [
     encodeNode(K_INPUT, 0, FHE_UINT64, 0, 0, 0),
     encodeNode(K_INPUT, 0, FHE_UINT64, 0, 0, 0),
     encodeNode(K_INPUT, 0, FHE_UINT64, 0, 0, 0),
@@ -42,7 +49,7 @@ function buildTransferGraph(): Uint8Array {
   ]
 
   const constants = Buffer.alloc(0)
-  const nodesData = Buffer.concat(nodes)
+  const nodesData = Buffer.concat(nodes.map(n => Buffer.from(n)))
 
   const header = Buffer.alloc(13)
   header.writeUInt8(1, 0)
@@ -53,65 +60,55 @@ function buildTransferGraph(): Uint8Array {
   header.writeUInt16LE(2, 9)
   header.writeUInt16LE(constants.length, 11)
 
-  return Buffer.concat([header, constants, nodesData])
+  return new Uint8Array(Buffer.concat([header, constants, nodesData]))
 }
 
 export async function transferFHE(
   from: EUint64,
   to: EUint64,
   amount: EUint64,
-  connection: Connection,
+  rpc: Rpc<SolanaRpcApi>,
   encryptContext: EncryptContextAccounts,
-  payer: unknown
+  payer: TransactionSigner
 ): Promise<[EUint64, EUint64]> {
   const inputs = [from.ciphertext, to.ciphertext, amount.ciphertext]
 
-  // Deriving deterministic output PDAs instead of invalid string concatenation
-  const [fromOut] = PublicKey.findProgramAddressSync(
-    [Buffer.from('output'), new PublicKey(from.ciphertext).toBuffer()],
-    encryptContext.encryptProgram
-  )
-  const [toOut] = PublicKey.findProgramAddressSync(
-    [Buffer.from('output'), new PublicKey(to.ciphertext).toBuffer()],
-    encryptContext.encryptProgram
-  )
+  // Output ciphertexts are keypair accounts, not PDAs (per Encrypt docs)
+  const { generateKeyPairSigner } = await import('@solana/kit')
+  const fromOutSigner = await generateKeyPairSigner()
+  const toOutSigner   = await generateKeyPairSigner()
 
-  const outputs: string[] = [fromOut.toBase58(), toOut.toBase58()]
+  const outputs: string[] = [fromOutSigner.address, toOutSigner.address]
   const graphBytes = buildTransferGraph()
 
-  await executeGraph(connection, graphBytes, inputs, outputs, encryptContext, payer)
+  await executeGraph(rpc, graphBytes, inputs, outputs, encryptContext, payer, [fromOutSigner, toOutSigner])
 
-  return [makeEUint64(outputs[0]!), makeEUint64(outputs[1]!)]
+  return [makeEUint64(fromOutSigner.address), makeEUint64(toOutSigner.address)]
 }
 
 export async function transferAndWait(
   from: EUint64,
   to: EUint64,
   amount: EUint64,
-  connection: Connection,
+  rpc: Rpc<SolanaRpcApi>,
   encryptContext: EncryptContextAccounts,
-  payer: unknown
+  payer: TransactionSigner
 ): Promise<[EUint64, EUint64]> {
   const inputs = [from.ciphertext, to.ciphertext, amount.ciphertext]
-  
-  // Use same deterministic PDA derivation
-  const [fromOut] = PublicKey.findProgramAddressSync(
-    [Buffer.from('output'), new PublicKey(from.ciphertext).toBuffer()],
-    encryptContext.encryptProgram
-  )
-  const [toOut] = PublicKey.findProgramAddressSync(
-    [Buffer.from('output'), new PublicKey(to.ciphertext).toBuffer()],
-    encryptContext.encryptProgram
-  )
 
-  const outputs = [fromOut.toBase58(), toOut.toBase58()]
+  // Output ciphertexts are keypair accounts, not PDAs (per Encrypt docs)
+  const { generateKeyPairSigner } = await import('@solana/kit')
+  const fromOutSigner = await generateKeyPairSigner()
+  const toOutSigner   = await generateKeyPairSigner()
+
+  const outputs = [fromOutSigner.address, toOutSigner.address]
   const graphBytes = buildTransferGraph()
 
-  await executeGraph(connection, graphBytes, inputs, outputs, encryptContext, payer)
+  await executeGraph(rpc, graphBytes, inputs, outputs, encryptContext, payer, [fromOutSigner, toOutSigner])
 
   for (const out of outputs) {
-    await waitForVerified(connection, new PublicKey(out))
+    await waitForVerified(rpc, address(out))
   }
 
-  return [makeEUint64(outputs[0]!), makeEUint64(outputs[1]!)]
+  return [makeEUint64(fromOutSigner.address), makeEUint64(toOutSigner.address)]
 }

@@ -49,9 +49,9 @@ export const submitJobAction: Action = {
     const image = imageMatch?.[1] || "nosana/ai-training:latest";
 
     try {
-      const { getNosanaClient, JobBuilder } = await import("@onyx/compute");
+      const { getNosanaClient, JobBuilder, selectMarket } = await import("@onyx/compute");
       const client = await getNosanaClient();
-      
+
       const builder = new JobBuilder();
       const jobDef = builder
         .setImage(image)
@@ -62,12 +62,18 @@ export const submitJobAction: Action = {
         .setExpose(3000)
         .buildObject();
 
-      // nosana-kit API: client.jobs.post(jobDef)
-      const result = await (client as any).jobs.post(jobDef);
+      const ipfsHash = await client.ipfs.pin(jobDef);
+      const market = await selectMarket("BALANCED");
+
+      const postResult = await client.jobs.post({
+        market: market.address,
+        timeout: 3600n,
+        ipfsHash
+      });
 
       const responseText = `Nosana GPU job submitted successfully!
-Job ID: ${result.job}
-Market: ${result.market}
+Job ID: ${postResult.accounts.job.address}
+Market: ${market.address}
 Image: ${image}`;
 
       if (callback) await callback({ text: responseText });

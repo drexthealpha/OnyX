@@ -1,13 +1,24 @@
 import { expose } from 'comlink';
-import * as prover from '@umbra-privacy/web-zk-prover';
+import {
+  getUserRegistrationProver,
+  getCreateSelfClaimableUtxoFromEncryptedBalanceProver,
+  getCreateReceiverClaimableUtxoFromEncryptedBalanceProver,
+  getCreateSelfClaimableUtxoFromPublicBalanceProver,
+  getCreateReceiverClaimableUtxoFromPublicBalanceProver,
+  getSelfClaimableUtxoToEncryptedBalanceClaimerProver,
+  getClaimReceiverClaimableUtxoIntoEncryptedBalanceProver,
+  getSelfClaimableUtxoToPublicBalanceClaimerProver,
+} from '@umbra-privacy/web-zk-prover';
 
 const worker = {
-  async proveGroth16(inputs: unknown, wasmData: Uint8Array, zkeyData: Uint8Array) {
-    return prover.proveGroth16(inputs, wasmData, zkeyData);
-  },
-  async getCreateSelfClaimableUtxoFromEncryptedBalanceProver() {
-    return prover.getCreateSelfClaimableUtxoFromEncryptedBalanceProver();
-  }
+  getUserRegistrationProver,
+  getCreateSelfClaimableUtxoFromEncryptedBalanceProver,
+  getCreateReceiverClaimableUtxoFromEncryptedBalanceProver,
+  getCreateSelfClaimableUtxoFromPublicBalanceProver,
+  getCreateReceiverClaimableUtxoFromPublicBalanceProver,
+  getSelfClaimableUtxoToEncryptedBalanceClaimerProver,
+  getClaimReceiverClaimableUtxoIntoEncryptedBalanceProver,
+  getSelfClaimableUtxoToPublicBalanceClaimerProver,
 };
 
 expose(worker);

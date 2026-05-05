@@ -1,45 +1,45 @@
 {
-    "name":  "@onyx/gateway",
-    "version":  "1.0.0",
-    "private":  true,
-    "type":  "module",
-    "main":  "./dist/index.js",
-    "types":  "./dist/index.d.ts",
-    "exports":  {
-                    ".":  {
-                              "types":  "./dist/index.d.ts",
-                              "import":  "./dist/index.js"
-                          }
-                },
-    "scripts":  {
-                    "build":  "tsc -p tsconfig.json",
-                    "dev":  "tsx watch src/daemon.ts",
-                    "start":  "tsx src/daemon.ts",
-                    "test":  "vitest run",
-                    "clean":  "rimraf dist"
-                },
-    "dependencies":  {
-                         "@slack/bolt":  "^3.22.0",
-                         "discord.js":  "^14.15.3",
-                         "grammy":  "^1.27.0",
-                         "hono":  "^4.4.0",
-                         "imap":  "^0.8.19",
-                         "matrix-js-sdk":  "^34.3.1",
-                         "nodemailer":  "^6.9.14",
-                         "pino":  "^9.3.2",
-                         "twilio":  "^5.2.3",
-                         "ws":  "^8.18.0"
-                     },
-    "devDependencies":  {
-                            "@types/imap":  "^0.8.40",
-                            "@types/nodemailer":  "^6.4.15",
-                            "@types/ws":  "^8.5.12",
-                            "rimraf":  "^5.0.5",
-                            "tsx":  "^4.16.2",
-                            "typescript":  "^5.5.3",
-                            "vitest":  "latest"
-                        },
-    "publishConfig":  {
-                          "access":  "public"
-                      }
+    "name": "@onyx/gateway",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "dev": "tsx watch src/daemon.ts",
+        "start": "tsx src/daemon.ts",
+        "test": "vitest run",
+        "clean": "rimraf dist"
+    },
+    "dependencies": {
+        "@slack/bolt": "^3.22.0",
+        "discord.js": "^14.26.4",
+        "grammy": "^1.42.0",
+        "hono": "^4.12.17",
+        "imap": "^0.8.19",
+        "matrix-js-sdk": "^34.13.0",
+        "nodemailer": "^6.10.1",
+        "pino": "^9.14.0",
+        "twilio": "^5.13.1",
+        "ws": "^8.20.0"
+    },
+    "devDependencies": {
+        "@types/imap": "^0.8.43",
+        "@types/nodemailer": "^6.4.23",
+        "@types/ws": "^8.18.1",
+        "rimraf": "^5.0.10",
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3",
+        "vitest": "latest"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
 }

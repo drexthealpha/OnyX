@@ -1,4 +1,4 @@
-// packages/onyx-bridge/src/types.ts
+import { Address, Rpc, SolanaRpcApi, TransactionSigner } from '@solana/kit';
 
 export enum Curve {
   Secp256k1 = 0,
@@ -22,10 +22,10 @@ export enum SignatureAlgorithm {
   ECDSASecp256r1 = 1,
   Taproot = 2,
   EdDSA = 3,
-  SchnorrkelSubstrate = 4,
+  Schnorrkel = 4,
 }
 
-export const CPI_AUTHORITY_SEED = Buffer.from('__ika_cpi_authority');
+export const CPI_AUTHORITY_SEED = '__ika_cpi_authority';
 export const IKA_PROGRAM_ID = '87W54kGYFQ1rgWqMeu4XTPHWXWmXSQCcjm8vCTfiq1oY';
 export const IKA_GRPC_ENDPOINT = process.env['IKA_GRPC_ENDPOINT'] || 'pre-alpha-dev-1.ika.ika-network.net:443';
 export const SOLANA_RPC_ENDPOINT = process.env['SOLANA_RPC_URL'] || 'https://api.devnet.solana.com';
@@ -43,6 +43,10 @@ export const DISC_NEK = 3;
 export const DISC_GAS_DEPOSIT = 4;
 export const DISC_MESSAGE_APPROVAL = 14;
 
+// Instruction discriminators per IKA docs
+export const IX_CREATE_DWALLET = 0;
+export const IX_APPROVE_MESSAGE = 8;
+
 export const COORDINATOR_LEN = 116;
 export const NEK_LEN = 164;
 export const DWALLET_LEN = 153;
@@ -53,7 +57,7 @@ export interface DWalletInfo {
   pubkey: Uint8Array;
   curve: Curve;
   authority: Uint8Array;
-  pda: Uint8Array;
+  pda: Address;
   bump: number;
   state: number;
   createdEpoch: bigint;
@@ -97,67 +101,70 @@ export interface PresignInfo {
 }
 
 export interface CreateDWalletOptions {
-  connection: import('@solana/web3.js').Connection;
+  rpc: Rpc<SolanaRpcApi>;
   curve?: Curve;
   signatureAlgorithm?: SignatureAlgorithm;
   authority?: Uint8Array;
-  signer?: import('@solana/web3.js').Keypair;
+  signer?: TransactionSigner;
 }
 
 export interface SignMessageOptions {
-  connection: import('@solana/web3.js').Connection;
+  rpc: Rpc<SolanaRpcApi>;
   dwalletInfo: DWalletInfo;
   message: Uint8Array;
   messageMetadata?: Uint8Array;
   signatureScheme: SignatureScheme;
   userPubkey: Uint8Array;
-  signer: import('@solana/web3.js').Keypair;
+  signer: TransactionSigner;
+  approvalTxSig: Uint8Array;
+  slot: number;
 }
 
 export interface TransferOptions {
-  connection: import('@solana/web3.js').Connection;
-  dwalletPda: import('@solana/web3.js').PublicKey;
-  newAuthority: import('@solana/web3.js').PublicKey;
-  payer: import('@solana/web3.js').Keypair;
+  rpc: Rpc<SolanaRpcApi>;
+  dwalletPda: Address;
+  newAuthority: Address;
+  payer: TransactionSigner;
 }
 
 export interface GasDepositOptions {
-  connection: import('@solana/web3.js').Connection;
+  rpc: Rpc<SolanaRpcApi>;
   userPubkey: Uint8Array;
   amountLamports: bigint;
   isIkaBalance: boolean;
-  payer: import('@solana/web3.js').Keypair;
+  payer: TransactionSigner;
 }
 
 export interface MultisigOptions {
-  connection: import('@solana/web3.js').Connection;
-  programId: import('@solana/web3.js').PublicKey;
-  members: import('@solana/web3.js').PublicKey[];
+  rpc: Rpc<SolanaRpcApi>;
+  programId: Address;
+  members: Address[];
   threshold: number;
-  payer: import('@solana/web3.js').Keypair;
+  payer: TransactionSigner;
 }
 
 export interface VoteOptions {
-  multisig: import('@solana/web3.js').PublicKey;
-  voter: import('@solana/web3.js').Keypair;
+  multisig: Address;
+  voter: TransactionSigner;
   approve: boolean;
 }
 
 export interface CrossChainTransferOptions {
-  fromConnection: import('@solana/web3.js').Connection;
-  toConnection: import('@solana/web3.js').Connection;
+  fromRpc: Rpc<SolanaRpcApi>;
+  toRpc: Rpc<SolanaRpcApi>;
   amountLamports: bigint;
-  recipient: import('@solana/web3.js').PublicKey;
+  recipient: Address;
   dwalletInfo: DWalletInfo;
-  splToken?: import('@solana/web3.js').PublicKey;
+  splToken?: Address;
   isNft?: boolean;
-  signer: import('@solana/web3.js').Keypair;
+  signer: TransactionSigner;
+  callerProgramId?: Address;
 }
 
 export interface SharedAccessOptions {
-  owner: import('@solana/web3.js').PublicKey;
-  grantee: import('@solana/web3.js').PublicKey;
-  connection: import('@solana/web3.js').Connection;
+  owner: Address;
+  grantee: Address;
+  rpc: Rpc<SolanaRpcApi>;
   durationSeconds?: number;
   maxAmountLamports?: bigint;
 }

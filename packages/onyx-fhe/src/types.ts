@@ -9,10 +9,10 @@ export function makeEUint128(ciphertext: string): EUint128 { return { _brand: 'E
 export function makeEUint256(ciphertext: string): EUint256 { return { _brand: 'EUint256', ciphertext } }
 
 export const FHE_TYPE = {
-  EBool:    0,
-  EUint8:   1,
-  EUint16:  2,
-  EUint32:  3,
+  EBool:    1,
+  EUint8:   2,
+  EUint16:  3,
+  EUint32:  4,
   EUint64:  4,
   EUint128: 5,
   EUint256: 6,
@@ -21,11 +21,16 @@ export const FHE_TYPE = {
 export type FheType = typeof FHE_TYPE[keyof typeof FHE_TYPE];
 
 export interface CiphertextAccount {
-  digest:     Uint8Array;  // 32 bytes offset 2
-  authorized: Uint8Array;  // 32 bytes offset 34
-  networkKey: Uint8Array;  // 32 bytes offset 66
-  fheType:    FheType;     // 1 byte  offset 98
-  status:     0 | 1;       // 1 byte  offset 99 (0=Pending, 1=Verified)
+  // Binary layout (100 bytes):
+  // [0]      disc       1 byte
+  // [1]      version    1 byte
+  // [2..33]  ciphertext_digest  32 bytes
+  // [34..65] authorized         32 bytes
+  // [66..97] network_key        32 bytes
+  // [98]     fhe_type   1 byte
+  // [99]     status     1 byte  (0=Pending, 1=Verified)
+  status:     0 | 1;       // 1 byte at offset 99
+  ciphertext: Uint8Array;  // 32-byte digest at offset 2
 }
 
 export interface FeeParams {

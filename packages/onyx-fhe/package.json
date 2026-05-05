@@ -1,36 +1,36 @@
 {
-    "name":  "@onyx/fhe",
-    "version":  "1.0.0",
-    "description":  "Encrypt FHE integration for ONYX — encrypted computation on Solana",
-    "main":  "./dist/index.js",
-    "types":  "./dist/index.d.ts",
-    "exports":  {
-                    ".":  {
-                              "types":  "./dist/index.d.ts",
-                              "import":  "./dist/index.js"
-                          }
-                },
-    "type":  "module",
-    "private":  true,
-    "scripts":  {
-                    "build":  "tsc -p tsconfig.json",
-                    "test":  "vitest run",
-                    "typecheck":  "tsc --noEmit",
-                    "clean":  "rimraf dist"
-                },
-    "dependencies":  {
-                         "@solana/web3.js":  "^1.91.0"
-                     },
-    "devDependencies":  {
-                            "@types/node":  "^20.0.0",
-                            "typescript":  "*",
-                            "vitest":  "*"
-                        },
-    "vitest":  {
-                   "preset":  "vitest/presets/default",
-                   "testEnvironment":  "node"
-               },
-    "publishConfig":  {
-                          "access":  "public"
-                      }
+    "name": "@onyx/fhe",
+    "version": "1.0.0",
+    "description": "Encrypt FHE integration for ONYX — encrypted computation on Solana",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "test": "vitest run",
+        "typecheck": "tsc --noEmit",
+        "clean": "rimraf dist"
+    },
+    "dependencies": {
+        "@solana/web3.js": "^1.98.4"
+    },
+    "devDependencies": {
+        "@types/node": "^20.19.39",
+        "typescript": "^6.0.3",
+        "vitest": "^4.1.5"
+    },
+    "vitest": {
+        "preset": "vitest/presets/default",
+        "testEnvironment": "node"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
 }

@@ -20,7 +20,7 @@ export function defineBcsTypes() {
     ECDSASecp256r1: null,
     Taproot: null,
     EdDSA: null,
-    SchnorrkelSubstrate: null,
+    Schnorrkel: null,
   });
 
   const DWalletSignatureScheme = bcs.enum('DWalletSignatureScheme', {

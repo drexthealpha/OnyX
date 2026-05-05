@@ -1,33 +1,33 @@
 {
-    "name":  "@onyx/studio",
-    "version":  "1.0.0",
-    "type":  "module",
-    "main":  "./dist/index.js",
-    "types":  "./dist/index.d.ts",
-    "scripts":  {
-                    "build":  "tsc -p tsconfig.json",
-                    "test":  "vitest run"
-                },
-    "devDependencies":  {
-                            "@types/node":  "^20.0.0",
-                            "typescript":  "^5.4.0",
-                            "vitest":  "latest"
-                        },
-    "peerDependencies":  {
-                             "@onyx/voice":  "workspace:*"
-                         },
-    "peerDependenciesMeta":  {
-                                 "@onyx/voice":  {
-                                                     "optional":  true
-                                                 }
-                             },
-    "exports":  {
-                    ".":  {
-                              "types":  "./dist/index.d.ts",
-                              "import":  "./dist/index.js"
-                          }
-                },
-    "publishConfig":  {
-                          "access":  "public"
-                      }
+    "name": "@onyx/studio",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "test": "vitest run"
+    },
+    "devDependencies": {
+        "@types/node": "^20.19.39",
+        "typescript": "^5.9.3",
+        "vitest": "latest"
+    },
+    "peerDependencies": {
+        "@onyx/voice": "workspace:*"
+    },
+    "peerDependenciesMeta": {
+        "@onyx/voice": {
+            "optional": true
+        }
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "publishConfig": {
+        "access": "public"
+    }
 }

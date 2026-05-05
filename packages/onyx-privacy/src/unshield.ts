@@ -1,5 +1,8 @@
-import { getEncryptedBalanceToPublicBalanceDirectWithdrawerFunction } from '@umbra-privacy/sdk';
-import type { Address, WithdrawResult, U64 } from './types.js';
+import { 
+  getEncryptedBalanceToPublicBalanceDirectWithdrawerFunction,
+} from '@umbra-privacy/sdk';
+import type { Address } from '@solana/kit';
+import type { U64 } from '@umbra-privacy/sdk/types';
 import type { UmbraClient } from './client.js';
 
 export async function unshieldAsset(
@@ -7,13 +10,7 @@ export async function unshieldAsset(
   mint: Address,
   amount: U64,
   destination: Address,
-): Promise<WithdrawResult> {
+) {
   const withdraw = getEncryptedBalanceToPublicBalanceDirectWithdrawerFunction({ client });
-  const result = await withdraw(destination, mint, amount);
-  return {
-    queueSignature: result.queueSignature,
-    callbackStatus: result.callbackStatus,
-    callbackSignature: result.callbackSignature,
-    callbackElapsedMs: result.callbackElapsedMs,
-  };
+  return withdraw(destination, mint, amount);
 }

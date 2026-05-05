@@ -1,4 +1,10 @@
-import { Connection, PublicKey, Keypair } from '@solana/web3.js'
+import { 
+  address, 
+  Address, 
+  Rpc, 
+  SolanaRpcApi, 
+  TransactionSigner 
+} from '@solana/kit'
 import { EUint64, EUint128, makeEUint64, makeEUint128 } from './types'
 import { EncryptContextAccounts } from './encrypt-context'
 import { executeGraph } from './refhe'
@@ -16,26 +22,28 @@ const OP_SELECT = 60
 const FHE_UINT128 = 5
 const FHE_UINT64 = 4
 
-function encodeNode(kind: number, opType: number, fheType: number, a: number, b: number, c: number): Buffer {
-  const buf = Buffer.alloc(9)
-  buf.writeUInt8(kind, 0)
-  buf.writeUInt8(opType, 1)
-  buf.writeUInt8(fheType, 2)
-  buf.writeUInt16LE(a, 3)
-  buf.writeUInt16LE(b, 5)
-  buf.writeUInt16LE(c, 7)
+function encodeNode(kind: number, opType: number, fheType: number, a: number, b: number, c: number): Uint8Array {
+  const buf = new Uint8Array(9)
+  const view = new DataView(buf.buffer)
+  view.setUint8(0, kind)
+  view.setUint8(1, opType)
+  view.setUint8(2, fheType)
+  view.setUint16(3, a, true)
+  view.setUint16(5, b, true)
+  view.setUint16(7, c, true)
   return buf
 }
 
-function uint64ToEUint128LE(value: bigint): Buffer {
-  const buf = Buffer.alloc(16)
-  buf.writeBigUInt64LE(value & BigInt('0xFFFFFFFFFFFFFFFF'), 0)
-  buf.writeBigUInt64LE(0n, 8)
+function uint64ToEUint128LE(value: bigint): Uint8Array {
+  const buf = new Uint8Array(16)
+  const view = new DataView(buf.buffer)
+  view.setBigUint64(0, value & 0xFFFFFFFFFFFFFFFFn, true)
+  view.setBigUint64(8, 0n, true)
   return buf
 }
 
 function buildSwapGraph(): Uint8Array {
-  const nodes: Buffer[] = [
+  const nodes: Uint8Array[] = [
     encodeNode(K_INPUT, 0, FHE_UINT128, 0, 0, 0),
     encodeNode(K_INPUT, 0, FHE_UINT128, 0, 0, 0),
     encodeNode(K_INPUT, 0, FHE_UINT64, 0, 0, 0),
@@ -56,7 +64,7 @@ function buildSwapGraph(): Uint8Array {
     uint64ToEUint128LE(1000n),
   ])
 
-  const nodesData = Buffer.concat(nodes)
+  const nodesData = Buffer.concat(nodes.map(n => Buffer.from(n)))
 
   const header = Buffer.alloc(13)
   header.writeUInt8(1, 0)
@@ -67,7 +75,7 @@ function buildSwapGraph(): Uint8Array {
   header.writeUInt16LE(1, 9)
   header.writeUInt16LE(constants.length, 11)
 
-  return Buffer.concat([header, constants, nodesData])
+  return new Uint8Array(Buffer.concat([header, constants, nodesData]))
 }
 
 export async function swapFHE(
@@ -75,20 +83,19 @@ export async function swapFHE(
   reserveOut: EUint128,
   amountIn: EUint64,
   minOut: EUint64,
-  connection: Connection,
+  rpc: Rpc<SolanaRpcApi>,
   encryptContext: EncryptContextAccounts,
-  payer: unknown
+  payer: TransactionSigner
 ): Promise<EUint64> {
   const inputs = [reserveIn.ciphertext, reserveOut.ciphertext, amountIn.ciphertext, minOut.ciphertext]
   
-  const [outPubkey] = PublicKey.findProgramAddressSync(
-    [Buffer.from('output'), new PublicKey(amountIn.ciphertext).toBuffer()],
-    encryptContext.encryptProgram
-  )
-  const outputs = [outPubkey.toBase58()]
+  // Output ciphertext is a keypair account, not a PDA (per Encrypt docs)
+  const { generateKeyPairSigner } = await import('@solana/kit')
+  const outSigner = await generateKeyPairSigner()
+  const outputs = [outSigner.address]
   const graphBytes = buildSwapGraph()
 
-  await executeGraph(connection, graphBytes, inputs, outputs, encryptContext, payer)
+  await executeGraph(rpc, graphBytes, inputs, outputs, encryptContext, payer, [outSigner])
 
-  return makeEUint64(outputs[0]!)
+  return makeEUint64(outSigner.address)
 }

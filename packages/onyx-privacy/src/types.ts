@@ -1,59 +1,40 @@
-export type U64 = bigint & { readonly _brand?: 'U64' };
-export type U128 = bigint & { readonly _brand?: 'U128' };
-export type U256 = bigint & { readonly _brand?: 'U256' };
-export type Address = string & { readonly _brand?: 'Address' };
+import type { Address } from '@solana/kit';
+import type { U64, U128, U256, U512 } from '@umbra-privacy/sdk/types';
+import type { Network } from '@umbra-privacy/sdk/constants';
 
-const U64_MAX = 2n ** 64n - 1n;
-const U128_MAX = 2n ** 128n - 1n;
-const U256_MAX = 2n ** 256n - 1n;
+export type { Address, U64, U128, U256, U512, Network };
+
+export type UmbraNetwork = 'mainnet' | 'devnet' | 'localnet';
+
+export function createAddress(raw: string): Address {
+  return raw as Address;
+}
 
 export function createU64(raw: bigint): U64 {
   if (raw < 0n) {
     throw new RangeError('[onyx-privacy] createU64: value must be >= 0');
   }
-  if (raw > U64_MAX) {
+  const MAX_U64 = 2n ** 64n - 1n;
+  if (raw > MAX_U64) {
     throw new RangeError('[onyx-privacy] createU64: value exceeds U64_MAX');
   }
   return raw as U64;
 }
 
-export function createU128(raw: bigint): U128 {
-  if (raw < 0n) {
-    throw new RangeError('[onyx-privacy] createU128: value must be >= 0');
-  }
-  if (raw > U128_MAX) {
-    throw new RangeError('[onyx-privacy] createU128: value exceeds U128_MAX');
-  }
-  return raw as U128;
-}
-
-export function createU256(raw: bigint): U256 {
-  if (raw < 0n) {
-    throw new RangeError('[onyx-privacy] createU256: value must be >= 0');
-  }
-  if (raw > U256_MAX) {
-    throw new RangeError('[onyx-privacy] createU256: value exceeds U256_MAX');
-  }
-  return raw as U256;
-}
-
-export function createAddress(raw: string): Address {
-  if (!raw || raw.length === 0) {
-    throw new RangeError('[onyx-privacy] createAddress: address cannot be empty');
-  }
-  return raw as Address;
-}
-
 export interface DepositResult {
   queueSignature: string;
-  callbackSignature: string;
+  callbackStatus?: 'finalized' | 'pruned' | 'timed-out';
+  callbackSignature?: string;
+  callbackElapsedMs?: number;
+  rentClaimSignature?: string;
+  rentClaimError?: string;
 }
 
 export interface WithdrawResult {
   queueSignature: string;
-  callbackStatus: string;
-  callbackSignature: string;
-  callbackElapsedMs: number;
+  callbackStatus?: 'finalized' | 'pruned' | 'timed-out';
+  callbackSignature?: string;
+  callbackElapsedMs?: number;
 }
 
 export interface ClaimResult {
@@ -71,7 +52,7 @@ export interface UTXOScanResult {
 }
 
 export function protocolFee(amount: bigint, bps: number): bigint {
-  return BigInt(Math.floor(Number(amount) * bps / 16384));
+  return (amount * BigInt(bps)) / 16384n;
 }
 
 export const TOKENS = {
@@ -80,8 +61,6 @@ export const TOKENS = {
   wSOL: 'So11111111111111111111111111111111111111112',
   UMBRA: 'PRVT6TB7uss3FrUd2D9xs2zqDBsa3GbMJMwCQsgmeta',
 } as const;
-
-export type UmbraNetwork = 'mainnet' | 'devnet' | 'localnet';
 
 export const PROGRAM_IDS: Record<UmbraNetwork, string> = {
   mainnet: 'UMBRAD2ishebJTcgCLkTkNUx1v3GyoAgpTRPeWoLykh',
@@ -105,9 +84,9 @@ export interface ComplianceReport {
 }
 
 export interface PayrollEntry {
-  recipientAddress: Address;
-  amount: U64;
-  mint: Address;
+  recipientAddress: string;
+  amount: bigint;
+  mint: string;
   memo?: string;
 }
 
@@ -122,17 +101,17 @@ export interface PayrollResult {
 export interface PaymentLink {
   id: string;
   url: string;
-  mint: Address;
-  amount: U64;
-  recipientAddress: Address;
+  mint: string;
+  amount: bigint;
+  recipientAddress: string;
   expiresAt?: number;
   memo?: string;
 }
 
 export interface GiftCard {
   id: string;
-  mint: Address;
-  amount: U64;
+  mint: string;
+  amount: bigint;
   claimCode: string;
   utxoSignatures: string[];
   expiresAt?: number;
@@ -140,11 +119,11 @@ export interface GiftCard {
 
 export interface Invoice {
   id: string;
-  issuer: Address;
-  recipient: Address;
-  items: Array<{ description: string; amount: U64; mint: Address }>;
-  total: U64;
-  mint: Address;
+  issuer: string;
+  recipient: string;
+  items: Array<{ description: string; amount: bigint; mint: string }>;
+  total: bigint;
+  mint: string;
   dueAt: number;
   status: 'pending' | 'paid' | 'overdue';
   paymentLink?: string;
@@ -152,9 +131,9 @@ export interface Invoice {
 
 export interface X402PrivatePaymentParams {
   client: unknown;
-  amount: U64;
-  mint: Address;
-  recipientAddress: Address;
+  amount: bigint;
+  mint: string;
+  recipientAddress: string;
   paymentReference: string;
   network?: UmbraNetwork;
 }

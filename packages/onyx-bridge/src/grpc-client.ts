@@ -1,165 +1,29 @@
 // packages/onyx-bridge/src/grpc-client.ts
 
 import * as grpc from '@grpc/grpc-js';
+import * as protoLoader from '@grpc/proto-loader';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { IKA_GRPC_ENDPOINT, PresignInfo } from './types';
 import { defineBcsTypes, serializeUserSignatureEd25519, serializeSignedRequestData } from './bcs-types';
 
-function encodeVarint(n: number | bigint): Buffer {
-  let num = typeof n === 'bigint' ? n : BigInt(n);
-  const bytes: number[] = [];
-  
-  while (num > 0n) {
-    let byte = Number(num & 0x7fn);
-    num >>= 7n;
-    if (num > 0n) {
-      byte |= 0x80;
-    }
-    bytes.push(byte);
-  }
-  
-  if (bytes.length === 0) {
-    bytes.push(0);
-  }
-  
-  return Buffer.from(bytes);
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-function protoLengthDelimitedField(fieldNum: number, data: Buffer): Buffer {
-  const tag = (fieldNum << 3) | 2;
-  return Buffer.concat([encodeVarint(tag), encodeVarint(data.length), data]);
-}
-
-function decodeVarint(buf: Buffer, offset: number): { value: bigint; bytesRead: number } {
-  let result = 0n;
-  let shift = 0;
-  let pos = offset;
-  
-  while (pos < buf.length) {
-    const byte = buf[pos];
-    if (byte === undefined) break;
-    result |= BigInt(byte & 0x7f) << BigInt(shift);
-    pos++;
-    if ((byte & 0x80) === 0) {
-      break;
-    }
-    shift += 7;
-  }
-  
-  return { value: result, bytesRead: pos - offset };
-}
-
-function decodeProtoField(buf: Buffer, targetField: number): Buffer | null {
-  let offset = 0;
-  
-  while (offset < buf.length) {
-    const tagResult = decodeVarint(buf, offset);
-    const fieldNum = Number(tagResult.value) >> 3;
-    const wireType = Number(tagResult.value) & 0x07;
-    offset += tagResult.bytesRead;
-    
-    if (fieldNum === targetField) {
-      if (wireType === 2) {
-        const lenResult = decodeVarint(buf, offset);
-        const len = Number(lenResult.value);
-        offset += lenResult.bytesRead;
-        return buf.slice(offset, offset + len);
-      } else if (wireType === 0) {
-        return Buffer.alloc(0);
-      }
-      return null;
-    }
-    
-    if (wireType === 2) {
-      const lenResult = decodeVarint(buf, offset);
-      const len = Number(lenResult.value);
-      offset += lenResult.bytesRead + len;
-    } else if (wireType === 0) {
-      const varintResult = decodeVarint(buf, offset);
-      offset += varintResult.bytesRead;
-    } else if (wireType === 5) {
-      offset += 4;
-    } else if (wireType === 1) {
-      offset += 8;
-    }
-  }
-  
-  return null;
-}
-
-function buildCredentials(endpoint: string): grpc.ChannelCredentials {
-  if (endpoint.includes('localhost') || endpoint.match(/127\.0\.0\.1/)) {
-    return grpc.credentials.createInsecure() as grpc.ChannelCredentials;
-  }
-  return grpc.credentials.createSsl() as grpc.ChannelCredentials;
-}
-
-function serializeUserSignedRequest(userSignature: Buffer, signedRequestData: Buffer): Buffer {
-  return Buffer.concat([
-    protoLengthDelimitedField(1, userSignature),
-    protoLengthDelimitedField(2, signedRequestData),
-  ]);
-}
-
-function serializeGetPresignsRequest(userPubkey: Uint8Array): Buffer {
-  return protoLengthDelimitedField(1, Buffer.from(userPubkey));
-}
-
-function serializeGetPresignsForDWalletRequest(userPubkey: Uint8Array, dwalletId: Uint8Array): Buffer {
-  return Buffer.concat([
-    protoLengthDelimitedField(1, Buffer.from(userPubkey)),
-    protoLengthDelimitedField(2, Buffer.from(dwalletId)),
-  ]);
-}
-
-function deserializeGetPresignsResponse(buf: Buffer): Array<{
-  presignId: Uint8Array;
-  dwalletId: Uint8Array;
-  curve: number;
-  signatureScheme: number;
-  epoch: bigint;
-}> {
-  const presigns: Array<{
-    presignId: Uint8Array;
-    dwalletId: Uint8Array;
-    curve: number;
-    signatureScheme: number;
-    epoch: bigint;
-  }> = [];
-  
-  let offset = 0;
-  
-  while (offset < buf.length) {
-    const tagResult = decodeVarint(buf, offset);
-    const fieldNum = Number(tagResult.value) >> 3;
-    offset += tagResult.bytesRead;
-    
-    if (fieldNum === 1) {
-      const lenResult = decodeVarint(buf, offset);
-      const len = Number(lenResult.value);
-      offset += lenResult.bytesRead;
-      
-      const wrapperData = buf.slice(offset, offset + len);
-      offset += len;
-      
-      const presignId = decodeProtoField(wrapperData, 1);
-      const dwalletId = decodeProtoField(wrapperData, 2);
-      const curveBytes = decodeProtoField(wrapperData, 3);
-      const schemeBytes = decodeProtoField(wrapperData, 4);
-      const epochResult = decodeVarint(wrapperData, 5);
-      
-      presigns.push({
-        presignId: presignId ? new Uint8Array(presignId) : new Uint8Array(),
-        dwalletId: dwalletId ? new Uint8Array(dwalletId) : new Uint8Array(),
-        curve: curveBytes ? Number(decodeVarint(curveBytes, 0).value) : 2,
-        signatureScheme: schemeBytes ? Number(decodeVarint(schemeBytes, 0).value) : 5,
-        epoch: epochResult.value,
-      });
-    } else {
-      break;
-    }
-  }
-  
-  return presigns;
+function loadGrpcClient(url: string) {
+  const PROTO_PATH = path.resolve(__dirname, '../proto/ika_dwallet.proto');
+  const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
+    keepCase: true,
+    longs: String,
+    enums: String,
+    defaults: true,
+    oneofs: true,
+  });
+  const proto = (grpc as any).loadPackageDefinition(packageDefinition) as any;
+  return new proto.ika.dwallet.v1.DWalletService(
+    url.replace(/^https?:\/\//, ''),
+    (grpc as any).credentials.createInsecure()
+  );
 }
 
 export interface GrpcClient {
@@ -169,94 +33,81 @@ export interface GrpcClient {
   close(): void;
 }
 
-export const GrpcClient = null as unknown as GrpcClient;
-
 export function createGrpcClient(endpoint?: string): GrpcClient {
   const target = endpoint || IKA_GRPC_ENDPOINT;
-  const creds = buildCredentials(target);
-  const client = new grpc.Client(target, creds);
+  const client = loadGrpcClient(target);
   
   return {
     async submitTransaction(userSig: Uint8Array, signedData: Uint8Array): Promise<Uint8Array> {
-      const requestData = serializeUserSignedRequest(
-        Buffer.from(userSig),
-        Buffer.from(signedData)
-      );
-      
       return new Promise((resolve, reject) => {
-        client.makeUnaryRequest(
-          '/ika.dwallet.v1.DWalletService/SubmitTransaction',
-          (buf: Buffer) => buf,
-          (buf: Buffer) => buf,
-          requestData,
-          (err: grpc.ServiceError | null, response: Buffer | undefined) => {
+        client.SubmitTransaction(
+          { 
+            user_signature: Buffer.from(userSig), 
+            signed_request_data: Buffer.from(signedData) 
+          },
+          (err: grpc.ServiceError | null, response: any) => {
             if (err) {
               reject(err);
               return;
             }
-            if (!response) {
-              reject(new Error('Empty response from gRPC'));
+            if (!response || !response.response_data) {
+              reject(new Error('Empty response or missing response_data from gRPC'));
               return;
             }
-            const responseData = decodeProtoField(response, 1);
-            if (responseData) {
-              resolve(new Uint8Array(responseData));
-            } else {
-              reject(new Error('Response field 1 not found'));
-            }
+            resolve(new Uint8Array(response.response_data));
           }
         );
       });
     },
     
-    async getPresigns(
-      userPubkey: Uint8Array
-    ): Promise<PresignInfo[]> {
-      const requestData = serializeGetPresignsRequest(userPubkey);
-      
+    async getPresigns(userPubkey: Uint8Array): Promise<PresignInfo[]> {
       return new Promise((resolve, reject) => {
-        client.makeUnaryRequest(
-          '/ika.dwallet.v1.DWalletService/GetPresigns',
-          (buf: Buffer) => buf,
-          (buf: Buffer) => buf,
-          requestData,
-          (err: grpc.ServiceError | null, response: Buffer | undefined) => {
+        client.GetPresigns(
+          { user_pubkey: Buffer.from(userPubkey) },
+          (err: grpc.ServiceError | null, response: any) => {
             if (err) {
               reject(err);
               return;
             }
-            if (!response) {
+            if (!response || !response.presigns) {
               resolve([]);
               return;
             }
-            resolve(deserializeGetPresignsResponse(response));
+            resolve(response.presigns.map((p: any) => ({
+              presignId: new Uint8Array(p.presign_id),
+              dwalletId: new Uint8Array(p.dwallet_id),
+              curve: p.curve,
+              signatureScheme: p.signature_scheme,
+              epoch: BigInt(p.epoch),
+            })));
           }
         );
       });
     },
     
-    async getPresignsForDWallet(
-      userPubkey: Uint8Array,
-      dwalletId: Uint8Array
-    ): Promise<PresignInfo[]> {
-      const requestData = serializeGetPresignsForDWalletRequest(userPubkey, dwalletId);
-      
+    async getPresignsForDWallet(userPubkey: Uint8Array, dwalletId: Uint8Array): Promise<PresignInfo[]> {
       return new Promise((resolve, reject) => {
-        client.makeUnaryRequest(
-          '/ika.dwallet.v1.DWalletService/GetPresignsForDWallet',
-          (buf: Buffer) => buf,
-          (buf: Buffer) => buf,
-          requestData,
-          (err: grpc.ServiceError | null, response: Buffer | undefined) => {
+        client.GetPresignsForDWallet(
+          { 
+            user_pubkey: Buffer.from(userPubkey), 
+            dwallet_id: Buffer.from(dwalletId) 
+          },
+          (err: grpc.ServiceError | null, response: any) => {
             if (err) {
               reject(err);
               return;
             }
-            if (!response) {
+            if (!response || !response.presigns) {
               resolve([]);
               return;
             }
-            resolve(deserializeGetPresignsResponse(response));
+            resolve(response.presigns.map((p: any) => ({
+              presignId: new Uint8Array(p.presign_id),
+              dwalletId: new Uint8Array(p.dwallet_id),
+              curve: p.curve,
+              signatureScheme: p.signature_scheme,
+              epoch: BigInt(p.epoch),
+            })));
           }
         );
       });
@@ -275,28 +126,29 @@ export function buildUserSignature(signature: Uint8Array, pubkey: Uint8Array): U
 export function buildSignedRequestData(
   senderPubkey: Uint8Array,
   request: object,
-  epoch: bigint = 0n
+  epoch: bigint = 1n
 ): Uint8Array {
   return serializeSignedRequestData(request, epoch, 'Solana', senderPubkey);
 }
 
 export function buildDkgRequest(
   curve: number,
-  userPublicKey: Uint8Array
+  userPublicKey: Uint8Array,
+  nekPublicKey: Uint8Array = new Uint8Array(32)
 ): object {
   return {
     DKG: {
-      dwallet_network_encryption_public_key: Array.from(new Uint8Array(32)),
+      dwallet_network_encryption_public_key: Array.from(nekPublicKey),
       curve: curve,
-      centralized_public_key_share_and_proof: Array.from(new Uint8Array(96)),
+      centralized_public_key_share_and_proof: Array.from(new Uint8Array(32)),
       user_secret_key_share: {
         Encrypted: {
-          encrypted_centralized_secret_share_and_proof: Array.from(new Uint8Array(64)),
+          encrypted_centralized_secret_share_and_proof: Array.from(new Uint8Array(32)),
           encryption_key: Array.from(new Uint8Array(32)),
-          signer_public_key: Array.from(new Uint8Array(32)),
+          signer_public_key: Array.from(userPublicKey),
         },
       },
-      user_public_output: Array.from(userPublicKey),
+      user_public_output: Array.from(new Uint8Array(32)),
       sign_during_dkg_request: null,
     },
   };
@@ -306,7 +158,8 @@ export function buildSignRequest(
   message: Uint8Array,
   presignSessionIdentifier: Uint8Array,
   attestation: { attestation_data: Uint8Array; network_signature: Uint8Array; network_pubkey: Uint8Array; epoch: bigint },
-  authorizationProof: Uint8Array
+  authorizationProof: Uint8Array,
+  slot: number = 0
 ): object {
   return {
     Sign: {
@@ -323,7 +176,7 @@ export function buildSignRequest(
       approval_proof: {
         Solana: {
           transaction_signature: Array.from(authorizationProof),
-          slot: 0,
+          slot: slot,
         },
       },
     },

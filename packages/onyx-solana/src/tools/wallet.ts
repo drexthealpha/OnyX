@@ -1,25 +1,21 @@
-import { 
-  Connection, 
-  PublicKey, 
-  SystemProgram, 
-  Transaction, 
-  Keypair,
-  LAMPORTS_PER_SOL,
-  sendAndConfirmTransaction
-} from "@solana/web3.js";
+import { createSolanaRpc, address, lamports } from "@solana/kit";
+import { createKeyPairSignerFromPrivateKeyBytes } from "@solana/signers";
+import { getTransferSolInstruction } from "@solana-program/system";
+import { pipe } from "@solana/functional";
+import { createTransactionMessage, setTransactionMessageFeePayerSigner, setTransactionMessageLifetimeUsingBlockhash, appendTransactionMessageInstruction, signTransactionMessageWithSigners, getBase64EncodedWireTransaction } from "@solana/kit";
 import { readFileSync } from "fs";
 import type { MCPTool } from "../types.js";
 
-function getConnection(): Connection {
-  const rpc = process.env['NOSANA_RPC_URL'] || "https://api.mainnet-beta.solana.com";
-  return new Connection(rpc, "confirmed");
+function getRpc() {
+  const rpcUrl = process.env['NOSANA_RPC_URL'] || "https://api.mainnet-beta.solana.com";
+  return createSolanaRpc(rpcUrl);
 }
 
-function getKeypair(): Keypair {
+async function getSigner() {
   const path = process.env['ONYX_WALLET_PATH'];
   if (!path) throw new Error("ONYX_WALLET_PATH not set");
   const secret = JSON.parse(readFileSync(path, "utf8"));
-  return Keypair.fromSecretKey(Uint8Array.from(secret));
+  return createKeyPairSignerFromPrivateKeyBytes(Uint8Array.from(secret));
 }
 
 export const getBalanceTool: MCPTool = {
@@ -32,13 +28,13 @@ export const getBalanceTool: MCPTool = {
     }
   },
   async execute(params: { wallet?: string }) {
-    const connection = getConnection();
-    const pubkey = params.wallet ? new PublicKey(params.wallet) : getKeypair().publicKey;
-    const lamports = await connection.getBalance(pubkey);
+    const rpc = getRpc();
+    const pubkey = params.wallet || (await getSigner()).address;
+    const { value: balance } = await rpc.getBalance(address(pubkey)).send();
     return { 
-      address: pubkey.toBase58(), 
-      lamports, 
-      sol: lamports / LAMPORTS_PER_SOL 
+      address: pubkey, 
+      lamports: balance, 
+      sol: Number(balance) / 1e9 
     };
   },
 };
@@ -55,25 +51,36 @@ export const transferTool: MCPTool = {
     required: ["to", "lamports"]
   },
   async execute(params: { to: string; lamports: number }) {
-    const connection = getConnection();
-    const from = getKeypair();
-    const to = new PublicKey(params.to);
+    const rpc = getRpc();
+    const signer = await getSigner();
+    const from = signer.address;
+    const to = params.to;
 
-    const transaction = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: from.publicKey,
-        toPubkey: to,
-        lamports: params.lamports,
-      })
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+    const transactionMessage = pipe(
+      createTransactionMessage({ version: 0 }),
+      (m) => setTransactionMessageFeePayerSigner(signer, m),
+      (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+      (m) => appendTransactionMessageInstruction(
+        getTransferSolInstruction({
+          source: signer,
+          destination: address(to),
+          amount: lamports(BigInt(params.lamports)),
+        }),
+        m
+      ),
     );
 
-    const signature = await sendAndConfirmTransaction(connection, transaction, [from]);
+    const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+    const wireTransaction = getBase64EncodedWireTransaction(signedTransaction);
+    const result = await rpc.sendTransaction(wireTransaction).send();
 
     return { 
       success: true,
-      signature, 
-      from: from.publicKey.toBase58(), 
-      to: to.toBase58(), 
+      signature: result, 
+      from, 
+      to, 
       lamports: params.lamports 
     };
   },

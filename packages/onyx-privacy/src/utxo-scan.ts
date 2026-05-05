@@ -6,10 +6,14 @@ export async function scanUTXOs(
   client: UmbraClient,
   treeIndex: number,
   startInsertionIndex: number,
+  endInsertionIndex?: number,
 ): Promise<UTXOScanResult> {
   const scanner = getClaimableUtxoScannerFunction({ client });
-  // SDK expects U32 which is represented as bigint in this version
-  const result = await scanner(BigInt(treeIndex) as any, BigInt(startInsertionIndex) as any);
+  const result = await scanner(
+    BigInt(treeIndex) as any,
+    BigInt(startInsertionIndex) as any,
+    endInsertionIndex !== undefined ? BigInt(endInsertionIndex) as any : undefined
+  );
   return {
     selfBurnable: result.selfBurnable ?? [],
     received: result.received ?? [],

@@ -121,7 +121,8 @@ export async function getPositions() {
   return portfolio.positions;
 }
 
-import { Connection, Keypair } from '@solana/web3.js';
+import { createSolanaRpc, address, fetchEncodedAccount } from '@solana/kit';
+import { createKeyPairSignerFromPrivateKeyBytes } from '@solana/signers';
 import fs from 'fs';
 
 export async function validateEnvironment() {
@@ -130,19 +131,20 @@ export async function validateEnvironment() {
   if (!fs.existsSync(walletPath)) throw new Error(`Wallet not found at ${walletPath}`);
   
   const secret = Uint8Array.from(JSON.parse(fs.readFileSync(walletPath, 'utf8')));
-  const keypair = Keypair.fromSecretKey(secret);
+  const signer = await createKeyPairSignerFromPrivateKeyBytes(secret);
+  const pubkey = signer.address;
   
   const rpcUrl = process.env['NOSANA_RPC_URL'] || 'https://api.mainnet-beta.solana.com';
-  const conn = new Connection(rpcUrl, 'confirmed');
+  const rpc = createSolanaRpc(rpcUrl);
   
-  const balance = await conn.getBalance(keypair.publicKey);
+  const { value: balance } = await rpc.getBalance(address(pubkey)).send();
   const SOL = 1e9;
   if (balance < 0.05 * SOL) {
-    throw new Error(`Insufficient SOL for trading operations. Found ${balance/SOL} SOL, need at least 0.05 SOL.`);
+    throw new Error(`Insufficient SOL for trading operations. Found ${Number(balance)/SOL} SOL, need at least 0.05 SOL.`);
   }
 
   if (!process.env['BIRDEYE_API_KEY']) throw new Error('BIRDEYE_API_KEY is missing. Real-world data requires this key.');
   if (!process.env['HELIUS_API_KEY']) throw new Error('HELIUS_API_KEY is missing. Real-world data requires this key.');
 
-  console.log(`[onyx-trading] Environment verified successfully. Using pubkey: ${keypair.publicKey.toBase58()} with balance: ${balance/SOL} SOL.`);
+  console.log(`[onyx-trading] Environment verified successfully. Using pubkey: ${pubkey.slice(0,8)}... with balance: ${Number(balance)/SOL} SOL.`);
 }

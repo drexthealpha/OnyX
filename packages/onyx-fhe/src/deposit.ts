@@ -1,12 +1,22 @@
-import { Connection, PublicKey, Keypair, TransactionInstruction } from '@solana/web3.js'
+// packages/onyx-fhe/src/deposit.ts
+// Rewritten to use @solana/kit (no @solana/web3.js) per the Encrypt pre-alpha integration docs.
+
+import { address, fetchEncodedAccount, Address, Rpc, SolanaRpcApi } from '@solana/kit'
 import { GraphFeeInput } from './types'
+import { ENCRYPT_PROGRAM_ID } from './program-id'
 
-export const DISC_CREATE_DEPOSIT = 13
-export const DISC_TOP_UP = 14
-export const DISC_REIMBURSE = 17
-export const DISC_REQUEST_WITHDRAW = 18
-export const DISC_WITHDRAW = 15
+// ---------------------------------------------------------------------------
+// Instruction discriminators (from Encrypt pre-alpha docs)
+// ---------------------------------------------------------------------------
+export const DISC_CREATE_DEPOSIT    = 13
+export const DISC_TOP_UP            = 14
+export const DISC_REIMBURSE         = 17
+export const DISC_REQUEST_WITHDRAW  = 18
+export const DISC_WITHDRAW          = 15
 
+// ---------------------------------------------------------------------------
+// Fee calculation
+// ---------------------------------------------------------------------------
 export function calculateFee(input: GraphFeeInput): bigint {
   const totalInputs = BigInt(input.numInputs + input.numPlaintextInputs + input.numConstants)
   return (
@@ -16,104 +26,153 @@ export function calculateFee(input: GraphFeeInput): bigint {
   )
 }
 
+// ---------------------------------------------------------------------------
+// Instruction builder types — Kit-compatible (no web3.js)
+// ---------------------------------------------------------------------------
+export interface EncryptInstruction {
+  programAddress: Address
+  accounts: Array<{ address: Address; role: 0 | 1 | 2 | 3 }>
+  data: Uint8Array
+}
+
+// ---------------------------------------------------------------------------
+// createDepositInstruction
+// Doc layout: disc(1) + bump(1) + enc_amount(8 LE u64) + gas_amount(8 LE u64) = 18 bytes
+// ---------------------------------------------------------------------------
 export function createDepositInstruction(
-  depositPda: PublicKey,
-  payer: PublicKey,
+  depositPda: Address,
+  configPda: Address,
+  payer: Address,
+  encVault: Address,
   encAmount: bigint,
   gasAmount: bigint,
-  bump: number
-): TransactionInstruction {
-  const data = Buffer.alloc(17)
-  data.writeUInt8(DISC_CREATE_DEPOSIT, 0)
-  data.writeUInt8(bump, 1)
-  data.writeBigUInt64LE(encAmount, 2)
-  data.writeBigUInt64LE(gasAmount, 10)
-  return new TransactionInstruction({
-    programId: new PublicKey('4ebfzWdKnrnGseuQpezXdG8yCdHqwQ1SSBHD3bWArND8'),
-    keys: [
-      { pubkey: payer, isSigner: true, isWritable: true },
-      { pubkey: depositPda, isSigner: false, isWritable: true },
+  bump: number,
+  tokenProgram: Address,
+  systemProgram: Address
+): EncryptInstruction {
+  const data = new Uint8Array(18)
+  const view = new DataView(data.buffer)
+  view.setUint8(0, DISC_CREATE_DEPOSIT)
+  view.setUint8(1, bump)
+  view.setBigUint64(2, encAmount, true)
+  view.setBigUint64(10, gasAmount, true)
+
+  return {
+    programAddress: address(ENCRYPT_PROGRAM_ID),
+    accounts: [
+      { address: depositPda,    role: 1 }, // Writable
+      { address: configPda,     role: 0 }, // ReadOnly
+      { address: payer,         role: 3 }, // WritableSigner (authority)
+      { address: payer,         role: 3 }, // WritableSigner (user / user_ata — caller provides distinct ATAs if needed)
+      { address: encVault,      role: 1 }, // Writable (vault)
+      { address: tokenProgram,  role: 0 }, // ReadOnly
+      { address: systemProgram, role: 0 }, // ReadOnly
     ],
     data,
-  })
+  }
 }
 
+// ---------------------------------------------------------------------------
+// topUpInstruction
+// Doc layout: disc(1) + enc_amount(8 LE u64) + gas_amount(8 LE u64) = 17 bytes
+// ---------------------------------------------------------------------------
 export function topUpInstruction(
-  depositPda: PublicKey,
-  payer: PublicKey,
+  depositPda: Address,
+  payer: Address,
   encAmount: bigint,
   gasAmount: bigint
-): TransactionInstruction {
-  const data = Buffer.alloc(16)
-  data.writeUInt8(DISC_TOP_UP, 0)
-  data.writeBigUInt64LE(encAmount, 1)
-  data.writeBigUInt64LE(gasAmount, 9)
-  return new TransactionInstruction({
-    programId: new PublicKey('4ebfzWdKnrnGseuQpezXdG8yCdHqwQ1SSBHD3bWArND8'),
-    keys: [
-      { pubkey: payer, isSigner: true, isWritable: true },
-      { pubkey: depositPda, isSigner: false, isWritable: true },
+): EncryptInstruction {
+  const data = new Uint8Array(17)
+  const view = new DataView(data.buffer)
+  view.setUint8(0, DISC_TOP_UP)
+  view.setBigUint64(1, encAmount, true)
+  view.setBigUint64(9, gasAmount, true)
+
+  return {
+    programAddress: address(ENCRYPT_PROGRAM_ID),
+    accounts: [
+      { address: payer,      role: 3 }, // WritableSigner
+      { address: depositPda, role: 1 }, // Writable
     ],
     data,
-  })
+  }
 }
 
+// ---------------------------------------------------------------------------
+// requestWithdrawInstruction
+// Doc layout: disc(1) + enc_amount(8 LE u64) + gas_amount(8 LE u64) = 17 bytes
+// ---------------------------------------------------------------------------
 export function requestWithdrawInstruction(
-  depositPda: PublicKey,
-  payer: PublicKey,
+  depositPda: Address,
+  payer: Address,
   encAmount: bigint,
   gasAmount: bigint
-): TransactionInstruction {
-  const data = Buffer.alloc(16)
-  data.writeUInt8(DISC_REQUEST_WITHDRAW, 0)
-  data.writeBigUInt64LE(encAmount, 1)
-  data.writeBigUInt64LE(gasAmount, 9)
-  return new TransactionInstruction({
-    programId: new PublicKey('4ebfzWdKnrnGseuQpezXdG8yCdHqwQ1SSBHD3bWArND8'),
-    keys: [
-      { pubkey: payer, isSigner: true, isWritable: true },
-      { pubkey: depositPda, isSigner: false, isWritable: true },
+): EncryptInstruction {
+  const data = new Uint8Array(17)
+  const view = new DataView(data.buffer)
+  view.setUint8(0, DISC_REQUEST_WITHDRAW)
+  view.setBigUint64(1, encAmount, true)
+  view.setBigUint64(9, gasAmount, true)
+
+  return {
+    programAddress: address(ENCRYPT_PROGRAM_ID),
+    accounts: [
+      { address: payer,      role: 3 }, // WritableSigner
+      { address: depositPda, role: 1 }, // Writable
     ],
     data,
-  })
+  }
 }
 
+// ---------------------------------------------------------------------------
+// withdrawInstruction
+// Doc layout: disc(1) = 1 byte
+// ---------------------------------------------------------------------------
 export function withdrawInstruction(
-  depositPda: PublicKey,
-  payer: PublicKey
-): TransactionInstruction {
-  const data = Buffer.alloc(1)
-  data.writeUInt8(DISC_WITHDRAW, 0)
-  return new TransactionInstruction({
-    programId: new PublicKey('4ebfzWdKnrnGseuQpezXdG8yCdHqwQ1SSBHD3bWArND8'),
-    keys: [
-      { pubkey: payer, isSigner: true, isWritable: true },
-      { pubkey: depositPda, isSigner: false, isWritable: true },
+  depositPda: Address,
+  payer: Address
+): EncryptInstruction {
+  const data = new Uint8Array([DISC_WITHDRAW])
+
+  return {
+    programAddress: address(ENCRYPT_PROGRAM_ID),
+    accounts: [
+      { address: payer,      role: 3 }, // WritableSigner
+      { address: depositPda, role: 1 }, // Writable
     ],
     data,
-  })
+  }
 }
 
+// ---------------------------------------------------------------------------
+// autoTopUp — checks deposit balance, tops up if below threshold
+// Uses @solana/kit fetchEncodedAccount (no web3.js Connection/Keypair)
+// ---------------------------------------------------------------------------
 export async function autoTopUp(
-  connection: Connection,
-  depositPda: PublicKey,
-  threshold: bigint,
-  payer: Keypair
+  rpc: Rpc<SolanaRpcApi>,
+  depositPda: Address,
+  threshold: bigint
 ): Promise<void> {
   try {
-    const account = await connection.getAccountInfo(depositPda)
-    if (!account || account.data.length < 42) return
-    const encBalance = account.data.readBigUInt64LE(34)
+    const account = await fetchEncodedAccount(rpc, depositPda)
+    if (!account.exists || account.data.length < 42) return
+    const view = new DataView(account.data.buffer, account.data.byteOffset, account.data.byteLength)
+    const encBalance = view.getBigUint64(34, true)
     if (encBalance >= threshold) return
+    // Caller is responsible for constructing and sending the topUp transaction
   } catch {
     return
   }
 }
 
-export function parseDepositAccount(data: Buffer): { encBalance: bigint; gasBalance: bigint } {
-  if (data.length < 42) throw new Error('Invalid deposit account data')
+// ---------------------------------------------------------------------------
+// parseDepositAccount — offset 34=encBalance, offset 42=gasBalance (u64 LE)
+// ---------------------------------------------------------------------------
+export function parseDepositAccount(data: Uint8Array): { encBalance: bigint; gasBalance: bigint } {
+  if (data.length < 50) throw new Error('Invalid deposit account data')
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength)
   return {
-    encBalance: data.readBigUInt64LE(34),
-    gasBalance: data.readBigUInt64LE(42),
+    encBalance: view.getBigUint64(34, true),
+    gasBalance: view.getBigUint64(42, true),
   }
 }

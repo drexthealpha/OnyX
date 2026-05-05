@@ -1,4 +1,10 @@
-import { Connection, PublicKey } from '@solana/web3.js'
+import { 
+  address, 
+  Address, 
+  Rpc, 
+  SolanaRpcApi, 
+  TransactionSigner 
+} from '@solana/kit'
 import { EUint64, makeEUint64 } from './types'
 import { EncryptContextAccounts } from './encrypt-context'
 import { executeGraph } from './refhe'
@@ -22,28 +28,27 @@ export async function deposit(
   pool: LendingPool,
   position: UserPosition,
   amount: EUint64,
-  connection: Connection,
+  rpc: Rpc<SolanaRpcApi>,
   encryptContext: EncryptContextAccounts,
-  payer: unknown
+  payer: TransactionSigner
 ): Promise<string> {
-  const [newPoolTotal] = PublicKey.findProgramAddressSync(
-    [Buffer.from('pool_deposit'), Buffer.from(pool.id)],
-    encryptContext.encryptProgram
-  )
-  const [newUserDeposit] = PublicKey.findProgramAddressSync(
-    [Buffer.from('user_deposit'), Buffer.from(position.userId)],
-    encryptContext.encryptProgram
-  )
+  // Output ciphertexts are keypair accounts, not PDAs (per Encrypt docs)
+  const { generateKeyPairSigner } = await import('@solana/kit')
+  const newPoolTotalSigner   = await generateKeyPairSigner()
+  const newUserDepositSigner = await generateKeyPairSigner()
 
-  const graphBytes = Buffer.alloc(0) // Graph would implement ADD(pool.total, amount) and ADD(user.deposited, amount)
-  
+  // Graph: ADD(pool.totalDeposits, amount) -> newPoolTotal
+  //        ADD(position.deposited,  amount) -> newUserDeposit
+  const graphBytes = new Uint8Array(0) // pre-alpha: graph DSL not yet public
+
   return await executeGraph(
-    connection,
+    rpc,
     graphBytes,
     [pool.totalDeposits.ciphertext, position.deposited.ciphertext, amount.ciphertext],
-    [newPoolTotal.toBase58(), newUserDeposit.toBase58()],
+    [newPoolTotalSigner.address, newUserDepositSigner.address],
     encryptContext,
-    payer
+    payer,
+    [newPoolTotalSigner, newUserDepositSigner]
   )
 }
 
@@ -54,28 +59,27 @@ export async function borrow(
   pool: LendingPool,
   position: UserPosition,
   amount: EUint64,
-  connection: Connection,
+  rpc: Rpc<SolanaRpcApi>,
   encryptContext: EncryptContextAccounts,
-  payer: unknown
+  payer: TransactionSigner
 ): Promise<string> {
-  const [newPoolBorrows] = PublicKey.findProgramAddressSync(
-    [Buffer.from('pool_borrow'), Buffer.from(pool.id)],
-    encryptContext.encryptProgram
-  )
-  const [newUserBorrow] = PublicKey.findProgramAddressSync(
-    [Buffer.from('user_borrow'), Buffer.from(position.userId)],
-    encryptContext.encryptProgram
-  )
+  // Output ciphertexts are keypair accounts, not PDAs (per Encrypt docs)
+  const { generateKeyPairSigner } = await import('@solana/kit')
+  const newPoolBorrowsSigner = await generateKeyPairSigner()
+  const newUserBorrowSigner  = await generateKeyPairSigner()
 
-  const graphBytes = Buffer.alloc(0) // Graph would implement ADD(pool.borrows, amount) and ADD(user.borrowed, amount)
-  
+  // Graph: ADD(pool.totalBorrows, amount) -> newPoolBorrows
+  //        ADD(position.borrowed,  amount) -> newUserBorrow
+  const graphBytes = new Uint8Array(0) // pre-alpha: graph DSL not yet public
+
   return await executeGraph(
-    connection,
+    rpc,
     graphBytes,
     [pool.totalBorrows.ciphertext, position.borrowed.ciphertext, amount.ciphertext],
-    [newPoolBorrows.toBase58(), newUserBorrow.toBase58()],
+    [newPoolBorrowsSigner.address, newUserBorrowSigner.address],
     encryptContext,
-    payer
+    payer,
+    [newPoolBorrowsSigner, newUserBorrowSigner]
   )
 }
 
@@ -86,27 +90,26 @@ export async function repay(
   pool: LendingPool,
   position: UserPosition,
   amount: EUint64,
-  connection: Connection,
+  rpc: Rpc<SolanaRpcApi>,
   encryptContext: EncryptContextAccounts,
-  payer: unknown
+  payer: TransactionSigner
 ): Promise<string> {
-  const [newPoolBorrows] = PublicKey.findProgramAddressSync(
-    [Buffer.from('pool_borrow'), Buffer.from(pool.id)],
-    encryptContext.encryptProgram
-  )
-  const [newUserBorrow] = PublicKey.findProgramAddressSync(
-    [Buffer.from('user_borrow'), Buffer.from(position.userId)],
-    encryptContext.encryptProgram
-  )
+  // Output ciphertexts are keypair accounts, not PDAs (per Encrypt docs)
+  const { generateKeyPairSigner } = await import('@solana/kit')
+  const newPoolBorrowsSigner = await generateKeyPairSigner()
+  const newUserBorrowSigner  = await generateKeyPairSigner()
 
-  const graphBytes = Buffer.alloc(0) // Graph would implement SUB(pool.borrows, amount) and SUB(user.borrowed, amount)
-  
+  // Graph: SUB(pool.totalBorrows, amount) -> newPoolBorrows
+  //        SUB(position.borrowed,  amount) -> newUserBorrow
+  const graphBytes = new Uint8Array(0) // pre-alpha: graph DSL not yet public
+
   return await executeGraph(
-    connection,
+    rpc,
     graphBytes,
     [pool.totalBorrows.ciphertext, position.borrowed.ciphertext, amount.ciphertext],
-    [newPoolBorrows.toBase58(), newUserBorrow.toBase58()],
+    [newPoolBorrowsSigner.address, newUserBorrowSigner.address],
     encryptContext,
-    payer
+    payer,
+    [newPoolBorrowsSigner, newUserBorrowSigner]
   )
 }

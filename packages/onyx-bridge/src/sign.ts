@@ -1,8 +1,34 @@
-// packages/onyx-bridge/src/sign.ts
-
-import { Connection, PublicKey } from '@solana/web3.js';
+import { 
+  address, 
+  appendTransactionMessageInstruction, 
+  createSolanaRpc, 
+  createTransactionMessage, 
+  fetchEncodedAccount, 
+  getU16Codec, 
+  getU8Codec, 
+  pipe, 
+  setTransactionMessageFeePayerSigner, 
+  setTransactionMessageLifetimeUsingBlockhash,
+  signTransactionMessageWithSigners,
+  Address,
+  Rpc,
+  SolanaRpcApi,
+  KeyPairSigner,
+  TransactionSigner,
+} from '@solana/kit';
+import { getStructCodec, getBytesCodec } from '@solana/codecs';
 import nacl from 'tweetnacl';
-import { DWalletInfo, SignatureScheme, IKA_PROGRAM_ID, MSG_APPROVAL_STATUS_OFFSET, MSG_APPROVAL_SIG_LEN_OFFSET, MSG_APPROVAL_SIG_OFFSET, MESSAGE_APPROVAL_LEN, DISC_MESSAGE_APPROVAL, SignMessageOptions } from './types';
+import { 
+  DWalletInfo, 
+  SignatureScheme, 
+  IKA_PROGRAM_ID, 
+  MSG_APPROVAL_STATUS_OFFSET, 
+  MSG_APPROVAL_SIG_LEN_OFFSET, 
+  MSG_APPROVAL_SIG_OFFSET, 
+  MESSAGE_APPROVAL_LEN, 
+  IX_APPROVE_MESSAGE, 
+  SignMessageOptions 
+} from './types';
 import { defineBcsTypes } from './bcs-types';
 import { createGrpcClient, buildUserSignature, buildSignedRequestData, buildSignRequest, buildPresignRequest } from './grpc-client';
 import { getDWalletPda } from './dwallet';
@@ -16,45 +42,61 @@ export function computeMessageApprovalPda(
   dwalletInfo: DWalletInfo,
   scheme: SignatureScheme,
   messageDigest: Uint8Array,
+  metadataDigest?: Uint8Array,
   programId?: string
-): [PublicKey, number] {
-  const seeds: Buffer[] = [];
+): Promise<[Address, number]> {
+  const dwalletProgramId = address(programId || IKA_PROGRAM_ID);
   
-  const payload = Buffer.alloc(2 + dwalletInfo.pubkey.length);
-  payload.writeUInt16LE(dwalletInfo.curve, 0);
-  Buffer.from(dwalletInfo.pubkey).copy(payload, 2);
+  // seeds: ["dwallet", curve_as_u16, pubkey_chunks, "message_approval", scheme_as_u16, digest]
+  const curveCodec = getU16Codec();
+  const schemeCodec = getU16Codec();
+  
+  const payload = new Uint8Array(2 + dwalletInfo.pubkey.length);
+  payload.set(curveCodec.encode(dwalletInfo.curve), 0);
+  payload.set(dwalletInfo.pubkey, 2);
+  
+  const seeds: Uint8Array[] = [new TextEncoder().encode('dwallet')];
   
   for (let i = 0; i < payload.length; i += 32) {
     seeds.push(payload.subarray(i, Math.min(i + 32, payload.length)));
   }
   
-  seeds.push(Buffer.from('message_approval'));
-  const schemeSeed = Buffer.alloc(2);
-  schemeSeed.writeUInt16LE(scheme, 0);
-  seeds.push(schemeSeed);
-  seeds.push(Buffer.from(messageDigest));
+  seeds.push(new TextEncoder().encode('message_approval'));
+  seeds.push(new Uint8Array(schemeCodec.encode(scheme)));
+  seeds.push(messageDigest);
   
-  const programIdObj = new PublicKey(programId || IKA_PROGRAM_ID);
-  return PublicKey.findProgramAddressSync(seeds, programIdObj);
+  if (metadataDigest && metadataDigest.some(b => b !== 0)) {
+    seeds.push(metadataDigest);
+  }
+  
+  return (async () => {
+     const { getProgramDerivedAddress } = await import('@solana/addresses');
+     const [pda, bump] = await getProgramDerivedAddress({
+       programAddress: dwalletProgramId,
+       seeds,
+     });
+     return [pda, bump];
+  })();
 }
 
 export async function pollMessageApproval(
-  connection: Connection,
-  pda: PublicKey,
+  rpc: Rpc<SolanaRpcApi>,
+  pda: Address,
   timeoutMs: number = 30000
 ): Promise<Uint8Array> {
   const startTime = Date.now();
   
   while (Date.now() - startTime < timeoutMs) {
     try {
-      const accountInfo = await connection.getAccountInfo(pda);
-      if (accountInfo && accountInfo.data.length >= MESSAGE_APPROVAL_LEN) {
-        const data = Buffer.from(accountInfo.data);
+      const account = await fetchEncodedAccount(rpc, pda);
+      if (account.exists && account.data.length >= MESSAGE_APPROVAL_LEN) {
+        const data = account.data;
         const status = data[MSG_APPROVAL_STATUS_OFFSET];
         
         if (status === 1) {
-          const sigLen = data.readUInt16LE(MSG_APPROVAL_SIG_LEN_OFFSET);
-          const signature = data.subarray(MSG_APPROVAL_SIG_OFFSET, MSG_APPROVAL_SIG_OFFSET + sigLen);
+          const sigLenCodec = getU16Codec();
+          const sigLen = Number(sigLenCodec.decode(data.subarray(MSG_APPROVAL_SIG_LEN_OFFSET, MSG_APPROVAL_SIG_LEN_OFFSET + 2)));
+          const signature = data.subarray(MSG_APPROVAL_SIG_OFFSET, MSG_APPROVAL_SIG_OFFSET + Number(sigLen));
           return new Uint8Array(signature);
         }
       }
@@ -68,24 +110,16 @@ export async function pollMessageApproval(
 }
 
 export async function requestPresign(options: {
-  connection: Connection;
+  rpc: Rpc<SolanaRpcApi>;
   dwalletInfo: DWalletInfo;
   userPubkey: Uint8Array;
-  signer: import('@solana/web3.js').Keypair;
+  signer: TransactionSigner;
   signatureAlgorithm?: number;
 }): Promise<Uint8Array> {
-  const { connection, dwalletInfo, userPubkey, signer, signatureAlgorithm = 3 } = options;
+  const { rpc, dwalletInfo, userPubkey, signer, signatureAlgorithm = 3 } = options;
   
-  const programId = new PublicKey(IKA_PROGRAM_ID);
-  
-  const [pda] = getDWalletPda(dwalletInfo.curve, dwalletInfo.pubkey);
-  
-  try {
-    const accountInfo = await connection.getAccountInfo(pda);
-    if (!accountInfo || accountInfo.data.length < 153) {
-      throw new Error('DWallet not found');
-    }
-  } catch {
+  const account = await fetchEncodedAccount(rpc, dwalletInfo.pda);
+  if (!account.exists || account.data.length < 153) {
     throw new Error('DWallet not found');
   }
   
@@ -101,12 +135,21 @@ export async function requestPresign(options: {
         attestation_data: new Uint8Array(32),
         network_signature: new Uint8Array(64),
         network_pubkey: new Uint8Array(32),
-        epoch: 0n,
+        epoch: 1n,
       }
     );
     
-    const signedData = buildSignedRequestData(userPubkey, presignRequest, 0n);
-    const signature = nacl.sign.detached(signedData, signer.secretKey);
+    const signedData = buildSignedRequestData(userPubkey, presignRequest, 1n);
+    
+    // signMessageWithSigners or direct signing if it's a KeyPairSigner
+    let signature: Uint8Array;
+    if ('signMessages' in signer) {
+        const [signedMessage] = await (signer as any).signMessages([{ content: signedData }]);
+        signature = signedMessage.signature;
+    } else {
+        // Fallback or error
+        throw new Error('Signer does not support message signing');
+    }
     
     const userSig = buildUserSignature(signature, userPubkey);
     
@@ -143,31 +186,25 @@ export async function requestPresign(options: {
 
 export async function signMessage(options: SignMessageOptions): Promise<Uint8Array> {
   const {
-    connection,
+    rpc,
     dwalletInfo,
     message,
     messageMetadata = new Uint8Array(0),
     signatureScheme,
     userPubkey,
     signer,
+    approvalTxSig,
+    slot,
   } = options;
-  
-  const messageDigest = computeMessageDigest(message);
-  
-  const [approvalPda, approvalBump] = computeMessageApprovalPda(
-    dwalletInfo,
-    signatureScheme,
-    messageDigest
-  );
   
   const grpcClient = createGrpcClient();
   
   try {
     const presignSessionIdentifier = await requestPresign({
-      connection,
+      rpc,
       dwalletInfo,
       userPubkey,
-      signer: options.signer,
+      signer,
       signatureAlgorithm: 3,
     });
     
@@ -178,13 +215,21 @@ export async function signMessage(options: SignMessageOptions): Promise<Uint8Arr
         attestation_data: new Uint8Array(32),
         network_signature: new Uint8Array(64),
         network_pubkey: new Uint8Array(32),
-        epoch: 0n,
+        epoch: 1n,
       },
-      new Uint8Array(64)
+      approvalTxSig,
+      slot
     );
     
-    const signedData = buildSignedRequestData(userPubkey, signRequest, 0n);
-    const signature = nacl.sign.detached(signedData, signer.secretKey);
+    const signedData = buildSignedRequestData(userPubkey, signRequest, 1n);
+    
+    let signature: Uint8Array;
+    if ('signMessages' in signer) {
+        const [signedMessage] = await (signer as any).signMessages([{ content: signedData }]);
+        signature = signedMessage.signature;
+    } else {
+        throw new Error('Signer does not support message signing');
+    }
     
     const userSig = buildUserSignature(signature, userPubkey);
     
@@ -206,51 +251,91 @@ export async function signMessage(options: SignMessageOptions): Promise<Uint8Arr
 }
 
 export async function approveMessage(options: {
-  connection: Connection;
+  rpc: Rpc<SolanaRpcApi>;
   dwalletInfo: DWalletInfo;
   message: Uint8Array;
   signatureScheme: SignatureScheme;
   userPubkey: Uint8Array;
-  payer: import('@solana/web3.js').Keypair;
+  payer: TransactionSigner;
+  callerProgramId: Address;
+  metadataDigest?: Uint8Array;
 }): Promise<string> {
-  const { connection, dwalletInfo, message, signatureScheme, userPubkey, payer } = options;
+  const { rpc, dwalletInfo, message, signatureScheme, userPubkey, payer, callerProgramId, metadataDigest } = options;
   
   const messageDigest = computeMessageDigest(message);
   
-  const [approvalPda, approvalBump] = computeMessageApprovalPda(
+  const [approvalPda, approvalBump] = await computeMessageApprovalPda(
     dwalletInfo,
     signatureScheme,
-    messageDigest
+    messageDigest,
+    metadataDigest
   );
   
-  const instructionData = Buffer.alloc(130);
-  instructionData.writeUInt8(8, 0);
-  instructionData.writeUInt8(approvalBump, 1);
-  Buffer.from(messageDigest).copy(instructionData, 2);
-  Buffer.from(new Uint8Array(32)).copy(instructionData, 34);
-  Buffer.from(userPubkey).copy(instructionData, 66);
-  instructionData.writeUInt16LE(signatureScheme, 98);
+  const dwalletProgramId = address(IKA_PROGRAM_ID);
   
-  const programId = new PublicKey(IKA_PROGRAM_ID);
-  
-  const { TransactionInstruction, SystemProgram } = await import('@solana/web3.js');
-  
-  const approveIx = new TransactionInstruction({
-    programId,
-    keys: [
-      { pubkey: new PublicKey(dwalletInfo.pda), isSigner: false, isWritable: true },
-      { pubkey: approvalPda, isSigner: false, isWritable: true },
-      { pubkey: payer.publicKey, isSigner: true, isWritable: false },
-      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-    ],
-    data: instructionData,
+  const { getProgramDerivedAddress } = await import('@solana/addresses');
+  const [coordinatorPda] = await getProgramDerivedAddress({
+    programAddress: dwalletProgramId,
+    seeds: [new TextEncoder().encode('dwallet_coordinator')],
+  });
+
+  const [cpiAuthority] = await getProgramDerivedAddress({
+    programAddress: callerProgramId,
+    seeds: [new TextEncoder().encode('__ika_cpi_authority')],
+  });
+
+  // Build instruction data using codecs per IKA docs
+  const { fixCodecSize } = await import('@solana/codecs');
+  const approveMessageIxCodec = getStructCodec([
+    ['discriminator', getU8Codec()],
+    ['bump', getU8Codec()],
+    ['messageDigest', fixCodecSize(getBytesCodec(), 32)],
+    ['metadataDigest', fixCodecSize(getBytesCodec(), 32)],
+    ['userPubkey', fixCodecSize(getBytesCodec(), 32)],
+    ['signatureScheme', getU16Codec()],
+  ]);
+
+  const instructionData = approveMessageIxCodec.encode({
+    discriminator: IX_APPROVE_MESSAGE,
+    bump: approvalBump,
+    messageDigest: messageDigest,
+    metadataDigest: metadataDigest || new Uint8Array(32),
+    userPubkey: userPubkey,
+    signatureScheme: signatureScheme,
   });
   
-  const { Transaction } = await import('@solana/web3.js');
-  const tx = new Transaction().add(approveIx);
+  const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+  const transactionMessage = pipe(
+    createTransactionMessage({ version: 0 }),
+    (m) => setTransactionMessageFeePayerSigner(payer, m),
+    (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+    (m) =>
+      appendTransactionMessageInstruction(
+        {
+          programAddress: dwalletProgramId,
+          accounts: [
+            // Per IKA docs: [coordinator, message_approval, dwallet, caller_program,
+            //                cpi_authority, payer, system_program]
+            { address: coordinatorPda,  role: 0 }, // ReadOnly
+            { address: approvalPda,     role: 1 }, // Writable
+            { address: dwalletInfo.pda, role: 0 }, // ReadOnly
+            { address: callerProgramId, role: 0 }, // ReadOnly (executable)
+            { address: cpiAuthority,    role: 0 }, // ReadOnly (program signs via invoke_signed)
+            { address: payer.address,   role: 3 }, // WritableSigner
+            { address: address('11111111111111111111111111111111'), role: 0 }, // SystemProgram ReadOnly
+          ],
+          data: instructionData,
+        },
+        m,
+      ),
+  );
   
-  const { sendAndConfirmTransaction } = await import('@solana/web3.js');
-  const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
+  const fullySignedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+  const { getBase64EncodedWireTransaction } = await import('@solana/transactions');
+  const wireTransaction = getBase64EncodedWireTransaction(fullySignedTransaction);
+  
+  const txSig = await rpc.sendTransaction(wireTransaction).send();
   
   return txSig;
 }

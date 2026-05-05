@@ -4,7 +4,7 @@ import {
   getPublicBalanceToSelfClaimableUtxoCreatorFunction,
   getPublicBalanceToReceiverClaimableUtxoCreatorFunction,
 } from '@umbra-privacy/sdk';
-import type { Address, U64 } from './types.js';
+import type { Address, U64 } from '@solana/kit';
 import type { UmbraClient } from './client.js';
 
 export interface UTXOCreateParams {
@@ -17,12 +17,12 @@ export async function createSelfClaimableUtxoFromEncryptedBalance(
   client: UmbraClient,
   zkProver: any,
   params: UTXOCreateParams,
-): Promise<string[]> {
+) {
   const creator = getEncryptedBalanceToSelfClaimableUtxoCreatorFunction({ client }, { zkProver });
   return creator({
-    destinationAddress: params.destinationAddress as any,
-    mint: params.mint as any,
-    amount: params.amount as any,
+    destinationAddress: params.destinationAddress,
+    mint: params.mint,
+    amount: params.amount,
   });
 }
 
@@ -30,12 +30,12 @@ export async function createReceiverClaimableUtxoFromEncryptedBalance(
   client: UmbraClient,
   zkProver: any,
   params: UTXOCreateParams,
-): Promise<string[]> {
+) {
   const creator = getEncryptedBalanceToReceiverClaimableUtxoCreatorFunction({ client }, { zkProver });
   return creator({
-    destinationAddress: params.destinationAddress as any,
-    mint: params.mint as any,
-    amount: params.amount as any,
+    destinationAddress: params.destinationAddress,
+    mint: params.mint,
+    amount: params.amount,
   });
 }
 
@@ -43,12 +43,12 @@ export async function createSelfClaimableUtxoFromPublicBalance(
   client: UmbraClient,
   zkProver: any,
   params: UTXOCreateParams,
-): Promise<string[]> {
+) {
   const creator = getPublicBalanceToSelfClaimableUtxoCreatorFunction({ client }, { zkProver });
   return creator({
-    destinationAddress: params.destinationAddress as any,
-    mint: params.mint as any,
-    amount: params.amount as any,
+    destinationAddress: params.destinationAddress,
+    mint: params.mint,
+    amount: params.amount,
   });
 }
 
@@ -56,11 +56,11 @@ export async function createReceiverClaimableUtxoFromPublicBalance(
   client: UmbraClient,
   zkProver: any,
   params: UTXOCreateParams,
-): Promise<string[]> {
+) {
   const creator = getPublicBalanceToReceiverClaimableUtxoCreatorFunction({ client }, { zkProver });
   return creator({
-    destinationAddress: params.destinationAddress as any,
-    mint: params.mint as any,
-    amount: params.amount as any,
+    destinationAddress: params.destinationAddress,
+    mint: params.mint,
+    amount: params.amount,
   });
 }

@@ -1,12 +1,27 @@
-// packages/onyx-bridge/src/multisig.ts
-
-import { Connection, PublicKey, Keypair, Transaction, TransactionInstruction, sendAndConfirmTransaction } from '@solana/web3.js';
+import { 
+  address, 
+  appendTransactionMessageInstruction, 
+  createSolanaRpc, 
+  createTransactionMessage, 
+  fetchEncodedAccount, 
+  pipe, 
+  setTransactionMessageFeePayerSigner, 
+  setTransactionMessageLifetimeUsingBlockhash,
+  signTransactionMessageWithSigners,
+  Address,
+  Rpc,
+  SolanaRpcApi,
+  TransactionSigner,
+  Instruction,
+  appendTransactionMessageInstructions,
+} from '@solana/kit';
+import { getStructCodec, getBytesCodec, getU8Codec, getU32Codec, getArrayCodec } from '@solana/codecs';
 import { VoteResult, MultisigConfig, MultisigOptions, VoteOptions } from './types';
 
 export class OnyxMultisig {
-  private connection: Connection;
-  private programId: PublicKey;
-  private pda: PublicKey;
+  private rpc: Rpc<SolanaRpcApi>;
+  private programId: Address;
+  private pda: Address;
   private state: {
     threshold: number;
     members: Map<string, boolean>;
@@ -16,8 +31,8 @@ export class OnyxMultisig {
     rejected: boolean;
   };
   
-  constructor(connection: Connection, programId: PublicKey, pda: PublicKey) {
-    this.connection = connection;
+  constructor(rpc: Rpc<SolanaRpcApi>, programId: Address, pda: Address) {
+    this.rpc = rpc;
     this.programId = programId;
     this.pda = pda;
     this.state = {
@@ -31,61 +46,86 @@ export class OnyxMultisig {
   }
   
   static async create(options: MultisigOptions): Promise<OnyxMultisig> {
-    const { connection, programId, members, threshold, payer } = options;
+    const { rpc, programId, members, threshold, payer } = options;
     
-    const seeds = [Buffer.from('multisig'), Buffer.from([...members].sort().map(m => m.toBase58()).join(''))];
-    const [pda] = PublicKey.findProgramAddressSync(seeds, programId);
+    const { getProgramDerivedAddress, getAddressEncoder } = await import('@solana/addresses');
+    const sortedMembers = [...members].sort();
+    const membersString = sortedMembers.join('');
     
-    const instructionData = Buffer.alloc(4 + members.length * 32);
-    instructionData.writeUInt32LE(members.length, 0);
-    instructionData.writeUInt8(threshold, 4);
-    
-    for (let i = 0; i < members.length; i++) {
-      const member = members[i];
-      if (!member) continue;
-      Buffer.from(member.toBytes()).copy(instructionData, 5 + i * 32);
-    }
-    
-    const initIx = new TransactionInstruction({
-      programId,
-      keys: [
-        { pubkey: pda, isSigner: false, isWritable: true },
-        { pubkey: payer.publicKey, isSigner: true, isWritable: true },
-      ],
-      data: instructionData,
+    const [pda] = await getProgramDerivedAddress({
+      programAddress: address(programId),
+      seeds: [new TextEncoder().encode('multisig'), new TextEncoder().encode(membersString)],
     });
     
-    const tx = new Transaction().add(initIx);
-    await sendAndConfirmTransaction(connection, tx, [payer]);
+    const { fixCodecSize } = await import('@solana/codecs');
+    const initIxCodec = getStructCodec([
+      ['memberCount', getU32Codec()],
+      ['threshold', getU8Codec()],
+      ['members', getArrayCodec(fixCodecSize(getBytesCodec(), 32), { size: members.length })],
+    ]);
+
+    const instructionData = initIxCodec.encode({
+      memberCount: members.length,
+      threshold,
+      members: members.map(m => getAddressEncoder().encode(m)),
+    });
     
-    const multisig = new OnyxMultisig(connection, programId, pda);
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+    const transactionMessage = pipe(
+      createTransactionMessage({ version: 0 }),
+      (m) => setTransactionMessageFeePayerSigner(payer, m),
+      (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+      (m) =>
+        appendTransactionMessageInstruction(
+          {
+            programAddress: address(programId),
+            accounts: [
+              { address: pda, role: 3 },
+              { address: payer.address, role: 3 },
+            ],
+            data: instructionData,
+          },
+          m,
+        ),
+    );
+
+    const fullySignedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+    const { getBase64EncodedWireTransaction } = await import('@solana/transactions');
+    const wireTransaction = getBase64EncodedWireTransaction(fullySignedTransaction);
+    
+    await rpc.sendTransaction(wireTransaction).send();
+    
+    const multisig = new OnyxMultisig(rpc, address(programId), pda);
     multisig.state.threshold = threshold;
     for (const member of members) {
-      multisig.state.members.set(member.toBase58(), true);
+      multisig.state.members.set(member, true);
     }
     multisig.state.nonce = 0;
     
     return multisig;
   }
   
-  static async load(connection: Connection, programId: PublicKey, pda: PublicKey): Promise<OnyxMultisig> {
+  static async load(rpc: Rpc<SolanaRpcApi>, programId: Address, pda: Address): Promise<OnyxMultisig> {
     try {
-      const accountInfo = await connection.getAccountInfo(pda);
-      if (!accountInfo) {
+      const account = await fetchEncodedAccount(rpc, pda);
+      if (!account.exists) {
         throw new Error('Multisig PDA not found');
       }
       
-      const multisig = new OnyxMultisig(connection, programId, pda);
+      const multisig = new OnyxMultisig(rpc, programId, pda);
+      const data = account.data;
       
-      const data = Buffer.from(accountInfo.data);
-      const memberCount = data.readUInt32LE(0);
-      multisig.state.threshold = data.readUInt8(4);
-      multisig.state.nonce = data.readUInt8(5);
+      const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+      const memberCount = view.getUint32(0, true);
+      multisig.state.threshold = view.getUint8(4);
+      multisig.state.nonce = view.getUint8(5);
       
+      const { getAddressDecoder } = await import('@solana/addresses');
       for (let i = 0; i < memberCount; i++) {
         const memberBytes = data.subarray(6 + i * 32, 6 + (i + 1) * 32);
-        const member = new PublicKey(memberBytes);
-        multisig.state.members.set(member.toBase58(), true);
+        const member = getAddressDecoder().decode(memberBytes);
+        multisig.state.members.set(member, true);
       }
       
       return multisig;
@@ -97,17 +137,17 @@ export class OnyxMultisig {
   async castVote(options: VoteOptions): Promise<VoteResult> {
     const { multisig, voter, approve } = options;
     
-    const voterBase58 = voter.publicKey.toBase58();
+    const voterAddress = voter.address;
     
-    if (!this.state.members.has(voterBase58)) {
+    if (!this.state.members.has(voterAddress)) {
       throw new Error('NOT_MEMBER: Voter is not a member of this multisig');
     }
     
-    if (this.state.votes.has(voterBase58)) {
+    if (this.state.votes.has(voterAddress)) {
       throw new Error('DOUBLE_VOTE: Member has already voted');
     }
     
-    this.state.votes.set(voterBase58, approve);
+    this.state.votes.set(voterAddress, approve);
     
     let approvalCount = 0;
     let rejectionCount = 0;
@@ -139,7 +179,7 @@ export class OnyxMultisig {
     };
   }
   
-  getPda(): PublicKey {
+  getPda(): Address {
     return this.pda;
   }
   
@@ -178,31 +218,33 @@ export class OnyxMultisig {
   }
 }
 
-export function computeMultisigPda(members: PublicKey[], programId: PublicKey, nonce: number = 0): [PublicKey, number] {
-  const memberData = Buffer.alloc(32 * members.length);
+export async function computeMultisigPda(members: Address[], programId: Address, nonce: number = 0): Promise<[Address, number]> {
+  const { getAddressEncoder, getProgramDerivedAddress } = await import('@solana/addresses');
+  const memberData = new Uint8Array(32 * members.length);
   for (let i = 0; i < members.length; i++) {
     const member = members[i];
     if (member) {
-      Buffer.from(member.toBytes()).copy(memberData, i * 32);
+      memberData.set(getAddressEncoder().encode(member), i * 32);
     }
   }
   
-  const seeds = [Buffer.from('multisig'), memberData, Buffer.alloc(1)];
-  const nonceSeed = seeds[2];
-  if (nonceSeed) {
-    nonceSeed.writeUInt8(nonce, 0);
-  }
+  const nonceBytes = new Uint8Array(1);
+  nonceBytes[0] = nonce;
   
-  return PublicKey.findProgramAddressSync(seeds, programId);
+  const [pda, bump] = await getProgramDerivedAddress({
+    programAddress: address(programId),
+    seeds: [new TextEncoder().encode('multisig'), memberData, nonceBytes],
+  });
+  return [pda, bump];
 }
 
 export async function createMultisigTransaction(options: {
-  connection: Connection;
+  rpc: Rpc<SolanaRpcApi>;
   multisig: OnyxMultisig;
-  instructions: TransactionInstruction[];
-  payer: Keypair;
+  instructions: Instruction[];
+  payer: TransactionSigner;
 }): Promise<string> {
-  const { connection, multisig, instructions, payer } = options;
+  const { rpc, multisig, instructions, payer } = options;
   
   const state = multisig.getState();
   
@@ -214,12 +256,18 @@ export async function createMultisigTransaction(options: {
     throw new Error('Multisig rejected - cannot execute');
   }
   
-  const tx = new Transaction();
-  for (const ix of instructions) {
-    tx.add(ix);
-  }
+  const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+  const transactionMessage = pipe(
+    createTransactionMessage({ version: 0 }),
+    (m) => setTransactionMessageFeePayerSigner(payer, m),
+    (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+    (m) => appendTransactionMessageInstructions(instructions, m)
+  );
+
+  const fullySignedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+  const { getBase64EncodedWireTransaction } = await import('@solana/transactions');
+  const wireTransaction = getBase64EncodedWireTransaction(fullySignedTransaction);
   
-  const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
-  
-  return txSig;
+  return await rpc.sendTransaction(wireTransaction).send();
 }

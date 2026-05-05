@@ -1,21 +1,29 @@
-import type { Address, U64, UmbraNetwork, X402PrivatePaymentParams, X402PaymentResult, X402PaymentVerification } from './types.js';
+import type { X402PrivatePaymentParams, X402PaymentResult, X402PaymentVerification } from './types.js';
+import type { Address } from '@solana/kit';
+import type { U64 } from '@umbra-privacy/sdk/types';
 import type { UmbraClient } from './client.js';
 import { createReceiverClaimableUtxoFromPublicBalance } from './utxo-create.js';
+import { getZkProvers } from './zk-prover.js';
 
 export async function createPrivateX402Payment(
   params: X402PrivatePaymentParams,
 ): Promise<X402PaymentResult> {
   const client = params.client as UmbraClient;
-  
+  const provers = await getZkProvers();
+
   const signatures = await createReceiverClaimableUtxoFromPublicBalance(
     client,
-    null as unknown as unknown,
+    provers.createReceiverClaimableUtxoFromPublicBalance,
     {
-      destinationAddress: params.recipientAddress,
-      mint: params.mint,
-      amount: params.amount,
+      destinationAddress: params.recipientAddress as unknown as Address,
+      mint: params.mint as unknown as Address,
+      amount: params.amount as unknown as U64,
     },
   );
+
+  if (signatures.length === 0) {
+    throw new Error('[onyx-privacy] X402 payment failed: no signatures returned');
+  }
 
   const paymentToken = Buffer.from(JSON.stringify({
     reference: params.paymentReference,
@@ -26,7 +34,7 @@ export async function createPrivateX402Payment(
   })).toString('base64');
 
   return {
-    signature: signatures[0] ?? 'mock_signature',
+    signature: signatures[0],
     paymentToken,
   };
 }

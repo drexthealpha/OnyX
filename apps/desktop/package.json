@@ -7,14 +7,14 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "onyx-web": "workspace:*",
     "next": "15.3.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "onyx-web": "workspace:*",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.0.0",
-    "@types/react": "^19",
-    "typescript": "^5"
+    "@tauri-apps/cli": "^2.11.0",
+    "@types/react": "19.2.14",
+    "typescript": "^5.9.3"
   }
 }

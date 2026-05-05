@@ -4,19 +4,19 @@
  * Loads keypair from ONYX_WALLET_PATH (user-provided — operator cost: $0).
  * Private key stored ONLY in closure — never on `this`, never returned.
  *
- * Grounded in real cryptography (tweetnacl) and real chain state (@solana/web3.js).
+ * Grounded in real cryptography (tweetnacl) and real chain state (@solana/kit).
  */
 
 import { readFileSync } from "node:fs";
-import { Connection, Keypair } from "@solana/web3.js";
-import nacl from "tweetnacl";
+import { address, createSolanaRpc, lamports, signBytes, generateKeyPair, getAddressFromPublicKey } from "@solana/kit";
+import { createKeyPairSignerFromBytes, createKeyPairSignerFromPrivateKeyBytes } from "@solana/signers";
 import type { Wallet, WalletConfig } from "./types.js";
 
 /** Create an OnyxWallet from the keypair at ONYX_WALLET_PATH.
  * The private key is stored in the closure and NEVER exposed on the
  * returned object.
  */
-export function createWallet(config?: Partial<WalletConfig>): Wallet {
+export async function createWallet(config?: Partial<WalletConfig>): Promise<Wallet> {
   // User provides this — operator cost: $0
   const keypairPath =
     config?.keypairPath ??
@@ -38,12 +38,40 @@ export function createWallet(config?: Partial<WalletConfig>): Wallet {
 
   // Load keypair — private key stored in closure ONLY
   const rawBytes = JSON.parse(readFileSync(keypairPath, "utf-8")) as number[];
-  const keypair = Keypair.fromSecretKey(Uint8Array.from(rawBytes));
-  const publicKey = keypair.publicKey.toBase58();
-  const connection = new Connection(rpcUrl, "confirmed");
+  const bytes = Uint8Array.from(rawBytes);
+  
+  // Support both 32-byte (private key) and 64-byte (full keypair) formats per @solana/kit docs
+  let privateKey: CryptoKey;
+  
+  if (bytes.length === 32) {
+    privateKey = await crypto.subtle.importKey(
+      'raw',
+      bytes,
+      { name: 'Ed25519' },
+      true,
+      ['sign']
+    );
+  } else {
+    // 64-byte keypair: first 32 bytes are private key
+    privateKey = await crypto.subtle.importKey(
+      'raw',
+      bytes.slice(0, 32),
+      { name: 'Ed25519' },
+      true,
+      ['sign']
+    );
+  }
+  
+  // Create signer from bytes
+  const signer = bytes.length === 32
+    ? await createKeyPairSignerFromPrivateKeyBytes(bytes)
+    : await createKeyPairSignerFromBytes(bytes);
+  const publicKey = signer.address;
+  const rpc = createSolanaRpc(rpcUrl);
 
   // Zero out the source array immediately after keypair creation
   rawBytes.fill(0);
+  bytes.fill(0);
 
   // Public API (no private key visible)
   const wallet: Wallet = {
@@ -52,17 +80,20 @@ export function createWallet(config?: Partial<WalletConfig>): Wallet {
     },
 
     async sign(transaction: Uint8Array): Promise<Uint8Array> {
-      // nacl.sign.detached produces a 64-byte Ed25519 signature
-      return nacl.sign.detached(transaction, keypair.secretKey);
+      // Sign transaction bytes using @solana/kit signBytes
+      const signature = await signBytes(privateKey, transaction);
+      return signature;
     },
 
     async signMessage(message: Uint8Array): Promise<Uint8Array> {
-      return nacl.sign.detached(message, keypair.secretKey);
+      // Sign message using @solana/kit signBytes
+      const signature = await signBytes(privateKey, message);
+      return signature;
     },
 
     async getBalance(): Promise<bigint> {
-      const balance = await connection.getBalance(keypair.publicKey);
-      return BigInt(balance);
+      const { value: balance } = await rpc.getBalance(address(publicKey)).send();
+      return balance;
     },
   };
 

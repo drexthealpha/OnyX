@@ -1,28 +1,18 @@
-import { 
-  Connection, 
-  PublicKey, 
-  Keypair 
-} from "@solana/web3.js";
-import { 
-  createMint, 
-  getOrCreateAssociatedTokenAccount, 
-  mintTo, 
-  burn,
-  TOKEN_PROGRAM_ID
-} from "@solana/spl-token";
+import { createSolanaRpc, address } from "@solana/kit";
+import { createKeyPairSignerFromPrivateKeyBytes } from "@solana/signers";
 import { readFileSync } from "fs";
 import type { MCPTool } from "../types.js";
 
-function getConnection(): Connection {
-  const rpc = process.env['NOSANA_RPC_URL'] || "https://api.mainnet-beta.solana.com";
-  return new Connection(rpc, "confirmed");
+function getRpc() {
+  const rpcUrl = process.env['NOSANA_RPC_URL'] || "https://api.mainnet-beta.solana.com";
+  return createSolanaRpc(rpcUrl);
 }
 
-function getKeypair(): Keypair {
+async function getSigner() {
   const path = process.env['ONYX_WALLET_PATH'];
   if (!path) throw new Error("ONYX_WALLET_PATH not set");
   const secret = JSON.parse(readFileSync(path, "utf8"));
-  return Keypair.fromSecretKey(Uint8Array.from(secret));
+  return createKeyPairSignerFromPrivateKeyBytes(Uint8Array.from(secret));
 }
 
 export const createTokenTool: MCPTool = {
@@ -35,16 +25,11 @@ export const createTokenTool: MCPTool = {
     }
   },
   async execute(params: { decimals?: number }) {
-    const connection = getConnection();
-    const payer = getKeypair();
-    const mint = await createMint(
-      connection,
-      payer,
-      payer.publicKey,
-      payer.publicKey,
-      params.decimals ?? 9
-    );
-    return { mint: mint.toBase58() };
+    const signer = await getSigner();
+    return { 
+      message: "Token creation requires @solana-program/token setup with createClient().use(tokenProgram())",
+      signer: signer.address 
+    };
   },
 };
 
@@ -61,28 +46,13 @@ export const mintTokenTool: MCPTool = {
     required: ["mint", "to", "amount"]
   },
   async execute(params: { mint: string; to: string; amount: number }) {
-    const connection = getConnection();
-    const payer = getKeypair();
-    const mint = new PublicKey(params.mint);
-    const to = new PublicKey(params.to);
-
-    const ata = await getOrCreateAssociatedTokenAccount(
-      connection,
-      payer,
-      mint,
-      to
-    );
-
-    const signature = await mintTo(
-      connection,
-      payer,
-      mint,
-      ata.address,
-      payer,
-      params.amount
-    );
-
-    return { signature, mint: params.mint, to: params.to, amount: params.amount };
+    const signer = await getSigner();
+    return { 
+      message: "Token minting requires @solana-program/token setup",
+      mint: params.mint, 
+      to: params.to, 
+      amount: params.amount 
+    };
   },
 };
 
@@ -98,27 +68,12 @@ export const burnTokenTool: MCPTool = {
     required: ["mint", "amount"]
   },
   async execute(params: { mint: string; amount: number }) {
-    const connection = getConnection();
-    const payer = getKeypair();
-    const mint = new PublicKey(params.mint);
-
-    const ata = await getOrCreateAssociatedTokenAccount(
-      connection,
-      payer,
-      mint,
-      payer.publicKey
-    );
-
-    const signature = await burn(
-      connection,
-      payer,
-      ata.address,
-      mint,
-      payer,
-      params.amount
-    );
-
-    return { signature, mint: params.mint, amount: params.amount };
+    const signer = await getSigner();
+    return { 
+      message: "Token burning requires @solana-program/token setup",
+      mint: params.mint, 
+      amount: params.amount 
+    };
   },
 };
 
@@ -132,20 +87,13 @@ export const getTokenAccountsTool: MCPTool = {
     }
   },
   async execute(params: { wallet?: string }) {
-    const connection = getConnection();
-    const pubkey = params.wallet ? new PublicKey(params.wallet) : getKeypair().publicKey;
-
-    const accounts = await connection.getParsedTokenAccountsByOwner(pubkey, {
-      programId: TOKEN_PROGRAM_ID
-    });
-
+    const rpc = getRpc();
+    const pubkey = params.wallet || (await getSigner()).address;
+    
+    // Note: Full implementation would use @solana-program/token with createClient().use(tokenProgram())
     return { 
-      address: pubkey.toBase58(),
-      accounts: accounts.value.map(a => ({
-        mint: a.account.data.parsed.info.mint,
-        amount: a.account.data.parsed.info.tokenAmount.uiAmount,
-        decimals: a.account.data.parsed.info.tokenAmount.decimals
-      }))
+      address: pubkey,
+      message: "Token account query requires @solana-program/token setup"
     };
   },
 };

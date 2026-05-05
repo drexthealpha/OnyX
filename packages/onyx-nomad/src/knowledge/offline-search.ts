@@ -36,8 +36,9 @@ export function searchKnowledge(query: string): IntelBrief[] {
       )
       .all(query) as unknown[];
 
-    return rows.flatMap((row: unknown) => {
+    return rows.flatMap((r: unknown) => {
       try {
+        const row = r as { brief_json: string };
         return [JSON.parse(row.brief_json) as IntelBrief];
       } catch {
         return [];

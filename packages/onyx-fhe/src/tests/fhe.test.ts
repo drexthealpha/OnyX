@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'vitest'
-import { PublicKey } from '@solana/web3.js'
+import { address } from '@solana/kit'
+import { getProgramDerivedAddress } from '@solana/addresses'
 import { calculateFee, parseDecryptionRequest, verifyDigest } from '../index'
 import { buildEncryptContext } from '../encrypt-context'
 
@@ -55,10 +56,24 @@ describe('FHE Fee Calculation', () => {
 })
 
 describe('EncryptContext', () => {
+  const mockRpc = {
+    getAccountInfo: () => ({
+      send: async () => ({
+        value: {
+          data: [Buffer.concat([Buffer.from([3, 1]), Buffer.alloc(32, 0x55)]).toString('base64'), 'base64'],
+          executable: false,
+          lamports: 0,
+          owner: '11111111111111111111111111111111'
+        }
+      })
+    })
+  } as any
+
   test('buildEncryptContext returns all 11 account fields', async () => {
     const ctx = await buildEncryptContext(
-      '4ebfzWdKnrnGseuQpezXdG8yCdHqwQ1SSBHD3bWArND8',
-      'So11111111111111111111111111111111111111112'
+      mockRpc,
+      address('4ebfzWdKnrnGseuQpezXdG8yCdHqwQ1SSBHD3bWArND8'),
+      address('So11111111111111111111111111111111111111112')
     )
     const fields = [
       'encryptProgram', 'config', 'deposit', 'cpiAuthority',
@@ -68,41 +83,43 @@ describe('EncryptContext', () => {
     for (const f of fields) {
       expect(ctx[f as keyof typeof ctx]).toBeDefined()
     }
-    const [expected] = PublicKey.findProgramAddressSync(
-      [Buffer.from('__encrypt_cpi_authority')],
-      new PublicKey('4ebfzWdKnrnGseuQpezXdG8yCdHqwQ1SSBHD3bWArND8')
-    )
-    expect(ctx.cpiAuthority.toBase58()).toBe(expected.toBase58())
+    const [expected] = await getProgramDerivedAddress({
+      programAddress: address('So11111111111111111111111111111111111111112'),
+      seeds: [new TextEncoder().encode('__encrypt_cpi_authority')]
+    })
+    expect(ctx.cpiAuthority).toBe(expected)
   })
 
   test('buildEncryptContext derives correct PDAs', async () => {
     const ctx = await buildEncryptContext(
-      '4ebfzWdKnrnGseuQpezXdG8yCdHqwQ1SSBHD3bWArND8',
-      'So11111111111111111111111111111111111111112'
+      mockRpc,
+      address('4ebfzWdKnrnGseuQpezXdG8yCdHqwQ1SSBHD3bWArND8'),
+      address('So11111111111111111111111111111111111111112')
     )
-    expect(ctx.encryptProgram.toBase58()).toBe('4ebfzWdKnrnGseuQpezXdG8yCdHqwQ1SSBHD3bWArND8')
-    expect(ctx.systemProgram.toBase58()).toBe('11111111111111111111111111111111')
+    expect(ctx.encryptProgram).toBe('4ebfzWdKnrnGseuQpezXdG8yCdHqwQ1SSBHD3bWArND8')
+    expect(ctx.systemProgram).toBe('11111111111111111111111111111111')
   })
 })
 
 describe('Sealed Bid Digest', () => {
-  function buildMockDecryptionRequest(digest: Buffer, result: bigint): Buffer {
-    const buf = Buffer.alloc(115)
-    buf.writeUInt8(6, 0)
-    buf.writeUInt8(1, 1)
+  function buildMockDecryptionRequest(digest: Uint8Array, result: bigint): Uint8Array {
+    const buf = new Uint8Array(115)
+    const view = new DataView(buf.buffer)
+    view.setUint8(0, 6)
+    view.setUint8(1, 1)
     buf.set(digest, 2)
-    buf.writeUInt32LE(0, 34)
-    buf.writeUInt32LE(0, 66)
-    buf.writeUInt32LE(0, 98)
-    buf.writeUInt8(4, 98)
-    buf.writeUInt32LE(16, 99)
-    buf.writeUInt32LE(16, 103)
-    buf.writeBigUInt64LE(result, 107)
+    view.setUint32(34, 0, true)
+    view.setUint32(66, 0, true)
+    view.setUint32(98, 0, true)
+    view.setUint8(98, 4)
+    view.setUint32(99, 16, true)
+    view.setUint32(103, 16, true)
+    view.setBigUint64(107, result, true)
     return buf
   }
 
   test('parseDecryptionRequest extracts result correctly', () => {
-    const realDigest = Buffer.alloc(32, 0xAB)
+    const realDigest = new Uint8Array(32).fill(0xAB)
     const parsed = parseDecryptionRequest(buildMockDecryptionRequest(realDigest, 42n))
     expect(parsed.result).toBe(42n)
     expect(parsed.bytesWritten).toBe(16)
@@ -110,29 +127,30 @@ describe('Sealed Bid Digest', () => {
   })
 
   test('parseDecryptionRequest returns null for incomplete request', () => {
-    const realDigest = Buffer.alloc(32, 0xAB)
-    const buf = Buffer.alloc(115)
-    buf.writeUInt8(6, 0)
-    buf.writeUInt8(1, 1)
+    const realDigest = new Uint8Array(32).fill(0xAB)
+    const buf = new Uint8Array(115)
+    const view = new DataView(buf.buffer)
+    view.setUint8(0, 6)
+    view.setUint8(1, 1)
     buf.set(realDigest, 2)
-    buf.writeUInt32LE(0, 34)
-    buf.writeUInt32LE(0, 66)
-    buf.writeUInt32LE(0, 98)
-    buf.writeUInt8(4, 98)
-    buf.writeUInt32LE(16, 99)
-    buf.writeUInt32LE(8, 103)
+    view.setUint32(34, 0, true)
+    view.setUint32(66, 0, true)
+    view.setUint32(98, 0, true)
+    view.setUint8(98, 4)
+    view.setUint32(99, 16, true)
+    view.setUint32(103, 8, true)
     const parsed = parseDecryptionRequest(buf)
     expect(parsed.result).toBeNull()
   })
 
   test('verifyDigest rejects digest mismatch', () => {
-    const realDigest = Buffer.alloc(32, 0xAB)
-    const wrongDigest = Buffer.alloc(32, 0xCD)
+    const realDigest = new Uint8Array(32).fill(0xAB)
+    const wrongDigest = new Uint8Array(32).fill(0xCD)
     expect(() => verifyDigest(realDigest, wrongDigest)).toThrow()
   })
 
   test('verifyDigest accepts matching digest', () => {
-    const realDigest = Buffer.alloc(32, 0xAB)
+    const realDigest = new Uint8Array(32).fill(0xAB)
     expect(() => verifyDigest(realDigest, realDigest)).not.toThrow()
   })
 })

@@ -24,5 +24,7 @@ export * from './passkeys';
 
 export * from './shared-access';
 
+export * from './client';
+
 export const NAME = 'onyx-bridge';
 export const VERSION = '0.1.0';

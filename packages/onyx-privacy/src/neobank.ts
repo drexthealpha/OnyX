@@ -1,3 +1,4 @@
+import { getEncryptedBalanceQuerierFunction } from '@umbra-privacy/sdk';
 import type { Address, U64, DepositResult, WithdrawResult, ComplianceReport } from './types.js';
 import type { UmbraClient } from './client.js';
 import { shieldAsset } from './shield.js';
@@ -13,12 +14,17 @@ export class OnyxNeobank {
   }
 
   async getPrivateBalance(mint: Address): Promise<bigint> {
-    console.debug('[onyx-privacy] Getting private balance for mint:', mint.substring(0, 16) + '...');
+    const query = getEncryptedBalanceQuerierFunction({ client: this.client });
+    const result = await query([mint]);
+    const mintResult = result.get(mint);
+    if (mintResult?.state === 'shared') {
+      return mintResult.balance;
+    }
     return 0n;
   }
 
   async deposit(mint: Address, amount: U64): Promise<DepositResult> {
-    return shieldAsset(this.client, mint, amount, 'mock_destination' as Address);
+    return shieldAsset(this.client, mint, amount, this.client.signer.address as Address);
   }
 
   async withdraw(mint: Address, amount: U64, destination: Address): Promise<WithdrawResult> {
@@ -26,9 +32,12 @@ export class OnyxNeobank {
   }
 
   async transfer(mint: Address, amount: U64, recipient: Address): Promise<string[]> {
+    const zkProver = (await import('./zk-prover.js')).getZkProvers();
+    const provers = await zkProver;
+    
     return createReceiverClaimableUtxoFromPublicBalance(
       this.client,
-      null as unknown as unknown,
+      provers.createReceiverClaimableUtxoFromPublicBalance,
       {
         destinationAddress: recipient,
         mint,
@@ -38,7 +47,6 @@ export class OnyxNeobank {
   }
 
   async getStatement(startTs: number, endTs: number): Promise<ComplianceReport> {
-    const walletPublicKey = 'mock_wallet_public_key';
-    return generateComplianceReport(this.client, walletPublicKey, startTs, endTs);
+    return generateComplianceReport(this.client, '', startTs, endTs);
   }
 }

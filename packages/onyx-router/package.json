@@ -1,32 +1,32 @@
 {
-    "name":  "@onyx/router",
-    "version":  "1.0.0",
-    "description":  "x402 LLM routing and budget metering layer for ONYX",
-    "type":  "module",
-    "main":  "./dist/index.js",
-    "types":  "./dist/index.d.ts",
-    "scripts":  {
-                    "build":  "tsc",
-                    "test":  "vitest run"
-                },
-    "dependencies":  {
-                         "@onyx/kernel":  "workspace:*",
-                         "better-sqlite3":  "^9.4.3",
-                         "zod":  "^3.22.4"
-                     },
-    "devDependencies":  {
-                            "@types/better-sqlite3":  "^7.6.12",
-                            "@types/node":  "^20.0.0",
-                            "typescript":  "^5.4.0",
-                            "vitest":  "*"
-                        },
-    "exports":  {
-                    ".":  {
-                              "types":  "./dist/index.d.ts",
-                              "import":  "./dist/index.js"
-                          }
-                },
-    "publishConfig":  {
-                          "access":  "public"
-                      }
+    "name": "@onyx/router",
+    "version": "1.0.0",
+    "description": "x402 LLM routing and budget metering layer for ONYX",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "@onyx/kernel": "workspace:*",
+        "better-sqlite3": "^9.6.0",
+        "zod": "^4.4.3"
+    },
+    "devDependencies": {
+        "@types/better-sqlite3": "^7.6.13",
+        "@types/node": "^20.19.39",
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.5"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "publishConfig": {
+        "access": "public"
+    }
 }

@@ -1,44 +1,44 @@
 {
-    "name":  "@onyx/control",
-    "version":  "1.0.0",
-    "description":  "Ink TUI for terminal control of ONYX",
-    "type":  "module",
-    "main":  "dist/index.js",
-    "types":  "dist/index.d.ts",
-    "exports":  {
-                    ".":  {
-                              "import":  "./dist/index.js",
-                              "types":  "./dist/index.d.ts"
-                          }
-                },
-    "bin":  {
-                "onyx-control":  "bin/onyx-control.js"
-            },
-    "scripts":  {
-                    "dev":  "tsx src/index.tsx",
-                    "build":  "tsup src/index.tsx --format esm --dts",
-                    "test":  "vitest run",
-                    "typecheck":  "tsc --noEmit"
-                },
-    "dependencies":  {
-                         "ink":  "^5.0.1",
-                         "ink-text-input":  "^6.0.0",
-                         "react":  "^18.2.0",
-                         "zod":  "^3.24.1"
-                     },
-    "devDependencies":  {
-                            "@types/node":  "^22.0.0",
-                            "@types/react":  "^18.2.0",
-                            "tsup":  "^8.3.0",
-                            "tsx":  "^4.19.0",
-                            "typescript":  "^5.7.0",
-                            "vitest":  "^3.0.0",
-                            "ink-testing-library":  "^3.0.0"
-                        },
-    "engines":  {
-                    "node":  "\u003e=20.0.0"
-                },
-    "publishConfig":  {
-                          "access":  "public"
-                      }
+    "name": "@onyx/control",
+    "version": "1.0.0",
+    "description": "Ink TUI for terminal control of ONYX",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "bin": {
+        "onyx-control": "bin/onyx-control.js"
+    },
+    "scripts": {
+        "dev": "tsx src/index.tsx",
+        "build": "tsup src/index.tsx --format esm --dts",
+        "test": "vitest run",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "ink": "^5.2.1",
+        "ink-text-input": "^6.0.0",
+        "react": "19.0.0",
+        "zod": "^4.4.3"
+    },
+    "devDependencies": {
+        "@types/node": "^22.19.17",
+        "@types/react": "19.2.14",
+        "ink-testing-library": "^3.0.0",
+        "tsup": "^8.5.1",
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3",
+        "vitest": "^3.2.4"
+    },
+    "engines": {
+        "node": ">=20.0.0"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
 }

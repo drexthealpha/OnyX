@@ -1,9 +1,11 @@
 import { 
-  Connection, 
-  PublicKey, 
-  Transaction, 
-  TransactionInstruction 
-} from '@solana/web3.js'
+  address, 
+  Address, 
+  Rpc, 
+  SolanaRpcApi, 
+  TransactionSigner,
+  fetchEncodedAccount,
+} from '@solana/kit'
 import { EUint64, makeEUint64 } from './types'
 import { EncryptContextAccounts } from './encrypt-context'
 import { parseDecryptionRequest } from './sealed-bid'
@@ -48,35 +50,31 @@ export async function createMarket(
 export async function castVote(
   market: Market,
   vote: boolean,
-  connection: Connection,
+  rpc: Rpc<SolanaRpcApi>,
   encryptContext: EncryptContextAccounts,
-  payer: unknown
+  payer: TransactionSigner
 ): Promise<string> {
   if (!market.isOpen) throw new Error('Market is closed')
 
   const target = vote ? market.yesCount : market.noCount
-  
-  // We execute a simple ADD(target, 1) graph
-  // Note: In a real implementation, we would build the graph bytes here
-  // similar to buildTransferGraph in confidential-swap.ts
-  
-  const [outputPk] = PublicKey.findProgramAddressSync(
-    [Buffer.from('output'), new PublicKey(target.ciphertext).toBuffer()],
-    encryptContext.encryptProgram
-  )
+
+  // Output ciphertext is a keypair account, not a PDA (per Encrypt docs)
+  const { generateKeyPairSigner } = await import('@solana/kit')
+  const outputSigner = await generateKeyPairSigner()
 
   const { executeGraph } = await import('./refhe.js')
-  
-  // Placeholder graph for ADD 1
-  const graphBytes = Buffer.from([1, 0, 0, 0, 0]) // Dummy for now, would be real graph
+
+  // pre-alpha: ADD(target, 1) graph bytes — DSL spec not yet public
+  const graphBytes = new Uint8Array([1, 0, 0, 0, 0])
 
   const sig = await executeGraph(
-    connection,
+    rpc,
     graphBytes,
     [target.ciphertext],
-    [outputPk.toBase58()],
+    [outputSigner.address],
     encryptContext,
-    payer
+    payer,
+    [outputSigner]
   )
 
   market.totalVotes++
@@ -86,8 +84,8 @@ export async function castVote(
 export async function resolveMarket(
   market: Market,
   requestAccounts: { yes: string; no: string },
-  connection: Connection,
-  payer: unknown
+  rpc: Rpc<SolanaRpcApi>,
+  payer: TransactionSigner
 ): Promise<{ yes: bigint; no: bigint }> {
   let yesResult: bigint = 0n
   let noResult: bigint = 0n
@@ -96,9 +94,9 @@ export async function resolveMarket(
     [requestAccounts.yes, 'yes'] as const,
     [requestAccounts.no, 'no'] as const,
   ]) {
-    const accountInfo = await connection.getAccountInfo(new PublicKey(key))
-    if (accountInfo) {
-      const parsed = parseDecryptionRequest(accountInfo.data)
+    const account = await fetchEncodedAccount(rpc, address(key))
+    if (account.exists) {
+      const parsed = parseDecryptionRequest(account.data)
       if (parsed.result !== null) {
         if (label === 'yes') yesResult = parsed.result
         else noResult = parsed.result

@@ -1,6 +1,20 @@
-// packages/onyx-bridge/src/passkeys.ts
-
-import { Connection, PublicKey, Keypair, Transaction, TransactionInstruction, sendAndConfirmTransaction, SystemProgram } from '@solana/web3.js';
+import { 
+  address, 
+  appendTransactionMessageInstruction, 
+  createSolanaRpc, 
+  createTransactionMessage, 
+  pipe, 
+  setTransactionMessageFeePayerSigner, 
+  setTransactionMessageLifetimeUsingBlockhash,
+  signTransactionMessageWithSigners,
+  Address,
+  Rpc,
+  SolanaRpcApi,
+  TransactionSigner,
+  Instruction,
+  appendTransactionMessageInstructions,
+} from '@solana/kit';
+import nacl from 'tweetnacl';
 
 export const WEBAUTHN_RP_ID = 'localhost';
 export const WEBAUTHN_RP_NAME = 'ONYX';
@@ -201,38 +215,43 @@ export async function signWithWebAuthn(
   }
 }
 
-export function generateSignedKeypair(): Keypair {
-  return Keypair.generate();
+export async function generateSignedKeypair(): Promise<TransactionSigner> {
+  const { createKeyPairSignerFromBytes } = await import('@solana/signers');
+  const bytes = new Uint8Array(64);
+  crypto.getRandomValues(bytes);
+  return await createKeyPairSignerFromBytes(bytes);
 }
 
-export async function signTransactionWithKeypair(
-  connection: Connection,
-  tx: Transaction,
-  payer: Keypair,
-  signers: Keypair[]
+export async function signTransactionMessage(
+  rpc: Rpc<SolanaRpcApi>,
+  instructions: Instruction[],
+  payer: TransactionSigner,
+  signers: TransactionSigner[]
 ): Promise<string> {
-  const { blockhash } = await connection.getLatestBlockhash();
-  tx.recentBlockhash = blockhash;
-  tx.feePayer = payer.publicKey;
+  const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+  const transactionMessage = pipe(
+    createTransactionMessage({ version: 0 }),
+    (m) => setTransactionMessageFeePayerSigner(payer, m),
+    (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+    (m) => appendTransactionMessageInstructions(instructions, m)
+  );
+
+  const fullySignedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+  const { getBase64EncodedWireTransaction } = await import('@solana/transactions');
+  const wireTransaction = getBase64EncodedWireTransaction(fullySignedTransaction);
   
-  tx.sign(...signers);
-  
-  const txSig = await connection.sendTransaction(tx, signers);
-  
-  await connection.confirmTransaction(txSig);
-  
-  return txSig;
+  return await rpc.sendTransaction(wireTransaction).send();
 }
 
-export function verifySignature(signature: Uint8Array, publicKey: Uint8Array, message: Uint8Array): boolean {
+export async function verifySignature(signature: Uint8Array, publicKey: Address, message: Uint8Array): Promise<boolean> {
   try {
-    if (signature.length !== 64) {
-      return false;
-    }
-    
-    const { Signature } = require('@solana/web3.js');
-    const sig = Signature.populate(signature, publicKey);
-    return sig.verify(message);
+    const { getAddressEncoder } = await import('@solana/addresses');
+    return nacl.sign.detached.verify(
+      message, 
+      signature, 
+      new Uint8Array(getAddressEncoder().encode(publicKey))
+    );
   } catch {
     return false;
   }

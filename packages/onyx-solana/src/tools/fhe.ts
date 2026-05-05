@@ -16,17 +16,22 @@ export const createFHEAccountTool: MCPTool = {
     required: ["payer"],
   } as any,
   async execute({ payer }: { payer: string }) {
-    const fhe = await import("@onyx/fhe");
+    const fhe = await import('@onyx/fhe');
+    const { createSolanaRpc } = await import('@solana/kit');
+    const rpcUrl = process.env['NOSANA_RPC_URL'] || 'https://api.devnet.solana.com';
+    const rpc = createSolanaRpc(rpcUrl);
     // Use a placeholder caller program ID if not provided in env
-    const callerId = process.env['FHE_CALLER_PROGRAM_ID'] || "11111111111111111111111111111111";
-    const ctx = await fhe.buildEncryptContext(callerId, payer);
+    const callerId = process.env['FHE_CALLER_PROGRAM_ID'] || '11111111111111111111111111111111';
+    const { address } = await import('@solana/kit');
+    const ctx = await fhe.buildEncryptContext(rpc, address(callerId), address(payer));
     
     return {
       success: true,
-      encryptProgram: ctx.encryptProgram.toBase58(),
-      config: ctx.config.toBase58(),
-      deposit: ctx.deposit.toBase58(),
-      networkEncryptionKey: ctx.networkEncryptionKey.toBase58(),
+      // Kit Address is a branded string — no .toBase58() needed
+      encryptProgram: ctx.encryptProgram,
+      config: ctx.config,
+      deposit: ctx.deposit,
+      networkEncryptionKey: ctx.networkEncryptionKey,
     };
   },
 };

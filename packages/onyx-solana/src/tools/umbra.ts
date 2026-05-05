@@ -3,7 +3,17 @@
  * Grounded in @onyx/privacy package.
  */
 
+import { createKeyPairSignerFromPrivateKeyBytes } from "@solana/signers";
+import { readFileSync } from "fs";
 import type { MCPTool } from "../types.js";
+import { createUmbraClient, shieldAsset, unshieldAsset, createAddress, createU64 } from "@onyx/privacy";
+
+async function getSigner() {
+  const path = process.env['ONYX_WALLET_PATH'];
+  if (!path) throw new Error("ONYX_WALLET_PATH not set");
+  const secret = JSON.parse(readFileSync(path, "utf8"));
+  return createKeyPairSignerFromPrivateKeyBytes(Uint8Array.from(secret));
+}
 
 export const shieldAssetTool: MCPTool = {
   name: "shieldAsset",
@@ -18,21 +28,14 @@ export const shieldAssetTool: MCPTool = {
     required: ["token", "amount", "destination"],
   } as any,
   async execute({ token, amount, destination }: { token: string; amount: number; destination: string }) {
-    const privacy = await import("@onyx/privacy");
-    const { Keypair } = await import("@solana/web3.js");
-    const { readFileSync } = await import("fs");
+    const signer = await getSigner();
     
-    const walletPath = process.env['ONYX_WALLET_PATH'];
-    if (!walletPath) throw new Error("ONYX_WALLET_PATH not set");
-    const secret = JSON.parse(readFileSync(walletPath, "utf8"));
-    const signer = Keypair.fromSecretKey(Uint8Array.from(secret));
-    
-    const client = await privacy.createUmbraClient({ signer });
-    const result = await privacy.shieldAsset(
+    const client = await createUmbraClient({ signer });
+    const result = await shieldAsset(
       client,
-      privacy.createAddress(token),
-      privacy.createU64(BigInt(amount)),
-      privacy.createAddress(destination)
+      createAddress(token),
+      createU64(BigInt(amount)),
+      createAddress(destination)
     );
     
     return { success: true, queueSignature: result.queueSignature };
@@ -52,21 +55,14 @@ export const unshieldAssetTool: MCPTool = {
     required: ["token", "amount", "recipient"],
   } as any,
   async execute({ token, amount, recipient }: { token: string; amount: number; recipient: string }) {
-    const privacy = await import("@onyx/privacy");
-    const { Keypair } = await import("@solana/web3.js");
-    const { readFileSync } = await import("fs");
+    const signer = await getSigner();
     
-    const walletPath = process.env['ONYX_WALLET_PATH'];
-    if (!walletPath) throw new Error("ONYX_WALLET_PATH not set");
-    const secret = JSON.parse(readFileSync(walletPath, "utf8"));
-    const signer = Keypair.fromSecretKey(Uint8Array.from(secret));
-    
-    const client = await privacy.createUmbraClient({ signer });
-    const result = await privacy.unshieldAsset(
+    const client = await createUmbraClient({ signer });
+    const result = await unshieldAsset(
       client,
-      privacy.createAddress(token),
-      privacy.createU64(BigInt(amount)),
-      privacy.createAddress(recipient)
+      createAddress(token),
+      createU64(BigInt(amount)),
+      createAddress(recipient)
     );
     
     return { success: true, queueSignature: result.queueSignature };

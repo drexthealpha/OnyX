@@ -1,17 +1,33 @@
-// packages/onyx-bridge/src/gas-deposit.ts
-
-import { Connection, PublicKey, Keypair, Transaction, TransactionInstruction, SystemProgram, sendAndConfirmTransaction } from '@solana/web3.js';
+import { 
+  address, 
+  appendTransactionMessageInstruction, 
+  createSolanaRpc, 
+  createTransactionMessage, 
+  fetchEncodedAccount, 
+  pipe, 
+  setTransactionMessageFeePayerSigner, 
+  setTransactionMessageLifetimeUsingBlockhash,
+  signTransactionMessageWithSigners,
+  Address,
+  Rpc,
+  SolanaRpcApi,
+  TransactionSigner,
+} from '@solana/kit';
+import { getStructCodec, getBytesCodec, getU8Codec, getU64Codec } from '@solana/codecs';
 import { IKA_PROGRAM_ID, DISC_GAS_DEPOSIT, GAS_DEPOSIT_LEN, GasDepositOptions } from './types';
 
-export function getGasDepositPda(userPubkey: Uint8Array, programId?: string): [PublicKey, number] {
-  const programIdObj = new PublicKey(programId || IKA_PROGRAM_ID);
-  const seeds = [Buffer.from('gas_deposit'), Buffer.from(userPubkey)];
-  return PublicKey.findProgramAddressSync(seeds, programIdObj);
+export async function getGasDepositPda(userPubkey: Uint8Array, programId?: string): Promise<[Address, number]> {
+  const programIdObj = address(programId || IKA_PROGRAM_ID);
+  const { getProgramDerivedAddress } = await import('@solana/addresses');
+  const [pda, bump] = await getProgramDerivedAddress({
+    programAddress: programIdObj,
+    seeds: [new TextEncoder().encode('gas_deposit'), userPubkey],
+  });
+  return [pda, bump];
 }
 
 export const INSTRUCTION_CREATE_DEPOSIT = 36;
 export const INSTRUCTION_TOP_UP = 37;
-export const INSTRUCTION_SETTLE_GAS = 38;
 export const INSTRUCTION_REQUEST_WITHDRAW = 44;
 export const INSTRUCTION_WITHDRAW = 45;
 
@@ -19,185 +35,232 @@ export const IKA_BALANCE_OFFSET = 34;
 export const SOL_BALANCE_OFFSET = 42;
 
 export async function createGasDeposit(options: GasDepositOptions): Promise<string> {
-  const { connection, userPubkey, amountLamports, isIkaBalance, payer } = options;
+  const { rpc, userPubkey, amountLamports, isIkaBalance, payer } = options;
   
-  const [gasDepositPda, bump] = getGasDepositPda(userPubkey);
+  const [gasDepositPda, bump] = await getGasDepositPda(userPubkey);
   
-  const instructionData = Buffer.alloc(34);
-  instructionData.writeUInt8(INSTRUCTION_CREATE_DEPOSIT, 0);
-  instructionData.writeUInt8(bump, 1);
-  instructionData.writeUInt8(isIkaBalance ? 1 : 0, 2);
-  instructionData.writeBigUInt64LE(BigInt(amountLamports), 3);
+  // Doc layout: disc(1) + bump(1) + enc_amount(8 LE u64) + gas_amount(8 LE u64) = 18 bytes
+  const data = new Uint8Array(18);
+  const view = new DataView(data.buffer);
+  view.setUint8(0, INSTRUCTION_CREATE_DEPOSIT);
+  view.setUint8(1, bump);
+  view.setBigUint64(2, amountLamports, true);
+  view.setBigUint64(10, 0n, true); // gas_amount — caller may top up separately
+  const instructionData = data;
   
-  const programId = new PublicKey(IKA_PROGRAM_ID);
+  const programId = address(IKA_PROGRAM_ID);
   
-  const createIx = new TransactionInstruction({
-    programId,
-    keys: [
-      { pubkey: gasDepositPda, isSigner: false, isWritable: true },
-      { pubkey: payer.publicKey, isSigner: true, isWritable: true },
-      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-    ],
-    data: instructionData,
-  });
+  const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+  const transactionMessage = pipe(
+    createTransactionMessage({ version: 0 }),
+    (m) => setTransactionMessageFeePayerSigner(payer, m),
+    (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+    (m) =>
+      appendTransactionMessageInstruction(
+        {
+          programAddress: programId,
+          accounts: [
+            { address: gasDepositPda, role: 3 },
+            { address: payer.address, role: 3 },
+            { address: address('11111111111111111111111111111111'), role: 0 },
+          ],
+          data: instructionData,
+        },
+        m,
+      ),
+  );
+
+  const fullySignedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+  const { getBase64EncodedWireTransaction } = await import('@solana/transactions');
+  const wireTransaction = getBase64EncodedWireTransaction(fullySignedTransaction);
   
-  const tx = new Transaction().add(createIx);
-  const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
-  
-  return txSig;
+  return await rpc.sendTransaction(wireTransaction).send();
 }
 
 export async function topUpGasDeposit(options: GasDepositOptions): Promise<string> {
-  const { connection, userPubkey, amountLamports, isIkaBalance, payer } = options;
+  const { rpc, userPubkey, amountLamports, isIkaBalance, payer } = options;
   
-  const [gasDepositPda] = getGasDepositPda(userPubkey);
+  const [gasDepositPda] = await getGasDepositPda(userPubkey);
   
-  const instructionData = Buffer.alloc(34);
-  instructionData.writeUInt8(INSTRUCTION_TOP_UP, 0);
-  instructionData.writeUInt8(isIkaBalance ? 1 : 0, 1);
-  instructionData.writeBigUInt64LE(BigInt(amountLamports), 3);
+  // Doc layout: disc(1) + enc_amount(8 LE u64) + gas_amount(8 LE u64) = 17 bytes
+  const data = new Uint8Array(17);
+  const view = new DataView(data.buffer);
+  view.setUint8(0, INSTRUCTION_TOP_UP);
+  view.setBigUint64(1, amountLamports, true);
+  view.setBigUint64(9, 0n, true); // gas_amount
+  const instructionData = data;
   
-  const programId = new PublicKey(IKA_PROGRAM_ID);
+  const programId = address(IKA_PROGRAM_ID);
   
-  const topUpIx = new TransactionInstruction({
-    programId,
-    keys: [
-      { pubkey: gasDepositPda, isSigner: false, isWritable: true },
-      { pubkey: payer.publicKey, isSigner: true, isWritable: true },
-      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-    ],
-    data: instructionData,
-  });
-  
-  const tx = new Transaction().add(topUpIx);
-  const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
-  
-  return txSig;
-}
+  const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
 
-export async function settleGas(options: {
-  connection: Connection;
-  userPubkey: Uint8Array;
-  ikawalletPda: PublicKey;
-  amountLamports: bigint;
-  payer: Keypair;
-}): Promise<string> {
-  const { connection, userPubkey, ikawalletPda, amountLamports, payer } = options;
+  const transactionMessage = pipe(
+    createTransactionMessage({ version: 0 }),
+    (m) => setTransactionMessageFeePayerSigner(payer, m),
+    (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+    (m) =>
+      appendTransactionMessageInstruction(
+        {
+          programAddress: programId,
+          accounts: [
+            { address: gasDepositPda, role: 3 },
+            { address: payer.address, role: 3 },
+            { address: address('11111111111111111111111111111111'), role: 0 },
+          ],
+          data: instructionData,
+        },
+        m,
+      ),
+  );
+
+  const fullySignedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+  const { getBase64EncodedWireTransaction } = await import('@solana/transactions');
+  const wireTransaction = getBase64EncodedWireTransaction(fullySignedTransaction);
   
-  const [gasDepositPda] = getGasDepositPda(userPubkey);
-  
-  const instructionData = Buffer.alloc(35);
-  instructionData.writeUInt8(INSTRUCTION_SETTLE_GAS, 0);
-  instructionData.writeBigUInt64LE(BigInt(amountLamports), 3);
-  
-  const programId = new PublicKey(IKA_PROGRAM_ID);
-  
-  const settleIx = new TransactionInstruction({
-    programId,
-    keys: [
-      { pubkey: gasDepositPda, isSigner: false, isWritable: true },
-      { pubkey: ikawalletPda, isSigner: false, isWritable: true },
-      { pubkey: payer.publicKey, isSigner: true, isWritable: false },
-    ],
-    data: instructionData,
-  });
-  
-  const tx = new Transaction().add(settleIx);
-  const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
-  
-  return txSig;
+  return await rpc.sendTransaction(wireTransaction).send();
 }
 
 export async function requestWithdraw(options: {
-  connection: Connection;
+  rpc: Rpc<SolanaRpcApi>;
   userPubkey: Uint8Array;
-  recipient: PublicKey;
+  recipient: Address;
   amountLamports: bigint;
-  payer: Keypair;
+  payer: TransactionSigner;
 }): Promise<string> {
-  const { connection, userPubkey, recipient, amountLamports, payer } = options;
+  const { rpc, userPubkey, recipient, amountLamports, payer } = options;
   
-  const [gasDepositPda] = getGasDepositPda(userPubkey);
+  const [gasDepositPda] = await getGasDepositPda(userPubkey);
   
-  const instructionData = Buffer.alloc(67);
-  instructionData.writeUInt8(INSTRUCTION_REQUEST_WITHDRAW, 0);
-  instructionData.writeBigUInt64LE(BigInt(amountLamports), 3);
-  Buffer.from(recipient.toBytes()).copy(instructionData, 11);
-  
-  const programId = new PublicKey(IKA_PROGRAM_ID);
-  
-  const requestIx = new TransactionInstruction({
-    programId,
-    keys: [
-      { pubkey: gasDepositPda, isSigner: false, isWritable: true },
-      { pubkey: payer.publicKey, isSigner: true, isWritable: false },
-    ],
-    data: instructionData,
+  const { fixCodecSize } = await import('@solana/codecs');
+  const requestWithdrawIxCodec = getStructCodec([
+    ['discriminator', getU8Codec()],
+    ['padding', fixCodecSize(getBytesCodec(), 2)],
+    ['amount', getU64Codec()],
+    ['recipient', fixCodecSize(getBytesCodec(), 32)],
+  ]);
+
+  const { getAddressEncoder } = await import('@solana/addresses');
+  const instructionData = requestWithdrawIxCodec.encode({
+    discriminator: INSTRUCTION_REQUEST_WITHDRAW,
+    padding: new Uint8Array(2),
+    amount: BigInt(amountLamports),
+    recipient: getAddressEncoder().encode(recipient),
   });
   
-  const tx = new Transaction().add(requestIx);
-  const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
+  const programId = address(IKA_PROGRAM_ID);
   
-  return txSig;
+  const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+  const transactionMessage = pipe(
+    createTransactionMessage({ version: 0 }),
+    (m) => setTransactionMessageFeePayerSigner(payer, m),
+    (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+    (m) =>
+      appendTransactionMessageInstruction(
+        {
+          programAddress: programId,
+          accounts: [
+            { address: gasDepositPda, role: 3 },
+            { address: payer.address, role: 1 },
+          ],
+          data: instructionData,
+        },
+        m,
+      ),
+  );
+
+  const fullySignedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+  const { getBase64EncodedWireTransaction } = await import('@solana/transactions');
+  const wireTransaction = getBase64EncodedWireTransaction(fullySignedTransaction);
+  
+  return await rpc.sendTransaction(wireTransaction).send();
 }
 
 export async function withdrawGas(options: {
-  connection: Connection;
+  rpc: Rpc<SolanaRpcApi>;
   userPubkey: Uint8Array;
-  recipient: PublicKey;
+  recipient: Address;
   amountLamports: bigint;
-  payer: Keypair;
+  payer: TransactionSigner;
 }): Promise<string> {
-  const { connection, userPubkey, recipient, amountLamports, payer } = options;
+  const { rpc, userPubkey, recipient, amountLamports, payer } = options;
   
-  const [gasDepositPda] = getGasDepositPda(userPubkey);
+  const [gasDepositPda] = await getGasDepositPda(userPubkey);
   
-  const instructionData = Buffer.alloc(67);
-  instructionData.writeUInt8(INSTRUCTION_WITHDRAW, 0);
-  instructionData.writeBigUInt64LE(BigInt(amountLamports), 3);
-  Buffer.from(recipient.toBytes()).copy(instructionData, 11);
-  
-  const programId = new PublicKey(IKA_PROGRAM_ID);
-  
-  const withdrawIx = new TransactionInstruction({
-    programId,
-    keys: [
-      { pubkey: gasDepositPda, isSigner: false, isWritable: true },
-      { pubkey: recipient, isSigner: false, isWritable: true },
-      { pubkey: payer.publicKey, isSigner: true, isWritable: false },
-    ],
-    data: instructionData,
+  const { fixCodecSize } = await import('@solana/codecs');
+  const withdrawIxCodec = getStructCodec([
+    ['discriminator', getU8Codec()],
+    ['padding', fixCodecSize(getBytesCodec(), 2)],
+    ['amount', getU64Codec()],
+    ['recipient', fixCodecSize(getBytesCodec(), 32)],
+  ]);
+
+  const { getAddressEncoder } = await import('@solana/addresses');
+  const instructionData = withdrawIxCodec.encode({
+    discriminator: INSTRUCTION_WITHDRAW,
+    padding: new Uint8Array(2),
+    amount: BigInt(amountLamports),
+    recipient: getAddressEncoder().encode(recipient),
   });
   
-  const tx = new Transaction().add(withdrawIx);
-  const txSig = await sendAndConfirmTransaction(connection, tx, [payer]);
+  const programId = address(IKA_PROGRAM_ID);
   
-  return txSig;
+  const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+  const transactionMessage = pipe(
+    createTransactionMessage({ version: 0 }),
+    (m) => setTransactionMessageFeePayerSigner(payer, m),
+    (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+    (m) =>
+      appendTransactionMessageInstruction(
+        {
+          programAddress: programId,
+          accounts: [
+            { address: gasDepositPda, role: 3 },
+            { address: recipient, role: 3 },
+            { address: payer.address, role: 1 },
+          ],
+          data: instructionData,
+        },
+        m,
+      ),
+  );
+
+  const fullySignedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+  const { getBase64EncodedWireTransaction } = await import('@solana/transactions');
+  const wireTransaction = getBase64EncodedWireTransaction(fullySignedTransaction);
+  
+  return await rpc.sendTransaction(wireTransaction).send();
 }
 
-export async function readGasDepositBalance(connection: Connection, userPubkey: Uint8Array): Promise<{
+export async function readGasDepositBalance(rpc: Rpc<SolanaRpcApi>, userPubkey: Uint8Array): Promise<{
   ikaBalance: bigint;
   solBalance: bigint;
 }> {
-  const [gasDepositPda] = getGasDepositPda(userPubkey);
+  const [gasDepositPda] = await getGasDepositPda(userPubkey);
   
   try {
-    const accountInfo = await connection.getAccountInfo(gasDepositPda);
-    if (!accountInfo || accountInfo.data.length < GAS_DEPOSIT_LEN) {
+    const account = await fetchEncodedAccount(rpc, gasDepositPda);
+    if (!account.exists || account.data.length < GAS_DEPOSIT_LEN) {
       return { ikaBalance: 0n, solBalance: 0n };
     }
     
-    const data = Buffer.from(accountInfo.data);
+    const data = account.data;
     const discriminator = data[0];
     
     if (discriminator !== DISC_GAS_DEPOSIT) {
       return { ikaBalance: 0n, solBalance: 0n };
     }
     
-    const ikaBalance = data.readBigUInt64LE(IKA_BALANCE_OFFSET);
-    const solBalance = data.readBigUInt64LE(SOL_BALANCE_OFFSET);
+    const balanceCodec = getStructCodec([
+      ['ikaBalance', getU64Codec()],
+      ['solBalance', getU64Codec()],
+    ]);
     
-    return { ikaBalance, solBalance };
+    const balances = balanceCodec.decode(data.subarray(34, 50));
+    
+    return { ikaBalance: balances.ikaBalance, solBalance: balances.solBalance };
   } catch {
     return { ikaBalance: 0n, solBalance: 0n };
   }

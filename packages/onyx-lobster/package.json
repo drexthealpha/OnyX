@@ -1,46 +1,42 @@
 {
-    "name":  "@onyx/lobster",
-    "version":  "1.0.0",
-    "description":  "Typed deterministic pipeline DSL for ONYX",
-    "type":  "module",
-    "main":  "./dist/index.js",
-    "types":  "./dist/index.d.ts",
-    "scripts":  {
-                    "build":  "tsc",
-                    "test":  "vitest run"
-                },
-    "dependencies":  {
-                         "@onyx/kernel":  "workspace:*",
-                         "@solana/web3.js":  "^1.95.0",
-                         "@onyx/gateway":  "workspace:*",
-                         "@onyx/router":  "workspace:*",
-                         "@onyx/privacy":  "workspace:*",
-                         "@onyx/vault":  "workspace:*",
-                         "@onyx/mem":  "workspace:*",
-                         "@onyx/intel":  "workspace:*",
-                         "@onyx/research":  "workspace:*",
-                         "@onyx/content":  "workspace:*",
-                         "@onyx/browser":  "workspace:*",
-                         "@onyx/trading":  "workspace:*"
-                     },
-    "peerDependencies":  {
-
-                         },
-    "peerDependenciesMeta":  {
-
-                             },
-    "devDependencies":  {
-                            "typescript":  "^5.4.0",
-                            "@types/node":  "^20.0.0",
-                            "vitest":  "latest"
-                        },
-    "exports":  {
-                    ".":  {
-                              "types":  "./dist/index.d.ts",
-                              "import":  "./dist/index.js"
-                          }
-                },
-    "publishConfig":  {
-                          "access":  "public"
-                      }
+    "name": "@onyx/lobster",
+    "version": "1.0.0",
+    "description": "Typed deterministic pipeline DSL for ONYX",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "@onyx/browser": "workspace:*",
+        "@onyx/content": "workspace:*",
+        "@onyx/gateway": "workspace:*",
+        "@onyx/intel": "workspace:*",
+        "@onyx/kernel": "workspace:*",
+        "@onyx/mem": "workspace:*",
+        "@onyx/privacy": "workspace:*",
+        "@onyx/research": "workspace:*",
+        "@onyx/router": "workspace:*",
+        "@onyx/trading": "workspace:*",
+        "@onyx/vault": "workspace:*",
+        "@solana/kit": "latest",
+        "@solana/signers": "latest"
+    },
+    "peerDependenciesMeta": {},
+    "devDependencies": {
+        "@types/node": "^20.19.39",
+        "typescript": "^5.9.3",
+        "vitest": "latest"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "publishConfig": {
+        "access": "public"
+    }
 }

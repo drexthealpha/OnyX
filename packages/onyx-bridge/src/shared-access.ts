@@ -1,199 +1,248 @@
-// packages/onyx-bridge/src/shared-access.ts
-
-import { Connection, PublicKey, Keypair, Transaction, TransactionInstruction, sendAndConfirmTransaction, SystemProgram } from '@solana/web3.js';
+import { 
+  address, 
+  appendTransactionMessageInstruction, 
+  createSolanaRpc, 
+  createTransactionMessage, 
+  fetchEncodedAccount, 
+  pipe, 
+  setTransactionMessageFeePayerSigner, 
+  setTransactionMessageLifetimeUsingBlockhash,
+  signTransactionMessageWithSigners,
+  Address,
+  Rpc,
+  SolanaRpcApi,
+  TransactionSigner,
+  Instruction,
+  appendTransactionMessageInstructions,
+} from '@solana/kit';
+import { getStructCodec, getBytesCodec, getU8Codec, getI64Codec } from '@solana/codecs';
 import { SharedAccessOptions } from './types';
 
-export const SHARED_ACCESS_PREFIX = Buffer.from('shared_access');
+export const SHARED_ACCESS_PREFIX = 'shared_access';
 
 export class SharedAccessManager {
-  private connection: Connection;
-  private programId: PublicKey;
+  private rpc: Rpc<SolanaRpcApi>;
+  private programId: Address;
   
-  constructor(connection: Connection, programId: PublicKey) {
-    this.connection = connection;
+  constructor(rpc: Rpc<SolanaRpcApi>, programId: Address) {
+    this.rpc = rpc;
     this.programId = programId;
   }
   
-  static async grant(options: SharedAccessOptions): Promise<string> {
-    const { owner, grantee, connection, durationSeconds, maxAmountLamports } = options;
+  static async grant(options: SharedAccessOptions & { payer: TransactionSigner }): Promise<string> {
+    const { owner, grantee, rpc, durationSeconds, maxAmountLamports, payer } = options;
     
-    const programId = new PublicKey('87W54kGYFQ1rgWqMeu4XTPHWXWmXSQCcjm8vCTfiq1oY');
+    const programId = address('87W54kGYFQ1rgWqMeu4XTPHWXWmXSQCcjm8vCTfiq1oY');
     
-    const seeds = [
-      SHARED_ACCESS_PREFIX,
-      Buffer.from(owner.toBytes()),
-      Buffer.from(grantee.toBytes()),
-    ];
-    const [pda] = PublicKey.findProgramAddressSync(seeds, programId);
+    const { getProgramDerivedAddress, getAddressEncoder } = await import('@solana/addresses');
+    const [pda] = await getProgramDerivedAddress({
+      programAddress: programId,
+      seeds: [
+        new TextEncoder().encode(SHARED_ACCESS_PREFIX),
+        getAddressEncoder().encode(owner),
+        getAddressEncoder().encode(grantee),
+      ],
+    });
     
     const duration = durationSeconds || 86400;
     const maxAmount = maxAmountLamports || 0n;
     const expiry = BigInt(Math.floor(Date.now() / 1000) + duration);
     
-    const instructionData = Buffer.alloc(50);
-    instructionData.writeUInt8(100, 0);
-    instructionData.writeBigInt64LE(expiry, 1);
-    instructionData.writeBigInt64LE(maxAmount, 9);
-    instructionData.writeUInt8(1, 17);
-    
-    const grantIx = new TransactionInstruction({
-      programId,
-      keys: [
-        { pubkey: pda, isSigner: false, isWritable: true },
-        { pubkey: owner, isSigner: true, isWritable: false },
-        { pubkey: grantee, isSigner: false, isWritable: false },
-        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-      ],
-      data: instructionData,
+    const grantIxCodec = getStructCodec([
+      ['discriminator', getU8Codec()],
+      ['expiry', getI64Codec()],
+      ['maxAmount', getI64Codec()],
+      ['active', getU8Codec()],
+    ]);
+
+    const instructionData = grantIxCodec.encode({
+      discriminator: 100,
+      expiry,
+      maxAmount,
+      active: 1,
     });
     
-    const tx = new Transaction().add(grantIx);
-    const payer = Keypair.generate();
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+    const transactionMessage = pipe(
+      createTransactionMessage({ version: 0 }),
+      (m) => setTransactionMessageFeePayerSigner(payer, m),
+      (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+      (m) =>
+        appendTransactionMessageInstruction(
+          {
+            programAddress: programId,
+            accounts: [
+              { address: pda, role: 3 },
+              { address: owner, role: 1 },
+              { address: grantee, role: 0 },
+              { address: address('11111111111111111111111111111111'), role: 0 },
+            ],
+            data: instructionData,
+          },
+          m,
+        ),
+    );
+
+    const fullySignedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+    const { getBase64EncodedWireTransaction } = await import('@solana/transactions');
+    const wireTransaction = getBase64EncodedWireTransaction(fullySignedTransaction);
     
-    return await sendAndConfirmTransaction(connection, tx, [payer]);
+    return await rpc.sendTransaction(wireTransaction).send();
   }
   
   static async revoke(options: {
-    owner: PublicKey;
-    grantee: PublicKey;
-    connection: Connection;
+    owner: Address;
+    grantee: Address;
+    rpc: Rpc<SolanaRpcApi>;
+    payer: TransactionSigner;
   }): Promise<string> {
-    const { owner, grantee, connection } = options;
+    const { owner, grantee, rpc, payer } = options;
     
-    const programId = new PublicKey('87W54kGYFQ1rgWqMeu4XTPHWXWmXSQCcjm8vCTfiq1oY');
+    const programId = address('87W54kGYFQ1rgWqMeu4XTPHWXWmXSQCcjm8vCTfiq1oY');
     
-    const seeds = [
-      SHARED_ACCESS_PREFIX,
-      Buffer.from(owner.toBytes()),
-      Buffer.from(grantee.toBytes()),
-    ];
-    const [pda] = PublicKey.findProgramAddressSync(seeds, programId);
-    
-    const instructionData = Buffer.alloc(1);
-    instructionData.writeUInt8(101, 0);
-    
-    const revokeIx = new TransactionInstruction({
-      programId,
-      keys: [
-        { pubkey: pda, isSigner: false, isWritable: true },
-        { pubkey: owner, isSigner: true, isWritable: false },
+    const { getProgramDerivedAddress, getAddressEncoder } = await import('@solana/addresses');
+    const [pda] = await getProgramDerivedAddress({
+      programAddress: programId,
+      seeds: [
+        new TextEncoder().encode(SHARED_ACCESS_PREFIX),
+        getAddressEncoder().encode(owner),
+        getAddressEncoder().encode(grantee),
       ],
-      data: instructionData,
     });
     
-    const tx = new Transaction().add(revokeIx);
-    const payer = Keypair.generate();
+    const instructionData = new Uint8Array([101]);
     
-    return await sendAndConfirmTransaction(connection, tx, [payer]);
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+    const transactionMessage = pipe(
+      createTransactionMessage({ version: 0 }),
+      (m) => setTransactionMessageFeePayerSigner(payer, m),
+      (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+      (m) =>
+        appendTransactionMessageInstruction(
+          {
+            programAddress: programId,
+            accounts: [
+              { address: pda, role: 3 },
+              { address: owner, role: 1 },
+            ],
+            data: instructionData,
+          },
+          m,
+        ),
+    );
+
+    const fullySignedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+    const { getBase64EncodedWireTransaction } = await import('@solana/transactions');
+    const wireTransaction = getBase64EncodedWireTransaction(fullySignedTransaction);
+    
+    return await rpc.sendTransaction(wireTransaction).send();
   }
   
   static async checkAccess(options: {
-    owner: PublicKey;
-    grantee: PublicKey;
-    connection: Connection;
+    owner: Address;
+    grantee: Address;
+    rpc: Rpc<SolanaRpcApi>;
   }): Promise<{ hasAccess: boolean; expiry: bigint; maxAmount: bigint }> {
-    const { owner, grantee, connection } = options;
+    const { owner, grantee, rpc } = options;
     
-    const programId = new PublicKey('87W54kGYFQ1rgWqMeu4XTPHWXWmXSQCcjm8vCTfiq1oY');
+    const programId = address('87W54kGYFQ1rgWqMeu4XTPHWXWmXSQCcjm8vCTfiq1oY');
     
-    const seeds = [
-      SHARED_ACCESS_PREFIX,
-      Buffer.from(owner.toBytes()),
-      Buffer.from(grantee.toBytes()),
-    ];
-    const [pda] = PublicKey.findProgramAddressSync(seeds, programId);
+    const { getProgramDerivedAddress, getAddressEncoder } = await import('@solana/addresses');
+    const [pda] = await getProgramDerivedAddress({
+      programAddress: programId,
+      seeds: [
+        new TextEncoder().encode(SHARED_ACCESS_PREFIX),
+        getAddressEncoder().encode(owner),
+        getAddressEncoder().encode(grantee),
+      ],
+    });
     
     try {
-      const accountInfo = await connection.getAccountInfo(pda);
-      if (!accountInfo || accountInfo.data.length < 25) {
+      const account = await fetchEncodedAccount(rpc, pda);
+      if (!account.exists || account.data.length < 25) {
         return { hasAccess: false, expiry: 0n, maxAmount: 0n };
       }
       
-      const data = Buffer.from(accountInfo.data);
+      const data = account.data;
       const discriminator = data[0];
       
       if (discriminator !== 100) {
         return { hasAccess: false, expiry: 0n, maxAmount: 0n };
       }
       
-      const expiry = data.readBigInt64LE(1);
+      const accessCodec = getStructCodec([
+        ['expiry', getI64Codec()],
+        ['maxAmount', getI64Codec()],
+      ]);
+      
+      const decoded = accessCodec.decode(data.subarray(1, 17));
       const currentTime = BigInt(Math.floor(Date.now() / 1000));
       
-      if (expiry <= currentTime) {
-        return { hasAccess: false, expiry, maxAmount: 0n };
+      if (decoded.expiry <= currentTime) {
+        return { hasAccess: false, expiry: decoded.expiry, maxAmount: 0n };
       }
       
-      const maxAmount = data.readBigInt64LE(9);
-      
-      return { hasAccess: true, expiry, maxAmount };
+      return { hasAccess: true, expiry: decoded.expiry, maxAmount: decoded.maxAmount };
     } catch {
       return { hasAccess: false, expiry: 0n, maxAmount: 0n };
     }
   }
   
   static async executeWithSharedAccess(options: {
-    owner: PublicKey;
-    grantee: PublicKey;
-    connection: Connection;
-    instructions: TransactionInstruction[];
+    owner: Address;
+    grantee: Address;
+    rpc: Rpc<SolanaRpcApi>;
+    instructions: Instruction[];
+    payer: TransactionSigner;
   }): Promise<string> {
-    const { owner, grantee, connection, instructions } = options;
+    const { owner, grantee, rpc, instructions, payer } = options;
     
     const access = await SharedAccessManager.checkAccess({
       owner,
       grantee,
-      connection,
+      rpc,
     });
     
     if (!access.hasAccess) {
       throw new Error('Shared access not granted or expired');
     }
     
-    const tx = new Transaction();
-    for (const ix of instructions) {
-      tx.add(ix);
-    }
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
+
+    const transactionMessage = pipe(
+      createTransactionMessage({ version: 0 }),
+      (m) => setTransactionMessageFeePayerSigner(payer, m),
+      (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+      (m) => appendTransactionMessageInstructions(instructions, m)
+    );
+
+    const fullySignedTransaction = await signTransactionMessageWithSigners(transactionMessage);
+    const { getBase64EncodedWireTransaction } = await import('@solana/transactions');
+    const wireTransaction = getBase64EncodedWireTransaction(fullySignedTransaction);
     
-    const payer = Keypair.generate();
-    
-    return await sendAndConfirmTransaction(connection, tx, [payer]);
-  }
-  
-  static async delegateAccess(options: {
-    fromGrantor: PublicKey;
-    toGrantee: PublicKey;
-    connection: Connection;
-    maxAmount: bigint;
-    durationSeconds: number;
-  }): Promise<string> {
-    const { fromGrantor, toGrantee, connection, maxAmount, durationSeconds } = options;
-    
-    return SharedAccessManager.grant({
-      owner: fromGrantor,
-      grantee: toGrantee,
-      connection,
-      maxAmountLamports: maxAmount,
-      durationSeconds,
-    });
+    return await rpc.sendTransaction(wireTransaction).send();
   }
 }
 
-export async function grantSharedAccess(options: SharedAccessOptions): Promise<string> {
+export async function grantSharedAccess(options: SharedAccessOptions & { rpc: Rpc<SolanaRpcApi>; payer: TransactionSigner }): Promise<string> {
   return SharedAccessManager.grant(options);
 }
 
 export async function revokeSharedAccess(options: {
-  owner: PublicKey;
-  grantee: PublicKey;
-  connection: Connection;
+  owner: Address;
+  grantee: Address;
+  rpc: Rpc<SolanaRpcApi>;
+  payer: TransactionSigner;
 }): Promise<string> {
   return SharedAccessManager.revoke(options);
 }
 
 export async function checkSharedAccess(options: {
-  owner: PublicKey;
-  grantee: PublicKey;
-  connection: Connection;
+  owner: Address;
+  grantee: Address;
+  rpc: Rpc<SolanaRpcApi>;
 }): Promise<{ hasAccess: boolean; expiry: bigint; maxAmount: bigint }> {
   return SharedAccessManager.checkAccess(options);
 }

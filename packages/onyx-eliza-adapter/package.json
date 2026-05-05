@@ -1,43 +1,43 @@
 {
-    "name":  "@onyx/eliza-adapter",
-    "version":  "1.0.0",
-    "description":  "ONYX ↔ ElizaOS adapter bridge — maps ConversationTelemetry to ElizaOS Memory and vice versa",
-    "type":  "module",
-    "main":  "./dist/index.js",
-    "types":  "./dist/index.d.ts",
-    "exports":  {
-                    ".":  {
-                              "import":  "./dist/index.js",
-                              "types":  "./dist/index.d.ts"
-                          }
-                },
-    "scripts":  {
-                    "build":  "tsc -p tsconfig.json",
-                    "test":  "vitest run",
-                    "typecheck":  "tsc --noEmit"
-                },
-    "dependencies":  {
-                         "@onyx/kernel":  "workspace:*",
-                         "@onyx/multica":  "workspace:*"
-                     },
-    "peerDependencies":  {
-                             "@onyx/agent":  "workspace:*"
-                         },
-    "devDependencies":  {
-                            "@types/bun":  "latest",
-                            "typescript":  "^5.4.0",
-                            "vitest":  "latest"
-                        },
-    "keywords":  [
-                     "onyx",
-                     "eliza",
-                     "elizaos",
-                     "adapter",
-                     "memory",
-                     "telemetry"
-                 ],
-    "license":  "MIT",
-    "publishConfig":  {
-                          "access":  "public"
-                      }
+    "name": "@onyx/eliza-adapter",
+    "version": "1.0.0",
+    "description": "ONYX ↔ ElizaOS adapter bridge — maps ConversationTelemetry to ElizaOS Memory and vice versa",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "test": "vitest run",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@onyx/kernel": "workspace:*",
+        "@onyx/multica": "workspace:*"
+    },
+    "peerDependencies": {
+        "@onyx/agent": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "typescript": "^5.9.3",
+        "vitest": "latest"
+    },
+    "keywords": [
+        "onyx",
+        "eliza",
+        "elizaos",
+        "adapter",
+        "memory",
+        "telemetry"
+    ],
+    "license": "MIT",
+    "publishConfig": {
+        "access": "public"
+    }
 }

@@ -1,33 +1,33 @@
 {
-    "name":  "@onyx/seo",
-    "version":  "1.0.0",
-    "type":  "module",
-    "main":  "./dist/index.js",
-    "types":  "./dist/index.d.ts",
-    "scripts":  {
-                    "build":  "tsc -p tsconfig.json",
-                    "test":  "vitest run"
-                },
-    "dependencies":  {
-                         "zod":  "^3.22.0"
-                     },
-    "peerDependencies":  {
-                             "@anthropic-ai/sdk":  "^0.20.0",
-                             "@onyx/router":  "workspace:*",
-                             "@onyx/intel":  "workspace:*"
-                         },
-    "devDependencies":  {
-                            "@types/bun":  "latest",
-                            "typescript":  "^5.3.0",
-                            "vitest":  "latest"
-                        },
-    "exports":  {
-                    ".":  {
-                              "types":  "./dist/index.d.ts",
-                              "import":  "./dist/index.js"
-                          }
-                },
-    "publishConfig":  {
-                          "access":  "public"
-                      }
+    "name": "@onyx/seo",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "zod": "^4.4.3"
+    },
+    "peerDependencies": {
+        "@anthropic-ai/sdk": "^0.20.0",
+        "@onyx/intel": "workspace:*",
+        "@onyx/router": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "typescript": "^5.9.3",
+        "vitest": "latest"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "publishConfig": {
+        "access": "public"
+    }
 }

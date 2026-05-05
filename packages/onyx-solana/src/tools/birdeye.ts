@@ -94,7 +94,7 @@ export const getTopHoldersTool: MCPTool = {
     const items = res.data?.data?.items ?? [];
     return {
       address,
-      holders: items.map((item: unknown) => ({
+      holders: items.map((item: { owner: string; amount: string; ui_amount: string }) => ({
         owner: item.owner,
         amount: item.amount,
         uiAmount: item.ui_amount,

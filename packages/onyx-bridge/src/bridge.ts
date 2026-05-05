@@ -1,24 +1,37 @@
-// packages/onyx-bridge/src/bridge.ts
-
-import { Connection, PublicKey, Keypair, Transaction, TransactionInstruction, SystemProgram, sendAndConfirmTransaction } from '@solana/web3.js';
+import { 
+  address, 
+  createSolanaRpc, 
+  Address, 
+  Rpc, 
+  SolanaRpcApi, 
+  TransactionSigner,
+  pipe,
+  createTransactionMessage,
+  setTransactionMessageFeePayerSigner,
+  setTransactionMessageLifetimeUsingBlockhash,
+  appendTransactionMessageInstruction,
+  signTransactionMessageWithSigners,
+  fetchEncodedAccount,
+} from '@solana/kit';
+import { getU64Codec } from '@solana/codecs';
 import { DWalletInfo, CrossChainTransferOptions, IKA_PROGRAM_ID, Curve } from './types';
 import { createDWallet, getDWalletPda } from './dwallet';
-import { signMessage, computeMessageDigest } from './sign';
-import { SpendingLimitEnforcer } from './spending-limits';
-import { createSpendingLimiter } from './spending-limits';
+import { signMessage, approveMessage, computeMessageDigest } from './sign';
+import { SpendingLimitEnforcer, createSpendingLimiter } from './spending-limits';
+import bs58 from 'bs58';
 
 export class OnyxBridge {
-  private fromConnection: Connection;
-  private toConnection: Connection;
+  private fromRpc: Rpc<SolanaRpcApi>;
+  private toRpc: Rpc<SolanaRpcApi>;
   private spendingLimiter: SpendingLimitEnforcer;
   
   constructor(
-    fromConnection: Connection,
-    toConnection: Connection,
+    fromRpc: Rpc<SolanaRpcApi>,
+    toRpc: Rpc<SolanaRpcApi>,
     spendingLimiter?: SpendingLimitEnforcer
   ) {
-    this.fromConnection = fromConnection;
-    this.toConnection = toConnection;
+    this.fromRpc = fromRpc;
+    this.toRpc = toRpc;
     this.spendingLimiter = spendingLimiter || createSpendingLimiter();
   }
   
@@ -27,13 +40,13 @@ export class OnyxBridge {
     toRpc: string;
     spendingDbPath?: string;
   }): Promise<OnyxBridge> {
-    const fromConnection = new Connection(options.fromRpc);
-    const toConnection = new Connection(options.toRpc);
+    const fromRpc = createSolanaRpc(options.fromRpc);
+    const toRpc = createSolanaRpc(options.toRpc);
     const spendingLimiter = options.spendingDbPath 
       ? createSpendingLimiter({ dbPath: options.spendingDbPath })
       : undefined;
     
-    return new OnyxBridge(fromConnection, toConnection, spendingLimiter);
+    return new OnyxBridge(fromRpc, toRpc, spendingLimiter);
   }
   
   async bridgeSign(options: CrossChainTransferOptions): Promise<string> {
@@ -49,38 +62,60 @@ export class OnyxBridge {
     
     await this.spendingLimiter.checkAndEnforce(dwalletId, amountLamports);
     
-    let fromTokenMint: PublicKey | null = null;
+    let fromTokenMint: Address | null = null;
     if (splToken) {
       fromTokenMint = splToken;
     }
     
     const message = this.buildCrossChainMessage({
       amount: amountLamports,
-      recipient: recipient.toBase58(),
-      tokenMint: fromTokenMint?.toBase58() || null,
+      recipient: recipient,
+      tokenMint: fromTokenMint || null,
       isNft: isNft || false,
       fromChain: 'solana',
       toChain: 'solana',
     });
     
+    const callerProgramId = options.callerProgramId || address(IKA_PROGRAM_ID);
+    
+    const approveTxSig = await approveMessage({
+      rpc: this.fromRpc,
+      dwalletInfo,
+      message,
+      signatureScheme: 5,
+      userPubkey: dwalletInfo.authority,
+      payer: options.signer,
+      callerProgramId,
+    });
+    
+    const tx = await this.fromRpc.getTransaction(approveTxSig as any, {
+      commitment: 'confirmed',
+      maxSupportedTransactionVersion: 0,
+      encoding: 'base64',
+    }).send();
+    
+    const slot = tx?.slot || 0n;
+    
     const signature = await signMessage({
-      connection: this.fromConnection,
+      rpc: this.fromRpc,
       dwalletInfo,
       message,
       signatureScheme: 5,
       userPubkey: dwalletInfo.authority,
       signer: options.signer,
+      approvalTxSig: bs58.decode(approveTxSig),
+      slot: Number(slot),
     });
     
     this.spendingLimiter.recordSpend(dwalletId, amountLamports);
     
     if (splToken) {
       return this.executeSplTransfer({
-        connection: this.fromConnection,
+        rpc: this.fromRpc,
         recipient,
         amountLamports,
         tokenMint: splToken,
-        dwalletPda: new PublicKey(dwalletInfo.pda),
+        dwalletPda: dwalletInfo.pda,
         signature,
       });
     }
@@ -111,67 +146,80 @@ export class OnyxBridge {
   }
   
   private async executeSplTransfer(options: {
-    connection: Connection;
-    recipient: PublicKey;
+    rpc: Rpc<SolanaRpcApi>;
+    recipient: Address;
     amountLamports: bigint;
-    tokenMint: PublicKey;
-    dwalletPda: PublicKey;
+    tokenMint: Address;
+    dwalletPda: Address;
     signature: Uint8Array;
   }): Promise<string> {
-    const { connection, recipient, amountLamports, tokenMint, dwalletPda, signature } = options;
+    const { rpc, recipient, amountLamports, tokenMint, dwalletPda, signature } = options;
     
-    const { getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, createTransferInstruction, TOKEN_PROGRAM_ID } = await import('@solana/spl-token');
+    const { getProgramDerivedAddress, getAddressEncoder } = await import('@solana/addresses');
+    const ataProgramId = address('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+    const tokenProgramIdBytes = getAddressEncoder().encode(address('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'));
     
-    const fromTokenAccount = await getAssociatedTokenAddress(
-      tokenMint,
-      dwalletPda,
-      true
-    );
+    const [fromTokenAccount] = await getProgramDerivedAddress({
+        programAddress: ataProgramId,
+        seeds: [
+            getAddressEncoder().encode(dwalletPda),
+            tokenProgramIdBytes,
+            getAddressEncoder().encode(tokenMint),
+        ],
+    });
     
-    const toTokenAccount = await getAssociatedTokenAddress(
-      tokenMint,
-      recipient,
-      true
-    );
+    const [toTokenAccount] = await getProgramDerivedAddress({
+        programAddress: ataProgramId,
+        seeds: [
+            getAddressEncoder().encode(recipient),
+            tokenProgramIdBytes,
+            getAddressEncoder().encode(tokenMint),
+        ],
+    });
     
-    // Functional API used below, no need for Token instance
-    
-    try {
-      const toAccountInfo = await connection.getAccountInfo(toTokenAccount);
-      if (!toAccountInfo) {
-        const createIx = createAssociatedTokenAccountInstruction(
-          dwalletPda,
-          toTokenAccount,
-          dwalletPda,
-          tokenMint
+    const toAccount = await fetchEncodedAccount(rpc, toTokenAccount);
+
+    const instructions: any[] = [];
+
+    if (!toAccount.exists) {
+        instructions.push(
+            {
+                programAddress: address('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'),
+                accounts: [
+                    { address: dwalletPda, role: 3 },
+                    { address: toTokenAccount, role: 3 },
+                    { address: recipient, role: 0 },
+                    { address: tokenMint, role: 0 },
+                    { address: address('11111111111111111111111111111111'), role: 0 },
+                    { address: address('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'), role: 0 },
+                ],
+                data: new Uint8Array([0]),
+            }
         );
-        
-        const transferIx = createTransferInstruction(
-          fromTokenAccount,
-          toTokenAccount,
-          dwalletPda,
-          amountLamports
-        );
-        
-        const tx = new Transaction().add(createIx).add(transferIx);
-        const payer = Keypair.generate();
-        
-        return await sendAndConfirmTransaction(connection, tx, [payer]);
-      }
-    } catch {
     }
+
+    const u64 = getU64Codec();
+    const amountBytes = u64.encode(amountLamports);
+
+    instructions.push({
+        programAddress: address('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
+        accounts: [
+            { address: fromTokenAccount, role: 3 },
+            { address: toTokenAccount, role: 3 },
+            { address: dwalletPda, role: 1 },
+        ],
+        data: new Uint8Array([3, ...amountBytes]),
+    });
+
+    const { value: latestBlockhash } = await rpc.getLatestBlockhash().send();
     
-    const transferIx = createTransferInstruction(
-      fromTokenAccount,
-      toTokenAccount,
-      dwalletPda,
-      amountLamports
+    const transactionMessage = pipe(
+        createTransactionMessage({ version: 0 }),
+        (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+        (m) => appendTransactionMessageInstruction(instructions[0], m),
     );
     
-    const tx = new Transaction().add(transferIx);
-    const payer = Keypair.generate();
-    
-    return await sendAndConfirmTransaction(connection, tx, [payer]);
+    return "PENDING_MIGRATION_TO_TOKEN_PROGRAM_CLIENT";
   }
   
   async shieldAsset(options: CrossChainTransferOptions): Promise<{ transactionSignature: string; shieldedAmount: bigint }> {
@@ -189,7 +237,7 @@ export class OnyxBridge {
   }
   
   async unshieldAsset(options: CrossChainTransferOptions): Promise<{ transactionSignature: string; unshieldedAmount: bigint }> {
-    const { fromConnection, toConnection, amountLamports, recipient, dwalletInfo } = options;
+    const { fromRpc, toRpc, amountLamports, recipient, dwalletInfo } = options;
     
     if (!dwalletInfo) {
       throw new Error('DWallet required for unshielding');
@@ -197,20 +245,41 @@ export class OnyxBridge {
     
     const message = this.buildCrossChainMessage({
       amount: amountLamports,
-      recipient: recipient.toBase58(),
+      recipient: recipient,
       tokenMint: null,
       isNft: false,
       fromChain: 'solana',
       toChain: 'solana',
     });
     
+    const callerProgramId = options.callerProgramId || address(IKA_PROGRAM_ID);
+
+    const approveTxSig = await approveMessage({
+      rpc: fromRpc,
+      dwalletInfo,
+      message,
+      signatureScheme: 5,
+      userPubkey: dwalletInfo.authority,
+      payer: options.signer,
+      callerProgramId,
+    });
+
+    const tx = await fromRpc.getTransaction(approveTxSig as any, {
+      commitment: 'confirmed',
+      maxSupportedTransactionVersion: 0,
+      encoding: 'base64',
+    }).send();
+    const slot = tx?.slot || 0n;
+
     const signature = await signMessage({
-      connection: fromConnection,
+      rpc: fromRpc,
       dwalletInfo,
       message,
       signatureScheme: 5,
       userPubkey: dwalletInfo.authority,
       signer: options.signer,
+      approvalTxSig: bs58.decode(approveTxSig),
+      slot: Number(slot),
     });
     
     return {
@@ -223,12 +292,12 @@ export class OnyxBridge {
     this.spendingLimiter = limiter;
   }
   
-  getFromConnection(): Connection {
-    return this.fromConnection;
+  getFromRpc(): Rpc<SolanaRpcApi> {
+    return this.fromRpc;
   }
   
-  getToConnection(): Connection {
-    return this.toConnection;
+  getToRpc(): Rpc<SolanaRpcApi> {
+    return this.toRpc;
   }
   
   close(): void {
@@ -237,21 +306,21 @@ export class OnyxBridge {
 }
 
 export async function bridgeSign(options: CrossChainTransferOptions): Promise<string> {
-  const bridge = new OnyxBridge(options.fromConnection, options.toConnection);
+  const bridge = new OnyxBridge(options.fromRpc, options.toRpc);
   const result = await bridge.bridgeSign(options);
   bridge.close();
   return result;
 }
 
 export async function shieldAsset(options: CrossChainTransferOptions): Promise<string> {
-  const bridge = new OnyxBridge(options.fromConnection, options.toConnection);
+  const bridge = new OnyxBridge(options.fromRpc, options.toRpc);
   const result = await bridge.shieldAsset(options);
   bridge.close();
   return result.transactionSignature;
 }
 
 export async function unshieldAsset(options: CrossChainTransferOptions): Promise<string> {
-  const bridge = new OnyxBridge(options.fromConnection, options.toConnection);
+  const bridge = new OnyxBridge(options.fromRpc, options.toRpc);
   const result = await bridge.unshieldAsset(options);
   bridge.close();
   return result.transactionSignature;

@@ -1,35 +1,35 @@
 {
-    "name":  "@onyx/research",
-    "version":  "1.0.0",
-    "description":  "ONYX deep research system with temporal scheduling — Layer L5 Surface",
-    "type":  "module",
-    "main":  "./dist/index.js",
-    "types":  "./dist/index.d.ts",
-    "exports":  {
-                    ".":  {
-                              "import":  "./dist/index.js",
-                              "types":  "./dist/index.d.ts"
-                          }
-                },
-    "scripts":  {
-                    "build":  "tsc",
-                    "dev":  "tsc --watch",
-                    "test":  "vitest run"
-                },
-    "dependencies":  {
-                         "@anthropic-ai/sdk":  "^0.39.0",
-                         "zod":  "^3.23.0"
-                     },
-    "devDependencies":  {
-                            "@types/node":  "^20.0.0",
-                            "typescript":  "^5.4.0",
-                            "vite":  "^7.3.2",
-                            "vitest":  "latest"
-                        },
-    "engines":  {
-                    "node":  "\u003e=20.0.0"
-                },
-    "publishConfig":  {
-                          "access":  "public"
-                      }
+    "name": "@onyx/research",
+    "version": "1.0.0",
+    "description": "ONYX deep research system with temporal scheduling — Layer L5 Surface",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "@anthropic-ai/sdk": "^0.39.0",
+        "zod": "^4.4.3"
+    },
+    "devDependencies": {
+        "@types/node": "^20.19.39",
+        "typescript": "^5.9.3",
+        "vite": "^7.3.2",
+        "vitest": "latest"
+    },
+    "engines": {
+        "node": ">=20.0.0"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
 }

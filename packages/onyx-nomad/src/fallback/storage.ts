@@ -79,13 +79,16 @@ export function searchOffline(
       )
       .all(query, collection) as unknown[];
 
-    return rows.map((row: unknown) => ({
-      id: row.id,
-      collection: row.collection,
-      content: row.content,
-      // FTS5 rank is negative (lower = better). Normalise to 0–1 score.
-      score: Math.max(0, 1 + (row.rank || 0) / 10),
-    }));
+    return rows.map((r: unknown) => {
+      const row = r as { id: string, collection: string, content: string, rank: number };
+      return {
+        id: row.id,
+        collection: row.collection,
+        content: row.content,
+        // FTS5 rank is negative (lower = better). Normalise to 0–1 score.
+        score: Math.max(0, 1 + (row.rank || 0) / 10),
+      };
+    });
   } catch {
     return [];
   }

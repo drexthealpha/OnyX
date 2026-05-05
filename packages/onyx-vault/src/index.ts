@@ -11,7 +11,7 @@ export type { Wallet, WalletConfig, AbortedOperation } from "./types.js";
 
 export async function getBalance() {
   const { createWallet } = await import("./wallet.js");
-  const wallet = createWallet();
+  const wallet = await createWallet();
   const lamports = await wallet.getBalance();
   return {
     sol: Number(lamports) / 1e9,
@@ -21,13 +21,13 @@ export async function getBalance() {
 
 export async function getPublicKey() {
   const { createWallet } = await import("./wallet.js");
-  const wallet = createWallet();
+  const wallet = await createWallet();
   return wallet.getPublicKey();
 }
 
 export async function signTransaction(txData: Uint8Array) {
   const { createWallet } = await import("./wallet.js");
-  const wallet = createWallet();
+  const wallet = await createWallet();
   return wallet.sign(txData);
 }
 
@@ -36,7 +36,7 @@ export async function signTransaction(txData: Uint8Array) {
  */
 export async function getTransactionHistory(address?: string) {
   const { createWallet } = await import("./wallet.js");
-  const wallet = createWallet();
+  const wallet = await createWallet();
   const pubkey = address || wallet.getPublicKey();
   
   const key = process.env.HELIUS_API_KEY;

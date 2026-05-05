@@ -3,6 +3,8 @@ import type { UmbraClient } from './client.js';
 import { createSelfClaimableUtxoFromPublicBalance } from './utxo-create.js';
 import { scanUTXOs } from './utxo-scan.js';
 import { claimSelfClaimableToEncryptedBalance } from './utxo-claim.js';
+import { getZkProvers } from './zk-prover.js';
+import { getUmbraRelayer } from '@umbra-privacy/sdk';
 
 function generateRandomBytes(length: number): Uint8Array {
   const bytes = new Uint8Array(length);
@@ -30,11 +32,13 @@ export async function issueGiftCard(
   const claimSecret = generateRandomBytes(32);
   const claimCode = bytesToHex(claimSecret);
   
-  const destinationAddress = claimCode as Address;
+  const destinationAddress = claimCode as unknown as Address;
+  
+  const provers = await getZkProvers();
   
   const signatures = await createSelfClaimableUtxoFromPublicBalance(
     client,
-    null as unknown as unknown,
+    provers.createSelfClaimableUtxoFromPublicBalance,
     {
       destinationAddress,
       mint,
@@ -69,10 +73,15 @@ export async function claimGiftCard(
     };
   }
 
+  const provers = await getZkProvers();
+  const relayer = getUmbraRelayer({
+    apiEndpoint: 'https://relayer.api.umbraprivacy.com',
+  });
+
   return claimSelfClaimableToEncryptedBalance(
     client,
-    null as unknown as unknown,
-    null as unknown as unknown,
+    provers.claimSelfClaimableToEncryptedBalance,
+    relayer,
     matchingUtxos as unknown as Array<{ [key: string]: unknown }>,
   );
 }

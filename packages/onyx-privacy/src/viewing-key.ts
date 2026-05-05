@@ -1,47 +1,35 @@
-import type { Address } from './types.js';
+import {
+  getMasterViewingKeyDeriver,
+  getMintViewingKeyDeriver,
+  getYearlyViewingKeyDeriver,
+  getMonthlyViewingKeyDeriver,
+  getDailyViewingKeyDeriver,
+} from '@umbra-privacy/sdk';
+import type { Address } from '@solana/kit';
+import type { Year, Month, Day } from '@umbra-privacy/sdk/types';
+import type { UmbraClient } from './client.js';
 
-function poseidonHash(...inputs: (string | number | bigint)[]): string {
-  const data = inputs.map(String).join('|');
-  let hash = 0;
-  for (let i = 0; i < data.length; i++) {
-    const char = data.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  const hex = Math.abs(hash).toString(16).padStart(16, '0');
-  const second = data.length * 31 + data.charCodeAt(0);
-  const secondHex = Math.abs(second).toString(16).padStart(16, '0');
-  return '0x' + hex + secondHex + hex.slice(0, 16);
+export async function deriveMVK(client: UmbraClient): Promise<bigint> {
+  const deriver = getMasterViewingKeyDeriver({ client });
+  return deriver();
 }
 
-export function deriveMVK(wallet: { publicKey: Uint8Array }): string {
-  const pubkeyHex = Array.from(wallet.publicKey)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-  return poseidonHash('mvk', pubkeyHex);
+export async function deriveMintKey(client: UmbraClient, mint: Address): Promise<bigint> {
+  const deriver = getMintViewingKeyDeriver({ client });
+  return deriver(mint);
 }
 
-export function deriveMintKey(mvk: string, mint: Address): string {
-  return poseidonHash('mint', mvk, mint);
+export async function deriveYearlyKey(client: UmbraClient, mint: Address, year: number): Promise<bigint> {
+  const deriver = getYearlyViewingKeyDeriver({ client });
+  return deriver(mint, year as Year);
 }
 
-export function deriveYearlyKey(mintKey: string, year: number): string {
-  if (year < 2000 || year > 9999) {
-    throw new RangeError('[onyx-privacy] deriveYearlyKey: year must be between 2000 and 9999');
-  }
-  return poseidonHash('yearly', mintKey, year);
+export async function deriveMonthlyKey(client: UmbraClient, mint: Address, year: number, month: number): Promise<bigint> {
+  const deriver = getMonthlyViewingKeyDeriver({ client });
+  return deriver(mint, year as Year, month as Month);
 }
 
-export function deriveMonthlyKey(yearlyKey: string, month: number): string {
-  if (month < 1 || month > 12) {
-    throw new RangeError('[onyx-privacy] deriveMonthlyKey: month must be between 1 and 12');
-  }
-  return poseidonHash('monthly', yearlyKey, month);
-}
-
-export function deriveDailyKey(monthlyKey: string, day: number): string {
-  if (day < 1 || day > 31) {
-    throw new RangeError('[onyx-privacy] deriveDailyKey: day must be between 1 and 31');
-  }
-  return poseidonHash('daily', monthlyKey, day);
+export async function deriveDailyKey(client: UmbraClient, mint: Address, year: number, month: number, day: number): Promise<bigint> {
+  const deriver = getDailyViewingKeyDeriver({ client });
+  return deriver(mint, year as Year, month as Month, day as Day);
 }

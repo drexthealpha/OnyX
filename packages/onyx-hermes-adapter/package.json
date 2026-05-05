@@ -1,41 +1,38 @@
 {
-    "name":  "@onyx/hermes-adapter",
-    "version":  "1.0.0",
-    "description":  "ONYX ↔ Hermes ACP adapter — routes Hermes skill requests to ONYX skill execution",
-    "type":  "module",
-    "main":  "./dist/index.js",
-    "types":  "./dist/index.d.ts",
-    "exports":  {
-                    ".":  {
-                              "import":  "./dist/index.js",
-                              "types":  "./dist/index.d.ts"
-                          }
-                },
-    "scripts":  {
-                    "build":  "tsc -p tsconfig.json",
-                    "test":  "vitest run",
-                    "typecheck":  "tsc --noEmit"
-                },
-    "dependencies":  {
-
-                     },
-    "peerDependencies":  {
-                             "@onyx/hermes":  "workspace:*"
-                         },
-    "devDependencies":  {
-                            "@types/bun":  "latest",
-                            "typescript":  "^5.4.0",
-                            "vitest":  "latest"
-                        },
-    "keywords":  [
-                     "onyx",
-                     "hermes",
-                     "acp",
-                     "adapter",
-                     "skills"
-                 ],
-    "license":  "MIT",
-    "publishConfig":  {
-                          "access":  "public"
-                      }
+    "name": "@onyx/hermes-adapter",
+    "version": "1.0.0",
+    "description": "ONYX ↔ Hermes ACP adapter — routes Hermes skill requests to ONYX skill execution",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "test": "vitest run",
+        "typecheck": "tsc --noEmit"
+    },
+    "peerDependencies": {
+        "@onyx/hermes": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "typescript": "^5.9.3",
+        "vitest": "latest"
+    },
+    "keywords": [
+        "onyx",
+        "hermes",
+        "acp",
+        "adapter",
+        "skills"
+    ],
+    "license": "MIT",
+    "publishConfig": {
+        "access": "public"
+    }
 }

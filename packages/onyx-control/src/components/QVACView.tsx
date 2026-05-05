@@ -6,52 +6,68 @@ import { ProgressBar } from './ProgressBar.js';
 import { AnimatedBorder } from './AnimatedBorder.js';
 import type { AppContext } from '../App.js';
 import { t } from '../theme.js';
+import * as qvac from '@onyx/qvac';
 
 interface Props { context: AppContext; }
 
 export function QVACView({ context }: Props) {
-  const [models, setModels] = useState<string[]>(['llama-3.2-1b.bin']);
-  const [selectedModel, setSelectedModel] = useState('llama-3.2-1b.bin');
+  const [models, setModels] = useState<string[]>([]);
+  const [selectedModel, setSelectedModel] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [prompt, setPrompt] = useState('');
   const [streamData, setStreamData] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate loading model for TUI
-    if (!isLoaded) {
-      let prog = 0;
-      const timer = setInterval(() => {
-        prog += 10;
-        setLoadingProgress(prog);
-        if (prog >= 100) {
-          setIsLoaded(true);
-          clearInterval(timer);
-        }
-      }, 200);
-      return () => clearInterval(timer);
+    async function initQVAC() {
+      const available = await qvac.isAvailable();
+      if (!available) {
+        setError('QVAC not available — no model path configured');
+        return;
+      }
+
+      const modelPath = await qvac.getOfflineModel();
+      setSelectedModel(modelPath);
+      setModels([modelPath]);
+
+      try {
+        const modelId = await qvac.loadModel(modelPath);
+        setLoadingProgress(100);
+        setIsLoaded(true);
+        setModels([modelId]);
+      } catch (err) {
+        setError(`Failed to load model: ${err}`);
+      }
     }
-  }, [isLoaded]);
+
+    initQVAC();
+  }, []);
 
   const handleSubmit = async (value: string) => {
     if (!value.trim() || !isLoaded || isStreaming) return;
     setPrompt('');
     setStreamData('');
     setIsStreaming(true);
-    
-    // Simulate stream
-    const words = `This is a simulated local response from ${selectedModel} via QVAC...`.split(' ');
-    let i = 0;
-    const timer = setInterval(() => {
-      if (i < words.length) {
-        setStreamData((prev) => prev + (prev ? ' ' : '') + words[i]);
-        i++;
-      } else {
-        setIsStreaming(false);
-        clearInterval(timer);
+    setError(null);
+
+    const modelId = models[0];
+    if (!modelId) {
+      setIsStreaming(false);
+      setError('No model loaded');
+      return;
+    }
+
+    try {
+      for await (const token of qvac.stream(modelId, value)) {
+        setStreamData((prev) => prev + (prev ? ' ' : '') + token);
       }
-    }, 100);
+    } catch (err) {
+      setError(`Stream error: ${err}`);
+    } finally {
+      setIsStreaming(false);
+    }
   };
 
   return (
@@ -59,6 +75,12 @@ export function QVACView({ context }: Props) {
       <Box marginBottom={1}>
         <Text color={t.accent} bold>QVAC Local Inference View</Text>
       </Box>
+
+      {error && (
+        <Box marginBottom={1}>
+          <Text color="red">Error: {error}</Text>
+        </Box>
+      )}
 
       <Box flexDirection="column" marginBottom={1}>
         <Text color={t.fg.primary}>Model: {selectedModel}</Text>
@@ -69,7 +91,7 @@ export function QVACView({ context }: Props) {
             <ProgressBar value={loadingProgress} />
           </Box>
         ) : (
-          <Text color="green">Status: Loaded & Ready (P2P OK)</Text>
+          <Text color="green">Status: Loaded & Ready</Text>
         )}
       </Box>
 

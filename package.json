@@ -24,12 +24,12 @@
     "demo:ika": "tsx scripts/demo-ika.ts"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
-    "prettier": "^3.2.5",
-    "rimraf": "^5.0.5",
-    "turbo": "^1.13.2",
-    "typescript": "^5.4.5",
-    "vitest": "^1.4.0"
+    "@types/node": "^20.19.39",
+    "prettier": "^3.8.3",
+    "rimraf": "^5.0.10",
+    "turbo": "^1.13.4",
+    "typescript": "^5.9.3",
+    "vitest": "^1.6.1"
   },
   "engines": {
     "node": ">=20.0.0",
@@ -38,9 +38,9 @@
   "packageManager": "pnpm@9.1.0",
   "dependencies": {
     "@umbra-privacy/sdk": "2.0.3",
-    "utf-8-validate": "^5.0.2",
+    "utf-8-validate": "^5.0.10",
     "whatwg-url": "7.1.0",
-    "zod": "^3.25.76"
+    "zod": "^4.4.3"
   },
   "pnpm": {
     "overrides": {

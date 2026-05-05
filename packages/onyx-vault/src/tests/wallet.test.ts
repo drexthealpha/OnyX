@@ -10,25 +10,31 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createWallet } from "../wallet.js";
 
-import { Keypair } from "@solana/web3.js";
+import { createKeyPairSignerFromPrivateKeyBytes } from "@solana/signers";
 
-// Generate a mock keypair (32 bytes for public key, 64 for secret)
-function generateMockKeypair(): { publicKey: number[]; secretKey: number[] } {
-  const kp = Keypair.generate();
+// Generate a mock keypair using @solana/kit
+async function generateMockKeypair(): Promise<{ secretKey: number[]; address: string }> {
+  // Generate 32 random bytes for private key
+  const privateKeyBytes = new Uint8Array(32);
+  crypto.getRandomValues(privateKeyBytes);
+  
+  // Create signer from the 32-byte private key
+  const signer = await createKeyPairSignerFromPrivateKeyBytes(privateKeyBytes);
+  
   return {
-    secretKey: Array.from(kp.secretKey),
-    publicKey: Array.from(kp.publicKey.toBytes()),
+    secretKey: Array.from(privateKeyBytes),
+    address: signer.address,
   };
 }
 
 // Test 1: wallet loads and returns correct public key
 
 test("createWallet — getPublicKey returns valid base58 string", async () => {
-  const { secretKey } = generateMockKeypair();
+  const { secretKey } = await generateMockKeypair();
   const keypairPath = join(tmpdir(), `onyx-test-${Date.now()}.json`);
   writeFileSync(keypairPath, JSON.stringify(secretKey));
 
-  const wallet = createWallet({ keypairPath, rpcUrl: "https://api.devnet.solana.com" });
+  const wallet = await createWallet({ keypairPath, rpcUrl: "https://api.devnet.solana.com" });
   const pubkey = wallet.getPublicKey();
 
   assert.equal(typeof pubkey, "string");
@@ -40,11 +46,11 @@ test("createWallet — getPublicKey returns valid base58 string", async () => {
 // Test 2: wallet.sign does not expose private key
 
 test("createWallet — returned wallet object has no privateKey property", async () => {
-  const { secretKey } = generateMockKeypair();
+  const { secretKey } = await generateMockKeypair();
   const keypairPath = join(tmpdir(), `onyx-test-${Date.now()}.json`);
   writeFileSync(keypairPath, JSON.stringify(secretKey));
 
-  const wallet = createWallet({ keypairPath, rpcUrl: "https://api.devnet.solana.com" });
+  const wallet = await createWallet({ keypairPath, rpcUrl: "https://api.devnet.solana.com" });
 
   const walletAny = wallet as unknown as Record<string, unknown>;
   assert.equal(walletAny["privateKey"], undefined);
@@ -57,11 +63,11 @@ test("createWallet — returned wallet object has no privateKey property", async
 // Test 3: getBalance returns a bigint
 
 test("createWallet — getBalance returns bigint", async () => {
-  const { secretKey } = generateMockKeypair();
+  const { secretKey } = await generateMockKeypair();
   const keypairPath = join(tmpdir(), `onyx-test-${Date.now()}.json`);
   writeFileSync(keypairPath, JSON.stringify(secretKey));
 
-  const wallet = createWallet({ keypairPath, rpcUrl: "https://api.devnet.solana.com" });
+  const wallet = await createWallet({ keypairPath, rpcUrl: "https://api.devnet.solana.com" });
 
   assert.equal(typeof wallet.getBalance, "function");
   assert.equal(typeof wallet.sign, "function");
