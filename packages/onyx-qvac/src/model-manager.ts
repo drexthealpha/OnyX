@@ -30,5 +30,14 @@ export function listLoaded(): string[] {
 }
 
 export function isLoaded(modelId: string): boolean {
-    return Array.from(loadedModels.values()).includes(modelId);
+  return Array.from(loadedModels.values()).includes(modelId);
+}
+
+export async function isAvailable(): Promise<boolean> {
+  try {
+    const sdk = await import('@qvac/sdk');
+    return typeof sdk.loadModel === 'function';
+  } catch {
+    return false;
+  }
 }

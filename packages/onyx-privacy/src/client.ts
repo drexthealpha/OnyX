@@ -31,7 +31,7 @@ export async function createUmbraClient(config: OnyxUmbraConfig): Promise<IUmbra
     ?? (isDevnet ? DEVNET_RPC : MAINNET_RPC);
 
   const rpcSubscriptionsUrl = config.rpcSubscriptionsUrl
-    ?? process.env['UMBRA_RPC_WS_URL']
+    ?? process.env['UMBRA_WS_URL']
     ?? (isDevnet ? DEVNET_WS : MAINNET_WS);
 
   const indexerApiEndpoint = config.indexerApiEndpoint

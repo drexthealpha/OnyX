@@ -1,25 +1,17 @@
-# ONYX Deployment URLs and Signatures
+# ONYX Deployment URLs
 
-**NPM Registry:**
-https://www.npmjs.com/package/@onyx/sdk
+## Solana Programs (Devnet)
 
-**Docker Image:**
-ghcr.io/drexthealpha/onyx-gateway:latest
+| Program | Address | Explorer |
+|---------|---------|---------|
+| OnyX FHE Vault | `8tsJQaXZQGRdwUo28dicc9XwSMuCkbeiRvr9KYGcWpFs` | [View](https://explorer.solana.com/address/8tsJQaXZQGRdwUo28dicc9XwSMuCkbeiRvr9KYGcWpFs?cluster=devnet) |
+| Encrypt Protocol | `4ebfzWdKnrnGseuQpezXdG8yCdHqwQ1SSBHD3bWArND8` | [View](https://explorer.solana.com/address/4ebfzWdKnrnGseuQpezXdG8yCdHqwQ1SSBHD3bWArND8?cluster=devnet) |
+| Ika dWallet | `87W54kGYFQ1rgWqMeu4XTPHWXWmXSQCcjm8vCTfiq1oY` | [View](https://explorer.solana.com/address/87W54kGYFQ1rgWqMeu4XTPHWXWmXSQCcjm8vCTfiq1oY?cluster=devnet) |
+| Umbra Privacy | `DSuKkyqGVGgo4QtPABfxKJKygUDACbUhirnuv63mEpAJ` | [View](https://explorer.solana.com/address/DSuKkyqGVGgo4QtPABfxKJKygUDACbUhirnuv63mEpAJ?cluster=devnet) |
 
-**Web App (Vercel):**
-[PENDING]
+## Devnet Transaction Proofs
+> Fill these in after running the demo scripts
 
-**Nosana Job URL:**
-[PENDING]
-
-**FHE Vault tx:**
-[PENDING]
-
-**Umbra Shield tx:**
-[PENDING]
-
-**Ika dWallet tx:**
-[PENDING]
-
-**Demo Video:**
-[PENDING]
+- Ika dWallet PDA: `[run pnpm demo:ika and paste address here]`
+- Umbra shield tx: `[run pnpm demo:umbra and paste tx signature here]`
+- Nosana job URL: `[run pnpm demo:nosana and paste URL here]`

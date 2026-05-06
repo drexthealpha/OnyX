@@ -51,3 +51,6 @@ out/
 
 # Local reference repos
 champion_repos/
+
+# ONYX runtime data
+packages/onyx-mem/data/
